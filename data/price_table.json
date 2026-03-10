@@ -1,0 +1,1412 @@
+ [
+    {
+      "id": "pt_1773138413933",
+      "name": "AR20J-2(标准指导价)",
+      "description": "创建于 2026/3/10",
+      "currency": "¥",
+      "created_at": "2026-03-10T10:26:53.933Z",
+      "entries": [
+        {
+          "option_code": "ALA00",
+          "description": "语音报警器00",
+          "price": 3200
+        },
+        {
+          "option_code": "ALA01",
+          "description": "语音报警器01",
+          "price": 3300
+        },
+        {
+          "option_code": "ASS00",
+          "description": "防滑贴00",
+          "price": 11700
+        },
+        {
+          "option_code": "ASS01",
+          "description": "防滑贴01",
+          "price": 11800
+        },
+        {
+          "option_code": "BEV00",
+          "description": "动力电池00",
+          "price": 4700
+        },
+        {
+          "option_code": "BEV01",
+          "description": "动力电池01",
+          "price": 4800
+        },
+        {
+          "option_code": "CAC00",
+          "description": "底盘前后防撞00",
+          "price": 14500
+        },
+        {
+          "option_code": "CAC01",
+          "description": "底盘前后防撞01",
+          "price": 14600
+        },
+        {
+          "option_code": "CDM00",
+          "description": "Commission Date00",
+          "price": 12800
+        },
+        {
+          "option_code": "CDM01",
+          "description": "Commission Date01",
+          "price": 12900
+        },
+        {
+          "option_code": "CHH00",
+          "description": "充电线束00",
+          "price": 3700
+        },
+        {
+          "option_code": "CHH01",
+          "description": "充电线束01",
+          "price": 3800
+        },
+        {
+          "option_code": "CPE00",
+          "description": "低温包00",
+          "price": 13200
+        },
+        {
+          "option_code": "CPE01",
+          "description": "低温包01",
+          "price": 13300
+        },
+        {
+          "option_code": "DTT00",
+          "description": "驱动型式00",
+          "price": 3200
+        },
+        {
+          "option_code": "DTT01",
+          "description": "驱动型式01",
+          "price": 3300
+        },
+        {
+          "option_code": "ENG00",
+          "description": "发动机00",
+          "price": 1400
+        },
+        {
+          "option_code": "ENG01",
+          "description": "发动机01",
+          "price": 1500
+        },
+        {
+          "option_code": "FEB00",
+          "description": "灭火器支架00",
+          "price": 6100
+        },
+        {
+          "option_code": "FEB01",
+          "description": "灭火器支架01",
+          "price": 6200
+        },
+        {
+          "option_code": "FOO00",
+          "description": "脚踏使能开关00",
+          "price": 11400
+        },
+        {
+          "option_code": "FOO01",
+          "description": "脚踏使能开关01",
+          "price": 11500
+        },
+        {
+          "option_code": "FPB00",
+          "description": "防坠落棒00",
+          "price": 1200
+        },
+        {
+          "option_code": "FPB01",
+          "description": "防坠落棒01",
+          "price": 1300
+        },
+        {
+          "option_code": "FTC00",
+          "description": "燃油箱00",
+          "price": 13700
+        },
+        {
+          "option_code": "FTC01",
+          "description": "燃油箱01",
+          "price": 13800
+        },
+        {
+          "option_code": "GBT00",
+          "description": "玻璃支架00",
+          "price": 10700
+        },
+        {
+          "option_code": "GBT01",
+          "description": "玻璃支架01",
+          "price": 10800
+        },
+        {
+          "option_code": "GTR00",
+          "description": "发电机00",
+          "price": 12300
+        },
+        {
+          "option_code": "GTR01",
+          "description": "发电机01",
+          "price": 12400
+        },
+        {
+          "option_code": "HLB00",
+          "description": "限高杆00",
+          "price": 4000
+        },
+        {
+          "option_code": "HLB01",
+          "description": "限高杆01",
+          "price": 4100
+        },
+        {
+          "option_code": "HOR00",
+          "description": "液压油散热器00",
+          "price": 8900
+        },
+        {
+          "option_code": "HOR01",
+          "description": "液压油散热器01",
+          "price": 9000
+        },
+        {
+          "option_code": "JST00",
+          "description": "Jump Start00",
+          "price": 6700
+        },
+        {
+          "option_code": "JST01",
+          "description": "Jump Start01",
+          "price": 6800
+        },
+        {
+          "option_code": "LGM00",
+          "description": "LOGO标识00",
+          "price": 14000
+        },
+        {
+          "option_code": "LGM01",
+          "description": "LOGO标识01",
+          "price": 14100
+        },
+        {
+          "option_code": "NIR00",
+          "description": "螺母指示器00",
+          "price": 11900
+        },
+        {
+          "option_code": "NIR01",
+          "description": "螺母指示器01",
+          "price": 12000
+        },
+        {
+          "option_code": "NMP00",
+          "description": "铭牌00",
+          "price": 6100
+        },
+        {
+          "option_code": "NMP01",
+          "description": "铭牌01",
+          "price": 6200
+        },
+        {
+          "option_code": "OMG00",
+          "description": "产地标识00",
+          "price": 8300
+        },
+        {
+          "option_code": "OMG01",
+          "description": "产地标识01",
+          "price": 8400
+        },
+        {
+          "option_code": "PFM00",
+          "description": "工作平台00",
+          "price": 8300
+        },
+        {
+          "option_code": "PFM01",
+          "description": "工作平台01",
+          "price": 8400
+        },
+        {
+          "option_code": "PIP00",
+          "description": "管架00",
+          "price": 8900
+        },
+        {
+          "option_code": "PIP01",
+          "description": "管架01",
+          "price": 9000
+        },
+        {
+          "option_code": "PPM00",
+          "description": "平台电源模块00",
+          "price": 9300
+        },
+        {
+          "option_code": "PPM01",
+          "description": "平台电源模块01",
+          "price": 9400
+        },
+        {
+          "option_code": "PST00",
+          "description": "平台半网00",
+          "price": 4300
+        },
+        {
+          "option_code": "PST01",
+          "description": "平台半网01",
+          "price": 4400
+        },
+        {
+          "option_code": "RCA00",
+          "description": "无线防撞雷达00",
+          "price": 7000
+        },
+        {
+          "option_code": "RCA01",
+          "description": "无线防撞雷达01",
+          "price": 7100
+        },
+        {
+          "option_code": "SBB00",
+          "description": "安全带收纳桶00",
+          "price": 1100
+        },
+        {
+          "option_code": "SBB01",
+          "description": "安全带收纳桶01",
+          "price": 1200
+        },
+        {
+          "option_code": "SDV00",
+          "description": "标准化版本00",
+          "price": 6300
+        },
+        {
+          "option_code": "SDV01",
+          "description": "标准化版本01",
+          "price": 6400
+        },
+        {
+          "option_code": "SFF00",
+          "description": "转向型式00",
+          "price": 1900
+        },
+        {
+          "option_code": "SFF01",
+          "description": "转向型式01",
+          "price": 2000
+        },
+        {
+          "option_code": "SGL00",
+          "description": "安全护栏00",
+          "price": 2600
+        },
+        {
+          "option_code": "SGL01",
+          "description": "安全护栏01",
+          "price": 2700
+        },
+        {
+          "option_code": "SIG00",
+          "description": "标志标识00",
+          "price": 5300
+        },
+        {
+          "option_code": "SIG01",
+          "description": "标志标识01",
+          "price": 5400
+        },
+        {
+          "option_code": "SRK00",
+          "description": "置物架00",
+          "price": 6600
+        },
+        {
+          "option_code": "SRK01",
+          "description": "置物架01",
+          "price": 6700
+        },
+        {
+          "option_code": "SSB00",
+          "description": "智能安全带挂钩00",
+          "price": 5800
+        },
+        {
+          "option_code": "SSB01",
+          "description": "智能安全带挂钩01",
+          "price": 5900
+        },
+        {
+          "option_code": "SWI00",
+          "description": "电源开关00",
+          "price": 9900
+        },
+        {
+          "option_code": "SWI01",
+          "description": "电源开关01",
+          "price": 10000
+        },
+        {
+          "option_code": "TBX00",
+          "description": "T-BOX00",
+          "price": 12400
+        },
+        {
+          "option_code": "TBX01",
+          "description": "T-BOX01",
+          "price": 12500
+        },
+        {
+          "option_code": "TIR00",
+          "description": "轮胎00",
+          "price": 9500
+        },
+        {
+          "option_code": "TIR01",
+          "description": "轮胎01",
+          "price": 9600
+        },
+        {
+          "option_code": "UKM00",
+          "description": "UKCA标识00",
+          "price": 9300
+        },
+        {
+          "option_code": "UKM01",
+          "description": "UKCA标识01",
+          "price": 9400
+        },
+        {
+          "option_code": "WCK00",
+          "description": "止退器00",
+          "price": 8500
+        },
+        {
+          "option_code": "WCK01",
+          "description": "止退器01",
+          "price": 8600
+        },
+        {
+          "option_code": "WHN00",
+          "description": "白噪音00",
+          "price": 12300
+        },
+        {
+          "option_code": "WHN01",
+          "description": "白噪音01",
+          "price": 12400
+        },
+        {
+          "option_code": "COC00",
+          "description": "整机颜色00",
+          "price": 6900
+        },
+        {
+          "option_code": "COC01",
+          "description": "整机颜色01",
+          "price": 7000
+        },
+        {
+          "option_code": "DAP00",
+          "description": "取消防夹手00",
+          "price": 900
+        },
+        {
+          "option_code": "DAP01",
+          "description": "取消防夹手01",
+          "price": 1000
+        },
+        {
+          "option_code": "GPC00",
+          "description": "护栏防护波纹管00",
+          "price": 4400
+        },
+        {
+          "option_code": "GPC01",
+          "description": "护栏防护波纹管01",
+          "price": 4500
+        },
+        {
+          "option_code": "HYD00",
+          "description": "液压油00",
+          "price": 14500
+        },
+        {
+          "option_code": "HYD01",
+          "description": "液压油01",
+          "price": 14600
+        },
+        {
+          "option_code": "LAO00",
+          "description": "坑洼机构未打开可举升00",
+          "price": 1600
+        },
+        {
+          "option_code": "LAO01",
+          "description": "坑洼机构未打开可举升01",
+          "price": 1700
+        },
+        {
+          "option_code": "OAC00",
+          "description": "超载报警可下降00",
+          "price": 9700
+        },
+        {
+          "option_code": "OAC01",
+          "description": "超载报警可下降01",
+          "price": 9800
+        }
+      ],
+      "engineer_model_id": "em001"
+    },
+    {
+      "id": "pt_1773138440821",
+      "name": "AR20J-2(欧洲促销价) ",
+      "description": "创建于 2026/3/10",
+      "currency": "€",
+      "created_at": "2026-03-10T10:27:20.821Z",
+      "entries": [
+        {
+          "option_code": "ALA00",
+          "description": "语音报警器00",
+          "price": 3200
+        },
+        {
+          "option_code": "ALA01",
+          "description": "语音报警器01",
+          "price": 3300
+        },
+        {
+          "option_code": "ASS00",
+          "description": "防滑贴00",
+          "price": 11700
+        },
+        {
+          "option_code": "ASS01",
+          "description": "防滑贴01",
+          "price": 11800
+        },
+        {
+          "option_code": "BEV00",
+          "description": "动力电池00",
+          "price": 4700
+        },
+        {
+          "option_code": "BEV01",
+          "description": "动力电池01",
+          "price": 4800
+        },
+        {
+          "option_code": "CAC00",
+          "description": "底盘前后防撞00",
+          "price": 14500
+        },
+        {
+          "option_code": "CAC01",
+          "description": "底盘前后防撞01",
+          "price": 14600
+        },
+        {
+          "option_code": "CDM00",
+          "description": "Commission Date00",
+          "price": 12800
+        },
+        {
+          "option_code": "CDM01",
+          "description": "Commission Date01",
+          "price": 12900
+        },
+        {
+          "option_code": "CHH00",
+          "description": "充电线束00",
+          "price": 3700
+        },
+        {
+          "option_code": "CHH01",
+          "description": "充电线束01",
+          "price": 3800
+        },
+        {
+          "option_code": "CPE00",
+          "description": "低温包00",
+          "price": 13200
+        },
+        {
+          "option_code": "CPE01",
+          "description": "低温包01",
+          "price": 13300
+        },
+        {
+          "option_code": "DTT00",
+          "description": "驱动型式00",
+          "price": 3200
+        },
+        {
+          "option_code": "DTT01",
+          "description": "驱动型式01",
+          "price": 3300
+        },
+        {
+          "option_code": "ENG00",
+          "description": "发动机00",
+          "price": 1400
+        },
+        {
+          "option_code": "ENG01",
+          "description": "发动机01",
+          "price": 1500
+        },
+        {
+          "option_code": "FEB00",
+          "description": "灭火器支架00",
+          "price": 6100
+        },
+        {
+          "option_code": "FEB01",
+          "description": "灭火器支架01",
+          "price": 6200
+        },
+        {
+          "option_code": "FOO00",
+          "description": "脚踏使能开关00",
+          "price": 11400
+        },
+        {
+          "option_code": "FOO01",
+          "description": "脚踏使能开关01",
+          "price": 11500
+        },
+        {
+          "option_code": "FPB00",
+          "description": "防坠落棒00",
+          "price": 1200
+        },
+        {
+          "option_code": "FPB01",
+          "description": "防坠落棒01",
+          "price": 1300
+        },
+        {
+          "option_code": "FTC00",
+          "description": "燃油箱00",
+          "price": 13700
+        },
+        {
+          "option_code": "FTC01",
+          "description": "燃油箱01",
+          "price": 13800
+        },
+        {
+          "option_code": "GBT00",
+          "description": "玻璃支架00",
+          "price": 10700
+        },
+        {
+          "option_code": "GBT01",
+          "description": "玻璃支架01",
+          "price": 10800
+        },
+        {
+          "option_code": "GTR00",
+          "description": "发电机00",
+          "price": 12300
+        },
+        {
+          "option_code": "GTR01",
+          "description": "发电机01",
+          "price": 12400
+        },
+        {
+          "option_code": "HLB00",
+          "description": "限高杆00",
+          "price": 4000
+        },
+        {
+          "option_code": "HLB01",
+          "description": "限高杆01",
+          "price": 4100
+        },
+        {
+          "option_code": "HOR00",
+          "description": "液压油散热器00",
+          "price": 8900
+        },
+        {
+          "option_code": "HOR01",
+          "description": "液压油散热器01",
+          "price": 9000
+        },
+        {
+          "option_code": "JST00",
+          "description": "Jump Start00",
+          "price": 6700
+        },
+        {
+          "option_code": "JST01",
+          "description": "Jump Start01",
+          "price": 6800
+        },
+        {
+          "option_code": "LGM00",
+          "description": "LOGO标识00",
+          "price": 14000
+        },
+        {
+          "option_code": "LGM01",
+          "description": "LOGO标识01",
+          "price": 14100
+        },
+        {
+          "option_code": "NIR00",
+          "description": "螺母指示器00",
+          "price": 11900
+        },
+        {
+          "option_code": "NIR01",
+          "description": "螺母指示器01",
+          "price": 12000
+        },
+        {
+          "option_code": "NMP00",
+          "description": "铭牌00",
+          "price": 6100
+        },
+        {
+          "option_code": "NMP01",
+          "description": "铭牌01",
+          "price": 6200
+        },
+        {
+          "option_code": "OMG00",
+          "description": "产地标识00",
+          "price": 8300
+        },
+        {
+          "option_code": "OMG01",
+          "description": "产地标识01",
+          "price": 8400
+        },
+        {
+          "option_code": "PFM00",
+          "description": "工作平台00",
+          "price": 8300
+        },
+        {
+          "option_code": "PFM01",
+          "description": "工作平台01",
+          "price": 8400
+        },
+        {
+          "option_code": "PIP00",
+          "description": "管架00",
+          "price": 8900
+        },
+        {
+          "option_code": "PIP01",
+          "description": "管架01",
+          "price": 9000
+        },
+        {
+          "option_code": "PPM00",
+          "description": "平台电源模块00",
+          "price": 9300
+        },
+        {
+          "option_code": "PPM01",
+          "description": "平台电源模块01",
+          "price": 9400
+        },
+        {
+          "option_code": "PST00",
+          "description": "平台半网00",
+          "price": 4300
+        },
+        {
+          "option_code": "PST01",
+          "description": "平台半网01",
+          "price": 4400
+        },
+        {
+          "option_code": "RCA00",
+          "description": "无线防撞雷达00",
+          "price": 7000
+        },
+        {
+          "option_code": "RCA01",
+          "description": "无线防撞雷达01",
+          "price": 7100
+        },
+        {
+          "option_code": "SBB00",
+          "description": "安全带收纳桶00",
+          "price": 1100
+        },
+        {
+          "option_code": "SBB01",
+          "description": "安全带收纳桶01",
+          "price": 1200
+        },
+        {
+          "option_code": "SDV00",
+          "description": "标准化版本00",
+          "price": 6300
+        },
+        {
+          "option_code": "SDV01",
+          "description": "标准化版本01",
+          "price": 6400
+        },
+        {
+          "option_code": "SFF00",
+          "description": "转向型式00",
+          "price": 1900
+        },
+        {
+          "option_code": "SFF01",
+          "description": "转向型式01",
+          "price": 2000
+        },
+        {
+          "option_code": "SGL00",
+          "description": "安全护栏00",
+          "price": 2600
+        },
+        {
+          "option_code": "SGL01",
+          "description": "安全护栏01",
+          "price": 2700
+        },
+        {
+          "option_code": "SIG00",
+          "description": "标志标识00",
+          "price": 5300
+        },
+        {
+          "option_code": "SIG01",
+          "description": "标志标识01",
+          "price": 5400
+        },
+        {
+          "option_code": "SRK00",
+          "description": "置物架00",
+          "price": 6600
+        },
+        {
+          "option_code": "SRK01",
+          "description": "置物架01",
+          "price": 6700
+        },
+        {
+          "option_code": "SSB00",
+          "description": "智能安全带挂钩00",
+          "price": 5800
+        },
+        {
+          "option_code": "SSB01",
+          "description": "智能安全带挂钩01",
+          "price": 5900
+        },
+        {
+          "option_code": "SWI00",
+          "description": "电源开关00",
+          "price": 9900
+        },
+        {
+          "option_code": "SWI01",
+          "description": "电源开关01",
+          "price": 10000
+        },
+        {
+          "option_code": "TBX00",
+          "description": "T-BOX00",
+          "price": 12400
+        },
+        {
+          "option_code": "TBX01",
+          "description": "T-BOX01",
+          "price": 12500
+        },
+        {
+          "option_code": "TIR00",
+          "description": "轮胎00",
+          "price": 9500
+        },
+        {
+          "option_code": "TIR01",
+          "description": "轮胎01",
+          "price": 9600
+        },
+        {
+          "option_code": "UKM00",
+          "description": "UKCA标识00",
+          "price": 9300
+        },
+        {
+          "option_code": "UKM01",
+          "description": "UKCA标识01",
+          "price": 9400
+        },
+        {
+          "option_code": "WCK00",
+          "description": "止退器00",
+          "price": 8500
+        },
+        {
+          "option_code": "WCK01",
+          "description": "止退器01",
+          "price": 8600
+        },
+        {
+          "option_code": "WHN00",
+          "description": "白噪音00",
+          "price": 12300
+        },
+        {
+          "option_code": "WHN01",
+          "description": "白噪音01",
+          "price": 12400
+        },
+        {
+          "option_code": "COC00",
+          "description": "整机颜色00",
+          "price": 6900
+        },
+        {
+          "option_code": "COC01",
+          "description": "整机颜色01",
+          "price": 7000
+        },
+        {
+          "option_code": "DAP00",
+          "description": "取消防夹手00",
+          "price": 900
+        },
+        {
+          "option_code": "DAP01",
+          "description": "取消防夹手01",
+          "price": 1000
+        },
+        {
+          "option_code": "GPC00",
+          "description": "护栏防护波纹管00",
+          "price": 4400
+        },
+        {
+          "option_code": "GPC01",
+          "description": "护栏防护波纹管01",
+          "price": 4500
+        },
+        {
+          "option_code": "HYD00",
+          "description": "液压油00",
+          "price": 14500
+        },
+        {
+          "option_code": "HYD01",
+          "description": "液压油01",
+          "price": 14600
+        },
+        {
+          "option_code": "LAO00",
+          "description": "坑洼机构未打开可举升00",
+          "price": 1600
+        },
+        {
+          "option_code": "LAO01",
+          "description": "坑洼机构未打开可举升01",
+          "price": 1700
+        },
+        {
+          "option_code": "OAC00",
+          "description": "超载报警可下降00",
+          "price": 9700
+        },
+        {
+          "option_code": "OAC01",
+          "description": "超载报警可下降01",
+          "price": 9800
+        }
+      ],
+      "engineer_model_id": "em001"
+    },
+    {
+      "id": "pt_1773138460482",
+      "name": "AR20J-2(北美促销价)",
+      "description": "创建于 2026/3/10",
+      "currency": "$",
+      "created_at": "2026-03-10T10:27:40.482Z",
+      "entries": [
+        {
+          "option_code": "ALA00",
+          "description": "语音报警器00",
+          "price": 3200
+        },
+        {
+          "option_code": "ALA01",
+          "description": "语音报警器01",
+          "price": 3300
+        },
+        {
+          "option_code": "ASS00",
+          "description": "防滑贴00",
+          "price": 11700
+        },
+        {
+          "option_code": "ASS01",
+          "description": "防滑贴01",
+          "price": 11800
+        },
+        {
+          "option_code": "BEV00",
+          "description": "动力电池00",
+          "price": 4700
+        },
+        {
+          "option_code": "BEV01",
+          "description": "动力电池01",
+          "price": 4800
+        },
+        {
+          "option_code": "CAC00",
+          "description": "底盘前后防撞00",
+          "price": 14500
+        },
+        {
+          "option_code": "CAC01",
+          "description": "底盘前后防撞01",
+          "price": 14600
+        },
+        {
+          "option_code": "CDM00",
+          "description": "Commission Date00",
+          "price": 12800
+        },
+        {
+          "option_code": "CDM01",
+          "description": "Commission Date01",
+          "price": 12900
+        },
+        {
+          "option_code": "CHH00",
+          "description": "充电线束00",
+          "price": 3700
+        },
+        {
+          "option_code": "CHH01",
+          "description": "充电线束01",
+          "price": 3800
+        },
+        {
+          "option_code": "CPE00",
+          "description": "低温包00",
+          "price": 13200
+        },
+        {
+          "option_code": "CPE01",
+          "description": "低温包01",
+          "price": 13300
+        },
+        {
+          "option_code": "DTT00",
+          "description": "驱动型式00",
+          "price": 3200
+        },
+        {
+          "option_code": "DTT01",
+          "description": "驱动型式01",
+          "price": 3300
+        },
+        {
+          "option_code": "ENG00",
+          "description": "发动机00",
+          "price": 1400
+        },
+        {
+          "option_code": "ENG01",
+          "description": "发动机01",
+          "price": 1500
+        },
+        {
+          "option_code": "FEB00",
+          "description": "灭火器支架00",
+          "price": 6100
+        },
+        {
+          "option_code": "FEB01",
+          "description": "灭火器支架01",
+          "price": 6200
+        },
+        {
+          "option_code": "FOO00",
+          "description": "脚踏使能开关00",
+          "price": 11400
+        },
+        {
+          "option_code": "FOO01",
+          "description": "脚踏使能开关01",
+          "price": 11500
+        },
+        {
+          "option_code": "FPB00",
+          "description": "防坠落棒00",
+          "price": 1200
+        },
+        {
+          "option_code": "FPB01",
+          "description": "防坠落棒01",
+          "price": 1300
+        },
+        {
+          "option_code": "FTC00",
+          "description": "燃油箱00",
+          "price": 13700
+        },
+        {
+          "option_code": "FTC01",
+          "description": "燃油箱01",
+          "price": 13800
+        },
+        {
+          "option_code": "GBT00",
+          "description": "玻璃支架00",
+          "price": 10700
+        },
+        {
+          "option_code": "GBT01",
+          "description": "玻璃支架01",
+          "price": 10800
+        },
+        {
+          "option_code": "GTR00",
+          "description": "发电机00",
+          "price": 12300
+        },
+        {
+          "option_code": "GTR01",
+          "description": "发电机01",
+          "price": 12400
+        },
+        {
+          "option_code": "HLB00",
+          "description": "限高杆00",
+          "price": 4000
+        },
+        {
+          "option_code": "HLB01",
+          "description": "限高杆01",
+          "price": 4100
+        },
+        {
+          "option_code": "HOR00",
+          "description": "液压油散热器00",
+          "price": 8900
+        },
+        {
+          "option_code": "HOR01",
+          "description": "液压油散热器01",
+          "price": 9000
+        },
+        {
+          "option_code": "JST00",
+          "description": "Jump Start00",
+          "price": 6700
+        },
+        {
+          "option_code": "JST01",
+          "description": "Jump Start01",
+          "price": 6800
+        },
+        {
+          "option_code": "LGM00",
+          "description": "LOGO标识00",
+          "price": 14000
+        },
+        {
+          "option_code": "LGM01",
+          "description": "LOGO标识01",
+          "price": 14100
+        },
+        {
+          "option_code": "NIR00",
+          "description": "螺母指示器00",
+          "price": 11900
+        },
+        {
+          "option_code": "NIR01",
+          "description": "螺母指示器01",
+          "price": 12000
+        },
+        {
+          "option_code": "NMP00",
+          "description": "铭牌00",
+          "price": 6100
+        },
+        {
+          "option_code": "NMP01",
+          "description": "铭牌01",
+          "price": 6200
+        },
+        {
+          "option_code": "OMG00",
+          "description": "产地标识00",
+          "price": 8300
+        },
+        {
+          "option_code": "OMG01",
+          "description": "产地标识01",
+          "price": 8400
+        },
+        {
+          "option_code": "PFM00",
+          "description": "工作平台00",
+          "price": 8300
+        },
+        {
+          "option_code": "PFM01",
+          "description": "工作平台01",
+          "price": 8400
+        },
+        {
+          "option_code": "PIP00",
+          "description": "管架00",
+          "price": 8900
+        },
+        {
+          "option_code": "PIP01",
+          "description": "管架01",
+          "price": 9000
+        },
+        {
+          "option_code": "PPM00",
+          "description": "平台电源模块00",
+          "price": 9300
+        },
+        {
+          "option_code": "PPM01",
+          "description": "平台电源模块01",
+          "price": 9400
+        },
+        {
+          "option_code": "PST00",
+          "description": "平台半网00",
+          "price": 4300
+        },
+        {
+          "option_code": "PST01",
+          "description": "平台半网01",
+          "price": 4400
+        },
+        {
+          "option_code": "RCA00",
+          "description": "无线防撞雷达00",
+          "price": 7000
+        },
+        {
+          "option_code": "RCA01",
+          "description": "无线防撞雷达01",
+          "price": 7100
+        },
+        {
+          "option_code": "SBB00",
+          "description": "安全带收纳桶00",
+          "price": 1100
+        },
+        {
+          "option_code": "SBB01",
+          "description": "安全带收纳桶01",
+          "price": 1200
+        },
+        {
+          "option_code": "SDV00",
+          "description": "标准化版本00",
+          "price": 6300
+        },
+        {
+          "option_code": "SDV01",
+          "description": "标准化版本01",
+          "price": 6400
+        },
+        {
+          "option_code": "SFF00",
+          "description": "转向型式00",
+          "price": 1900
+        },
+        {
+          "option_code": "SFF01",
+          "description": "转向型式01",
+          "price": 2000
+        },
+        {
+          "option_code": "SGL00",
+          "description": "安全护栏00",
+          "price": 2600
+        },
+        {
+          "option_code": "SGL01",
+          "description": "安全护栏01",
+          "price": 2700
+        },
+        {
+          "option_code": "SIG00",
+          "description": "标志标识00",
+          "price": 5300
+        },
+        {
+          "option_code": "SIG01",
+          "description": "标志标识01",
+          "price": 5400
+        },
+        {
+          "option_code": "SRK00",
+          "description": "置物架00",
+          "price": 6600
+        },
+        {
+          "option_code": "SRK01",
+          "description": "置物架01",
+          "price": 6700
+        },
+        {
+          "option_code": "SSB00",
+          "description": "智能安全带挂钩00",
+          "price": 5800
+        },
+        {
+          "option_code": "SSB01",
+          "description": "智能安全带挂钩01",
+          "price": 5900
+        },
+        {
+          "option_code": "SWI00",
+          "description": "电源开关00",
+          "price": 9900
+        },
+        {
+          "option_code": "SWI01",
+          "description": "电源开关01",
+          "price": 10000
+        },
+        {
+          "option_code": "TBX00",
+          "description": "T-BOX00",
+          "price": 12400
+        },
+        {
+          "option_code": "TBX01",
+          "description": "T-BOX01",
+          "price": 12500
+        },
+        {
+          "option_code": "TIR00",
+          "description": "轮胎00",
+          "price": 9500
+        },
+        {
+          "option_code": "TIR01",
+          "description": "轮胎01",
+          "price": 9600
+        },
+        {
+          "option_code": "UKM00",
+          "description": "UKCA标识00",
+          "price": 9300
+        },
+        {
+          "option_code": "UKM01",
+          "description": "UKCA标识01",
+          "price": 9400
+        },
+        {
+          "option_code": "WCK00",
+          "description": "止退器00",
+          "price": 8500
+        },
+        {
+          "option_code": "WCK01",
+          "description": "止退器01",
+          "price": 8600
+        },
+        {
+          "option_code": "WHN00",
+          "description": "白噪音00",
+          "price": 12300
+        },
+        {
+          "option_code": "WHN01",
+          "description": "白噪音01",
+          "price": 12400
+        },
+        {
+          "option_code": "COC00",
+          "description": "整机颜色00",
+          "price": 6900
+        },
+        {
+          "option_code": "COC01",
+          "description": "整机颜色01",
+          "price": 7000
+        },
+        {
+          "option_code": "DAP00",
+          "description": "取消防夹手00",
+          "price": 900
+        },
+        {
+          "option_code": "DAP01",
+          "description": "取消防夹手01",
+          "price": 1000
+        },
+        {
+          "option_code": "GPC00",
+          "description": "护栏防护波纹管00",
+          "price": 4400
+        },
+        {
+          "option_code": "GPC01",
+          "description": "护栏防护波纹管01",
+          "price": 4500
+        },
+        {
+          "option_code": "HYD00",
+          "description": "液压油00",
+          "price": 14500
+        },
+        {
+          "option_code": "HYD01",
+          "description": "液压油01",
+          "price": 14600
+        },
+        {
+          "option_code": "LAO00",
+          "description": "坑洼机构未打开可举升00",
+          "price": 1600
+        },
+        {
+          "option_code": "LAO01",
+          "description": "坑洼机构未打开可举升01",
+          "price": 1700
+        },
+        {
+          "option_code": "OAC00",
+          "description": "超载报警可下降00",
+          "price": 9700
+        },
+        {
+          "option_code": "OAC01",
+          "description": "超载报警可下降01",
+          "price": 9800
+        }
+      ],
+      "engineer_model_id": "em001"
+    }
+  ]
