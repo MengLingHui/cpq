@@ -13,6 +13,12 @@ function hasItems<T>(value: T[] | null | undefined): value is T[] {
   return Array.isArray(value) && value.length > 0;
 }
 
+function getDataUrl(fileName: string): string {
+  const base = import.meta.env.BASE_URL || '/';
+  const normalizedBase = base.endsWith('/') ? base : `${base}/`;
+  return `${normalizedBase}data/${fileName}`;
+}
+
 export interface OptionItem {
   option_code: string;
   description: string;
@@ -310,7 +316,7 @@ export async function loadSeriesData(): Promise<SeriesInfo[]> {
     return localData;
   }
   // 从JSON文件加载
-  const response = await fetch('/data/series.json');
+  const response = await fetch(getDataUrl('series.json'));
   const data = await response.json();
   return data as SeriesInfo[];
 }
@@ -326,7 +332,7 @@ export async function loadMarketModels(): Promise<MarketModel[]> {
     console.log('[Storage] 从localStorage加载market_models数据');
     return localData;
   }
-  const response = await fetch('/data/market_model.json');
+  const response = await fetch(getDataUrl('market_model.json'));
   const data = await response.json();
   return Array.isArray(data) ? data : [data];
 }
@@ -342,7 +348,7 @@ export async function loadPriceTables(): Promise<PriceTable[]> {
     console.log('[Storage] 从localStorage加载price_tables数据');
     return localData;
   }
-  const response = await fetch('/data/price_table.json');
+  const response = await fetch(getDataUrl('price_table.json'));
   const data = await response.json();
   return Array.isArray(data) ? data : [data];
 }
@@ -374,7 +380,7 @@ export async function loadSavedConfigurations(): Promise<SavedConfiguration[]> {
       return localData;
     }
     // 从JSON文件加载初始数据
-    const response = await fetch('/data/saved_configurations.json');
+    const response = await fetch(getDataUrl('saved_configurations.json'));
     const data = await response.json();
     const configs = Array.isArray(data) ? data : [];
     console.log('[Storage] 从JSON文件加载saved_configurations数据:', configs.length, '条');
@@ -473,7 +479,7 @@ export async function loadEngineerModels(): Promise<EngineerModel[]> {
     console.log('[Storage] 从localStorage加载engineer_models数据');
     return localData;
   }
-  const response = await fetch('/data/engineer_model.json');
+  const response = await fetch(getDataUrl('engineer_model.json'));
   const data: RawEngineerModel[] = await response.json();
   const dataArray = Array.isArray(data) ? data : [data];
   return dataArray.map(convertRawEngineerModel);
