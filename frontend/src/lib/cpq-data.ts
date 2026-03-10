@@ -46,13 +46,44 @@ export interface ConfigurationGroup {
   hide: boolean;
 }
 
+export interface RuleSelection {
+  category_code: string;
+  option_code: string;
+}
+
+export interface EnableRule {
+  id: string;
+  type: 'enable';
+  name: string;
+  description?: string;
+  when: RuleSelection[];
+  then: Array<{
+    category_code: string;
+    allowed_option_codes: string[];
+  }>;
+  priority?: number;
+  enabled?: boolean;
+}
+
+export interface ExcludeRule {
+  id: string;
+  type: 'exclude';
+  name: string;
+  description?: string;
+  items: RuleSelection[];
+  priority?: number;
+  enabled?: boolean;
+}
+
+export type CPQRule = EnableRule | ExcludeRule;
+
 export interface MarketModel {
   model_id: string;
   model_name: string;
   product_series: string;
   series_info: SeriesInfo;
   configuration_groups: ConfigurationGroup[];
-  rules: unknown[];
+  rules: CPQRule[];
   price_table_id?: string; // linked price table
   engineer_model_id?: string; // linked engineer model
   engineer_model_name?: string; // linked engineer model name for display
@@ -64,7 +95,97 @@ export interface EngineerModel {
   product_series: string;
   series_info: SeriesInfo;
   configuration_groups: ConfigurationGroup[];
-  rules: unknown[];
+  rules: CPQRule[];
+}
+
+function normalizeRuleSelection(input: unknown): RuleSelection | null {
+  if (!input || typeof input !== 'object') return null;
+  const item = input as Record<string, unknown>;
+  const categoryCode = item.category_code;
+  const optionCode = item.option_code;
+  if (typeof categoryCode !== 'string' || typeof optionCode !== 'string') return null;
+  return {
+    category_code: categoryCode,
+    option_code: optionCode,
+  };
+}
+
+export function normalizeRuleSet(input: unknown): CPQRule[] {
+  if (!Array.isArray(input)) return [];
+
+  const normalized: CPQRule[] = [];
+
+  for (const raw of input) {
+    if (!raw || typeof raw !== 'object') continue;
+    const candidate = raw as Record<string, unknown>;
+    const id = typeof candidate.id === 'string' ? candidate.id : `rule_${Date.now()}_${normalized.length}`;
+    const name = typeof candidate.name === 'string' ? candidate.name : id;
+    const description = typeof candidate.description === 'string' ? candidate.description : undefined;
+    const priority = typeof candidate.priority === 'number' ? candidate.priority : undefined;
+    const enabled = typeof candidate.enabled === 'boolean' ? candidate.enabled : true;
+
+    if (candidate.type === 'enable') {
+      const when = Array.isArray(candidate.when)
+        ? candidate.when.map(normalizeRuleSelection).filter((v): v is RuleSelection => !!v)
+        : [];
+      const then = Array.isArray(candidate.then)
+        ? candidate.then
+            .map((entry) => {
+              if (!entry || typeof entry !== 'object') return null;
+              const effect = entry as Record<string, unknown>;
+              if (typeof effect.category_code !== 'string') return null;
+              if (!Array.isArray(effect.allowed_option_codes)) return null;
+              const allowed = effect.allowed_option_codes.filter((v): v is string => typeof v === 'string');
+              return {
+                category_code: effect.category_code,
+                allowed_option_codes: allowed,
+              };
+            })
+            .filter((v): v is { category_code: string; allowed_option_codes: string[] } => !!v)
+        : [];
+
+      if (when.length > 0 && then.length > 0) {
+        normalized.push({
+          id,
+          type: 'enable',
+          name,
+          description,
+          when,
+          then,
+          priority,
+          enabled,
+        });
+      }
+      continue;
+    }
+
+    if (candidate.type === 'exclude') {
+      const items = Array.isArray(candidate.items)
+        ? candidate.items.map(normalizeRuleSelection).filter((v): v is RuleSelection => !!v)
+        : [];
+
+      if (items.length >= 2) {
+        normalized.push({
+          id,
+          type: 'exclude',
+          name,
+          description,
+          items,
+          priority,
+          enabled,
+        });
+      }
+    }
+  }
+
+  return normalized;
+}
+
+function normalizeModelRules<T extends { rules?: unknown }>(model: T): T & { rules: CPQRule[] } {
+  return {
+    ...model,
+    rules: normalizeRuleSet(model.rules),
+  };
 }
 
 // Price table entry with description
@@ -330,11 +451,12 @@ export async function loadMarketModels(): Promise<MarketModel[]> {
   }
   if (hasItems(localData)) {
     console.log('[Storage] 从localStorage加载market_models数据');
-    return localData;
+    return localData.map(model => normalizeModelRules(model as MarketModel));
   }
   const response = await fetch(getDataUrl('market_model.json'));
   const data = await response.json();
-  return Array.isArray(data) ? data : [data];
+  const models = Array.isArray(data) ? data : [data];
+  return models.map(model => normalizeModelRules(model as MarketModel));
 }
 
 // Load price tables from JSON -优先从localStorage读取
@@ -411,7 +533,7 @@ interface RawEngineerModel {
   product_series: string;
   series_info: SeriesInfo;
   configurations: RawEngineerConfig[];
-  rules: unknown[];
+  rules?: unknown[];
 }
 
 // Convert raw engineer model JSON to EngineerModel with grouped configuration_groups
@@ -464,7 +586,7 @@ function convertRawEngineerModel(raw: RawEngineerModel): EngineerModel {
     product_series: raw.product_series,
     series_info: { ...raw.series_info },
     configuration_groups: configurationGroups,
-    rules: raw.rules || [],
+    rules: normalizeRuleSet(raw.rules),
   };
 }
 
@@ -477,7 +599,7 @@ export async function loadEngineerModels(): Promise<EngineerModel[]> {
   }
   if (hasItems(localData)) {
     console.log('[Storage] 从localStorage加载engineer_models数据');
-    return localData;
+    return localData.map(model => normalizeModelRules(model as EngineerModel));
   }
   const response = await fetch(getDataUrl('engineer_model.json'));
   const data: RawEngineerModel[] = await response.json();
@@ -499,7 +621,7 @@ export function createEngineerModelFromMarket(market: MarketModel): EngineerMode
         options: c.options.map(o => ({ ...o })),
       })),
     })),
-    rules: [...market.rules],
+    rules: normalizeRuleSet(market.rules),
   };
 }
 

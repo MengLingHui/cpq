@@ -5,9 +5,9 @@
     "product_series": "articulated_boom",
     "series_info": {
       "series_id": "articulated_boom",
-      "series_name": "曲臂式高空作业平台",
-      "series_description": "曲臂式高空作业平台",
-      "parent_series": "臂车系列"
+      "series_name": "Articulated Boom",
+      "series_description": "Articulated Boom",
+      "parent_series": "boom_lift"
     },
     "configurations": [
       {
@@ -19,12 +19,12 @@
         "options": [
           {
             "option_code": "SDV00",
-            "description": "CE欧盟认证",
+            "description": "CE",
             "is_default": true
           },
           {
             "option_code": "SDV01",
-            "description": "ANSI美标认证",
+            "description": "ANSI",
             "is_default": false
           }
         ]
@@ -38,7 +38,7 @@
         "options": [
           {
             "option_code": "MRA_AR20J-2_01",
-            "description": "内：3.5 米（约 11.48 英尺）\n外：6.35 米（约 20.83 英尺）",
+            "description": "内：3.5m/11.48ft\n外： 6.35m/20.83ft",
             "is_default": true
           }
         ]
@@ -66,7 +66,7 @@
         "options": [
           {
             "option_code": "ADT_AR20J-2_01",
-            "description": "2.51 米（约 8.23 英尺）",
+            "description": "2.51m/8.23ft",
             "is_default": true
           }
         ]
@@ -94,7 +94,7 @@
         "options": [
           {
             "option_code": "WHB_AR20J-2_01",
-            "description": "2.19 米（约 7.19 英尺）",
+            "description": "2.19m/7.19ft",
             "is_default": true
           }
         ]
@@ -108,7 +108,7 @@
         "options": [
           {
             "option_code": "MDS_AR20J-2_01",
-            "description": "5±0.25 千米/小时（约 3.1±0.16 英里/小时）",
+            "description": "5±0.25km/h /3.1±0.16mph",
             "is_default": true
           }
         ]
@@ -122,7 +122,7 @@
         "options": [
           {
             "option_code": "MDZ_AR20J-2_01",
-            "description": "0.8±0.05 千米/小时（约 0.5±0.03 英里/小时）",
+            "description": "0.8±0.05km/h/0.5±0.03mph",
             "is_default": true
           }
         ]
@@ -136,7 +136,7 @@
         "options": [
           {
             "option_code": "MWS_AR20J-2_01",
-            "description": "12.5 米/秒（约 28 英里/小时）",
+            "description": "12.5m/s/28mph",
             "is_default": true
           }
         ]
@@ -150,7 +150,7 @@
         "options": [
           {
             "option_code": "VGP_AR20J-2_01",
-            "description": "530.7 千帕（约 77 磅/平方英寸）",
+            "description": "530.7kpa/77psi",
             "is_default": true
           }
         ]
@@ -164,7 +164,7 @@
         "options": [
           {
             "option_code": "HOT_AR20J-2_01",
-            "description": "110 升（约 29 加仑）",
+            "description": "110L/29gal",
             "is_default": true
           }
         ]
@@ -178,7 +178,7 @@
         "options": [
           {
             "option_code": "VKM_AR20J-2_01",
-            "description": "9300 千克（约 20503 磅）",
+            "description": "9300kg/20503lbs",
             "is_default": true
           }
         ]
@@ -192,12 +192,12 @@
         "options": [
           {
             "option_code": "ALA00",
-            "description": "语音报警-标准版（蜂鸣器+中文提示）",
+            "description": "Voice alarm - standard (buzzer + CN prompt)",
             "is_default": true
           },
           {
             "option_code": "ALA01",
-            "description": "语音报警-多语言版（中/英）",
+            "description": "Voice alarm - multilingual (CN/EN)",
             "is_default": false
           }
         ]
@@ -211,12 +211,12 @@
         "options": [
           {
             "option_code": "ASS00",
-            "description": "防滑贴-标准平台",
+            "description": "Anti-slip tape - standard deck",
             "is_default": true
           },
           {
             "option_code": "ASS01",
-            "description": "防滑贴-重载加强版",
+            "description": "Anti-slip tape - heavy duty",
             "is_default": false
           }
         ]
@@ -230,12 +230,12 @@
         "options": [
           {
             "option_code": "BEV00",
-            "description": "启动电池 12伏/100安时 铅酸",
+            "description": "Starter battery 12V/100Ah lead-acid",
             "is_default": true
           },
           {
             "option_code": "BEV01",
-            "description": "启动电池 12伏/105安时 免维护吸附式电池",
+            "description": "Starter battery 12V/105Ah AGM",
             "is_default": false
           }
         ]
@@ -249,12 +249,31 @@
         "options": [
           {
             "option_code": "CAC00",
-            "description": "前后防撞梁-标准版",
+            "description": "Front/rear bumper - standard",
             "is_default": true
           },
           {
             "option_code": "CAC01",
-            "description": "前后防撞梁-重载版",
+            "description": "Front/rear bumper - heavy duty",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 16,
+        "category_code": "CDM",
+        "category_name": "Delivery schedule",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "CDM00",
+            "description": "Delivery slot - standard (6-8 weeks)",
+            "is_default": true
+          },
+          {
+            "option_code": "CDM01",
+            "description": "Delivery slot - rush (4-6 weeks)",
             "is_default": false
           }
         ]
@@ -268,12 +287,12 @@
         "options": [
           {
             "option_code": "CHH00",
-            "description": "充电线束 交流16安（欧规）",
+            "description": "Charging harness AC 16A (EU)",
             "is_default": true
           },
           {
             "option_code": "CHH01",
-            "description": "充电线束 交流32安（工业版）",
+            "description": "Charging harness AC 32A (industrial)",
             "is_default": false
           }
         ]
@@ -287,12 +306,12 @@
         "options": [
           {
             "option_code": "CPE00",
-            "description": "气候包-标准（-10C及以上）",
+            "description": "Climate pack - standard (-10C and above)",
             "is_default": true
           },
           {
             "option_code": "CPE01",
-            "description": "气候包-低温（-20C预热）",
+            "description": "Climate pack - cold weather (-20C preheat)",
             "is_default": false
           }
         ]
@@ -306,12 +325,12 @@
         "options": [
           {
             "option_code": "DTT00",
-            "description": "驱动形式 两驱",
+            "description": "Drive type 2WD",
             "is_default": true
           },
           {
             "option_code": "DTT01",
-            "description": "驱动形式 四驱",
+            "description": "Drive type 4WD",
             "is_default": false
           }
         ]
@@ -325,12 +344,12 @@
         "options": [
           {
             "option_code": "ENG00",
-            "description": "发动机 久保田V2403 柴油",
+            "description": "Engine Kubota V2403 diesel",
             "is_default": true
           },
           {
             "option_code": "ENG01",
-            "description": "发动机 道依茨D2.9 柴油",
+            "description": "Engine Deutz D2.9 diesel",
             "is_default": false
           }
         ]
@@ -344,12 +363,12 @@
         "options": [
           {
             "option_code": "FEB00",
-            "description": "灭火器支架-不安装",
+            "description": "Fire extinguisher bracket - none",
             "is_default": true
           },
           {
             "option_code": "FEB01",
-            "description": "灭火器支架-已安装",
+            "description": "Fire extinguisher bracket - installed",
             "is_default": false
           }
         ]
@@ -363,12 +382,12 @@
         "options": [
           {
             "option_code": "FOO00",
-            "description": "脚踏开关-标准版",
+            "description": "Foot switch enable - standard",
             "is_default": true
           },
           {
             "option_code": "FOO01",
-            "description": "脚踏开关-重载版",
+            "description": "Foot switch enable - heavy duty",
             "is_default": false
           }
         ]
@@ -382,12 +401,12 @@
         "options": [
           {
             "option_code": "FPB00",
-            "description": "防坠护栏-标准版",
+            "description": "Fall protection bar - standard",
             "is_default": true
           },
           {
             "option_code": "FPB01",
-            "description": "防坠护栏-自锁版",
+            "description": "Fall protection bar - self-locking",
             "is_default": false
           }
         ]
@@ -401,12 +420,12 @@
         "options": [
           {
             "option_code": "FTC00",
-            "description": "燃油箱 80L",
+            "description": "Fuel tank 80L",
             "is_default": true
           },
           {
             "option_code": "FTC01",
-            "description": "燃油箱 110L",
+            "description": "Fuel tank 110L",
             "is_default": false
           }
         ]
@@ -420,12 +439,12 @@
         "options": [
           {
             "option_code": "GBT00",
-            "description": "玻璃支架-标准版",
+            "description": "Glass bracket - standard",
             "is_default": true
           },
           {
             "option_code": "GBT01",
-            "description": "玻璃支架-加强版",
+            "description": "Glass bracket - reinforced",
             "is_default": false
           }
         ]
@@ -439,12 +458,12 @@
         "options": [
           {
             "option_code": "GTR00",
-            "description": "发电机-不安装",
+            "description": "Generator - none",
             "is_default": true
           },
           {
             "option_code": "GTR01",
-            "description": "发电机 3.5千瓦 已安装",
+            "description": "Generator 3.5kW installed",
             "is_default": false
           }
         ]
@@ -458,12 +477,12 @@
         "options": [
           {
             "option_code": "HLB00",
-            "description": "高度限制 2.0m",
+            "description": "Height limiter 2.0m",
             "is_default": true
           },
           {
             "option_code": "HLB01",
-            "description": "高度限制 2.3m",
+            "description": "Height limiter 2.3m",
             "is_default": false
           }
         ]
@@ -477,12 +496,12 @@
         "options": [
           {
             "option_code": "HOR00",
-            "description": "液压油散热器-标准版",
+            "description": "Hydraulic oil cooler - standard",
             "is_default": true
           },
           {
             "option_code": "HOR01",
-            "description": "液压油散热器-高效版",
+            "description": "Hydraulic oil cooler - high efficiency",
             "is_default": false
           }
         ]
@@ -490,18 +509,18 @@
       {
         "category_id": 29,
         "category_code": "JST",
-        "category_name": "应急启动口",
+        "category_name": "Jump start port",
         "super_category_id": 2,
         "super_category_name": "配置选择",
         "options": [
           {
             "option_code": "JST00",
-            "description": "应急启动口-不安装",
+            "description": "Jump start port - none",
             "is_default": true
           },
           {
             "option_code": "JST01",
-            "description": "应急启动口-已安装",
+            "description": "Jump start port - installed",
             "is_default": false
           }
         ]
@@ -509,18 +528,18 @@
       {
         "category_id": 30,
         "category_code": "LGM",
-        "category_name": "品牌标识",
+        "category_name": "LOGO标识",
         "super_category_id": 2,
         "super_category_name": "配置选择",
         "options": [
           {
             "option_code": "LGM00",
-            "description": "品牌标识-中联重科标准版",
+            "description": "Logo Zoomlion standard",
             "is_default": true
           },
           {
             "option_code": "LGM01",
-            "description": "品牌标识-客户定制版",
+            "description": "Logo customer custom",
             "is_default": false
           }
         ]
@@ -534,12 +553,12 @@
         "options": [
           {
             "option_code": "NIR00",
-            "description": "螺母指示器-不安装",
+            "description": "Nut indicator - none",
             "is_default": true
           },
           {
             "option_code": "NIR01",
-            "description": "螺母指示器-已安装",
+            "description": "Nut indicator - installed",
             "is_default": false
           }
         ]
@@ -553,12 +572,12 @@
         "options": [
           {
             "option_code": "NMP00",
-            "description": "铭牌-中文",
+            "description": "Nameplate CN",
             "is_default": true
           },
           {
             "option_code": "NMP01",
-            "description": "铭牌-中英双语",
+            "description": "Nameplate CN/EN",
             "is_default": false
           }
         ]
@@ -572,12 +591,12 @@
         "options": [
           {
             "option_code": "OMG00",
-            "description": "产地标识-中国制造",
+            "description": "Origin mark - Made in China",
             "is_default": true
           },
           {
             "option_code": "OMG01",
-            "description": "产地标识-出口版本",
+            "description": "Origin mark - Export variant",
             "is_default": false
           }
         ]
@@ -591,12 +610,12 @@
         "options": [
           {
             "option_code": "PFM00",
-            "description": "平台 2.44m 标准版",
+            "description": "Platform 2.44m standard",
             "is_default": true
           },
           {
             "option_code": "PFM01",
-            "description": "平台 2.44m + 防夹门",
+            "description": "Platform 2.44m + anti-pinch gate",
             "is_default": false
           }
         ]
@@ -610,12 +629,12 @@
         "options": [
           {
             "option_code": "PIP00",
-            "description": "管件支架-不安装",
+            "description": "Pipe rack - none",
             "is_default": true
           },
           {
             "option_code": "PIP01",
-            "description": "管件支架-已安装",
+            "description": "Pipe rack - installed",
             "is_default": false
           }
         ]
@@ -629,12 +648,12 @@
         "options": [
           {
             "option_code": "PPM00",
-            "description": "平台电源模块 交流110伏",
+            "description": "Platform power module AC110V",
             "is_default": true
           },
           {
             "option_code": "PPM01",
-            "description": "平台电源模块 交流230伏",
+            "description": "Platform power module AC230V",
             "is_default": false
           }
         ]
@@ -648,12 +667,12 @@
         "options": [
           {
             "option_code": "PST00",
-            "description": "半网门-左侧开启",
+            "description": "Half mesh gate - left open",
             "is_default": true
           },
           {
             "option_code": "PST01",
-            "description": "半网门-双侧开启",
+            "description": "Half mesh gate - dual side open",
             "is_default": false
           }
         ]
@@ -667,12 +686,12 @@
         "options": [
           {
             "option_code": "RCA00",
-            "description": "防碰撞雷达-不安装",
+            "description": "Collision radar - none",
             "is_default": true
           },
           {
             "option_code": "RCA01",
-            "description": "防碰撞雷达-无线后向",
+            "description": "Collision radar - wireless rear",
             "is_default": false
           }
         ]
@@ -686,12 +705,31 @@
         "options": [
           {
             "option_code": "SBB00",
-            "description": "安全带挂桶-不安装",
+            "description": "Safety belt bucket - none",
             "is_default": true
           },
           {
             "option_code": "SBB01",
-            "description": "安全带挂桶-已安装",
+            "description": "Safety belt bucket - installed",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 40,
+        "category_code": "SDV",
+        "category_name": "标准化版本",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "SDV00",
+            "description": "Standardization package V1.0",
+            "is_default": true
+          },
+          {
+            "option_code": "SDV01",
+            "description": "Standardization package V1.1",
             "is_default": false
           }
         ]
@@ -705,12 +743,12 @@
         "options": [
           {
             "option_code": "SFF00",
-            "description": "转向方式-前轮转向",
+            "description": "Steering front-wheel",
             "is_default": true
           },
           {
             "option_code": "SFF01",
-            "description": "转向方式-四轮转向",
+            "description": "Steering four-wheel",
             "is_default": false
           }
         ]
@@ -724,12 +762,12 @@
         "options": [
           {
             "option_code": "SGL00",
-            "description": "安全护栏-标准版",
+            "description": "Safety guardrail - standard",
             "is_default": true
           },
           {
             "option_code": "SGL01",
-            "description": "安全护栏-加强版",
+            "description": "Safety guardrail - reinforced",
             "is_default": false
           }
         ]
@@ -743,12 +781,12 @@
         "options": [
           {
             "option_code": "SIG00",
-            "description": "安全贴纸-中文套装",
+            "description": "Safety decal set - CN",
             "is_default": true
           },
           {
             "option_code": "SIG01",
-            "description": "安全贴纸-全球多语言套装",
+            "description": "Safety decal set - global multilingual",
             "is_default": false
           }
         ]
@@ -762,12 +800,12 @@
         "options": [
           {
             "option_code": "SRK00",
-            "description": "工具置物架-不安装",
+            "description": "Storage rack - none",
             "is_default": true
           },
           {
             "option_code": "SRK01",
-            "description": "工具置物架-已安装",
+            "description": "Storage rack - tool rack installed",
             "is_default": false
           }
         ]
@@ -781,12 +819,12 @@
         "options": [
           {
             "option_code": "SSB00",
-            "description": "安全带挂钩-标准版",
+            "description": "Seat belt hook - standard",
             "is_default": true
           },
           {
             "option_code": "SSB01",
-            "description": "安全带挂钩-智能版",
+            "description": "Seat belt hook - smart",
             "is_default": false
           }
         ]
@@ -800,12 +838,12 @@
         "options": [
           {
             "option_code": "SWI00",
-            "description": "电源开关-机械式",
+            "description": "Power switch - mechanical",
             "is_default": true
           },
           {
             "option_code": "SWI01",
-            "description": "电源开关-电子式",
+            "description": "Power switch - electronic",
             "is_default": false
           }
         ]
@@ -813,18 +851,18 @@
       {
         "category_id": 47,
         "category_code": "TBX",
-        "category_name": "车联网终端",
+        "category_name": "T-BOX",
         "super_category_id": 2,
         "super_category_name": "配置选择",
         "options": [
           {
             "option_code": "TBX00",
-            "description": "车联网盒子-不安装",
+            "description": "Telematics box - none",
             "is_default": true
           },
           {
             "option_code": "TBX01",
-            "description": "车联网盒子 4G 已安装",
+            "description": "Telematics box 4G installed",
             "is_default": false
           }
         ]
@@ -838,12 +876,12 @@
         "options": [
           {
             "option_code": "TIR00",
-            "description": "轮胎-实心无痕胎",
+            "description": "Tire solid non-marking",
             "is_default": true
           },
           {
             "option_code": "TIR01",
-            "description": "轮胎-充气越野胎",
+            "description": "Tire pneumatic off-road",
             "is_default": false
           }
         ]
@@ -851,18 +889,18 @@
       {
         "category_id": 49,
         "category_code": "UKM",
-        "category_name": "英国合规标识",
+        "category_name": "UKCA标识",
         "super_category_id": 2,
         "super_category_name": "配置选择",
         "options": [
           {
             "option_code": "UKM00",
-            "description": "英国合规标识-不安装",
+            "description": "UKCA mark - none",
             "is_default": true
           },
           {
             "option_code": "UKM01",
-            "description": "英国合规标识-已安装",
+            "description": "UKCA mark - installed",
             "is_default": false
           }
         ]
@@ -876,12 +914,12 @@
         "options": [
           {
             "option_code": "WCK00",
-            "description": "止轮器-手动",
+            "description": "Wheel chock - manual",
             "is_default": true
           },
           {
             "option_code": "WCK01",
-            "description": "止轮器-自动",
+            "description": "Wheel chock - automatic",
             "is_default": false
           }
         ]
@@ -895,12 +933,12 @@
         "options": [
           {
             "option_code": "WHN00",
-            "description": "白噪声警示-不安装",
+            "description": "White-noise warning - none",
             "is_default": true
           },
           {
             "option_code": "WHN01",
-            "description": "白噪声警示-已安装",
+            "description": "White-noise warning - installed",
             "is_default": false
           }
         ]
@@ -914,12 +952,12 @@
         "options": [
           {
             "option_code": "COC00",
-            "description": "涂装颜色-中联绿",
+            "description": "Color Zoomlion green",
             "is_default": true
           },
           {
             "option_code": "COC01",
-            "description": "涂装颜色-高可视橙",
+            "description": "Color high-visibility orange",
             "is_default": false
           }
         ]
@@ -933,12 +971,12 @@
         "options": [
           {
             "option_code": "DAP00",
-            "description": "防夹功能-启用",
+            "description": "Anti-pinch function enabled",
             "is_default": true
           },
           {
             "option_code": "DAP01",
-            "description": "防夹功能-取消",
+            "description": "Anti-pinch function cancelled",
             "is_default": false
           }
         ]
@@ -952,12 +990,12 @@
         "options": [
           {
             "option_code": "GPC00",
-            "description": "防护波纹管-不安装",
+            "description": "Guard corrugated tube - none",
             "is_default": true
           },
           {
             "option_code": "GPC01",
-            "description": "防护波纹管-已安装",
+            "description": "Guard corrugated tube - installed",
             "is_default": false
           }
         ]
@@ -971,12 +1009,12 @@
         "options": [
           {
             "option_code": "HYD00",
-            "description": "液压油 46号 标准型",
+            "description": "Hydraulic oil ISO VG46 standard",
             "is_default": true
           },
           {
             "option_code": "HYD01",
-            "description": "液压油 32号 低温型",
+            "description": "Hydraulic oil ISO VG32 low-temp",
             "is_default": false
           }
         ]
@@ -990,12 +1028,12 @@
         "options": [
           {
             "option_code": "LAO00",
-            "description": "坑洞联锁-启用",
+            "description": "Pothole interlock enabled",
             "is_default": true
           },
           {
             "option_code": "LAO01",
-            "description": "坑洞联锁-旁通",
+            "description": "Pothole interlock bypass",
             "is_default": false
           }
         ]
@@ -1009,12 +1047,12 @@
         "options": [
           {
             "option_code": "OAC00",
-            "description": "超载报警：禁止下降",
+            "description": "Overload alarm: lower disabled",
             "is_default": true
           },
           {
             "option_code": "OAC01",
-            "description": "超载报警：允许应急下降",
+            "description": "Overload alarm: emergency lower enabled",
             "is_default": false
           }
         ]
@@ -1024,8 +1062,8 @@
       {
         "id": "ER_AR20J2_001",
         "type": "enable",
-        "name": "四驱模式要求高功率动力总成",
-        "description": "选择四驱后仅允许高功率动力总成",
+        "name": "4WD requires high-power engine",
+        "description": "Only high-power powertrain is allowed when 4WD is selected",
         "when": [
           {
             "category_code": "DTT",
@@ -1046,8 +1084,8 @@
       {
         "id": "ER_AR20J2_002",
         "type": "enable",
-        "name": "高功率动力总成要求 110L 燃油箱",
-        "description": "高功率动力总成要求更大续航配置",
+        "name": "High-power engine requires 110L fuel tank",
+        "description": "High-power powertrain requires larger range",
         "when": [
           {
             "category_code": "ENG",
@@ -1068,8 +1106,8 @@
       {
         "id": "ER_AR20J2_003",
         "type": "enable",
-        "name": "低温气候包要求低温液压油",
-        "description": "低温工况必须使用低粘度液压油",
+        "name": "Cold climate pack requires low-temp hydraulic oil",
+        "description": "Cold climate setup mandates low viscosity oil",
         "when": [
           {
             "category_code": "CPE",
@@ -1090,8 +1128,8 @@
       {
         "id": "ER_AR20J2_004",
         "type": "enable",
-        "name": "发电机套件要求交流230伏平台电源模块",
-        "description": "发电机方案必须匹配交流230伏平台电源",
+        "name": "Generator package requires AC230V platform module",
+        "description": "Generator variant is bound to AC230V module",
         "when": [
           {
             "category_code": "GTR",
@@ -1112,8 +1150,8 @@
       {
         "id": "ER_AR20J2_005",
         "type": "enable",
-        "name": "英国合规标识要求全球多语言安全贴纸",
-        "description": "出口合规要求多语言安全标识",
+        "name": "UKCA mark requires global safety decals",
+        "description": "Export compliance requires multilingual safety labels",
         "when": [
           {
             "category_code": "UKM",
@@ -1134,8 +1172,8 @@
       {
         "id": "ER_AR20J2_006",
         "type": "enable",
-        "name": "紧急下降模式要求智能安全带挂钩",
-        "description": "启用紧急下降时需提升人员防护等级",
+        "name": "Emergency lowering mode requires smart belt hook",
+        "description": "Raise personnel protection level when emergency lowering is enabled",
         "when": [
           {
             "category_code": "OAC",
@@ -1156,8 +1194,8 @@
       {
         "id": "XR_AR20J2_001",
         "type": "exclude",
-        "name": "高功率动力总成与免维护吸附式电池版本冲突",
-        "description": "包装方案与热管理布局冲突",
+        "name": "High-power engine conflicts with AGM battery variant",
+        "description": "Packaging and thermal layout conflict",
         "items": [
           {
             "category_code": "ENG",
@@ -1174,8 +1212,8 @@
       {
         "id": "XR_AR20J2_002",
         "type": "exclude",
-        "name": "取消防夹功能与防夹门平台冲突",
-        "description": "平台防夹门要求启用防夹功能",
+        "name": "Anti-pinch cancellation conflicts with anti-pinch gate platform",
+        "description": "Platform anti-pinch gate requires anti-pinch function enabled",
         "items": [
           {
             "category_code": "DAP",
@@ -1192,8 +1230,8 @@
       {
         "id": "XR_AR20J2_003",
         "type": "exclude",
-        "name": "2.0m 高度限制与 110L 燃油箱冲突",
-        "description": "低轮廓限高方案不支持大油箱布局",
+        "name": "2.0m height limiter conflicts with 110L fuel tank",
+        "description": "Low-profile limiter package does not support large tank layout",
         "items": [
           {
             "category_code": "HLB",
@@ -1210,8 +1248,8 @@
       {
         "id": "XR_AR20J2_004",
         "type": "exclude",
-        "name": "白噪声警示与多语言语音报警冲突",
-        "description": "声学叠加会降低报警可辨识度",
+        "name": "White-noise warning conflicts with multilingual voice alarm",
+        "description": "Acoustic overlap reduces alarm intelligibility",
         "items": [
           {
             "category_code": "WHN",
@@ -1228,8 +1266,8 @@
       {
         "id": "XR_AR20J2_005",
         "type": "exclude",
-        "name": "越野充气胎与前轮转向冲突",
-        "description": "越野轮胎配置必须搭配四轮转向",
+        "name": "Off-road pneumatic tire conflicts with front-wheel steering",
+        "description": "Off-road tire setup must pair with 4-wheel steering",
         "items": [
           {
             "category_code": "TIR",

@@ -35,6 +35,7 @@ import {
   FolderOpen,
   Database,
   FileText,
+  AlertTriangle,
 } from 'lucide-react';
 import PricePanel from './PricePanel';
 import { isSuperCategoryPriced, isSuperCategoryReadOnly, supportsCustomInput, canShowHiddenItems, formatModelDisplayName } from '@/lib/cpq-data';
@@ -518,9 +519,11 @@ function OptionsConfigurator() {
     getPriceTablesForEngineerModel,
     toggleSelection,
     getActiveModelDisplayName,
-    getEngineerModelName,
     hasCustomEntries,
     isComplete,
+    constraintAnalysis,
+    isOptionAvailable,
+    getOptionDisableReasons,
   } = useCPQStore();
 
   const [customInputVisible, setCustomInputVisible] = useState<Record<string, boolean>>({});
@@ -579,6 +582,7 @@ function OptionsConfigurator() {
   const handleSelectOption = (categoryCode: string, optionCode: string, isReadOnly: boolean, superCategoryId: number) => {
     // Read-only categories cannot be changed
     if (isReadOnly) return;
+    if (!isOptionAvailable(categoryCode, optionCode)) return;
     // For 配置选择 (id:2) and 制造属性 (id:3), allow deselection (toggle)
     if (isSuperCategoryPriced(superCategoryId)) {
       toggleSelection(categoryCode, optionCode);
@@ -640,24 +644,31 @@ function OptionsConfigurator() {
         {options.map((opt) => {
           const price = priceMap[opt.option_code] || 0;
           const isSelected = selectedCode === opt.option_code;
+          const available = isOptionAvailable(categoryCode, opt.option_code);
+          const disableReasons = getOptionDisableReasons(categoryCode, opt.option_code);
+          const shouldDisable = !isReadOnly && !available;
           return (
             <div
               key={opt.option_code}
               className={`flex items-center gap-2 rounded px-2 py-1 transition-colors ${
                 isReadOnly
                   ? isSelected ? 'bg-slate-100 border border-slate-200' : 'border border-transparent opacity-60'
-                  : isSelected ? 'bg-blue-50 border border-blue-200 cursor-pointer' : 'hover:bg-slate-100 border border-transparent cursor-pointer'
+                  : shouldDisable
+                    ? 'bg-slate-100 border border-slate-200 opacity-55 cursor-not-allowed'
+                    : isSelected ? 'bg-blue-50 border border-blue-200 cursor-pointer' : 'hover:bg-slate-100 border border-transparent cursor-pointer'
               }`}
               onClick={() => handleSelectOption(categoryCode, opt.option_code, isReadOnly, superCategoryId)}
+              title={disableReasons[0] || ''}
             >
               <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
                 isReadOnly
                   ? isSelected ? 'border-slate-400' : 'border-slate-300'
-                  : isSelected ? 'border-blue-500' : 'border-slate-300'
+                  : shouldDisable ? 'border-slate-300' : isSelected ? 'border-blue-500' : 'border-slate-300'
               }`}>
-                {isSelected && <div className={`w-1.5 h-1.5 rounded-full ${isReadOnly ? 'bg-slate-400' : 'bg-blue-500'}`} />}
+                {isSelected && <div className={`w-1.5 h-1.5 rounded-full ${isReadOnly || shouldDisable ? 'bg-slate-400' : 'bg-blue-500'}`} />}
               </div>
               {isReadOnly && <Lock className="w-2.5 h-2.5 text-slate-400 shrink-0" />}
+              {shouldDisable && <AlertTriangle className="w-2.5 h-2.5 text-amber-500 shrink-0" />}
               <span className="text-[11px] truncate text-slate-600 flex-1">{opt.description}</span>
               {opt.is_default && <Badge variant="secondary" className="text-[9px] h-4 shrink-0">默认</Badge>}
               {hasPricing && <span className="text-emerald-600 text-[10px] whitespace-nowrap ml-auto">{formatPrice(price)}</span>}
@@ -795,6 +806,35 @@ function OptionsConfigurator() {
             </div>
           </div>
 
+          {(constraintAnalysis.conflicts.length > 0 || constraintAnalysis.repairSuggestions.length > 0 || constraintAnalysis.activeEnableRuleIds.length > 0) && (
+            <div className="border rounded-lg p-3 mb-2 bg-amber-50/60 border-amber-200">
+              <div className="flex items-center gap-2 text-xs font-medium text-amber-800 mb-1">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                规则引擎提示
+              </div>
+              {constraintAnalysis.activeEnableRuleIds.length > 0 && (
+                <p className="text-[11px] text-amber-700">
+                  已触发 {constraintAnalysis.activeEnableRuleIds.length} 条启用规则，部分选项范围已自动收敛。
+                </p>
+              )}
+              {constraintAnalysis.conflicts.length > 0 && (
+                <p className="text-[11px] text-red-600 mt-1">
+                  检测到 {constraintAnalysis.conflicts.length} 组排除冲突，系统已尝试自动修复，请确认当前配置。
+                </p>
+              )}
+              {constraintAnalysis.repairSuggestions.length > 0 && (
+                <div className="mt-1 text-[11px] text-amber-800 space-y-0.5">
+                  {constraintAnalysis.repairSuggestions.slice(0, 3).map((suggestion, idx) => (
+                    <div key={`${suggestion.category_code}-${idx}`}>
+                      建议：{suggestion.category_code} 从 {suggestion.from_option_code}
+                      {suggestion.to_option_code ? ` 调整为 ${suggestion.to_option_code}` : ' 取消当前值'}（{suggestion.reason}）
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Toggle buttons for showing hidden items - 暂时注释掉
           {Object.keys(hiddenCountBySuper).length > 0 && (
             <div className="flex flex-wrap gap-2 mb-2">
@@ -897,6 +937,7 @@ function OptionsConfigurator() {
                         const hasCustom = isCustomActive(cat.category_code);
                         const customEntry = customEntries.find(e => e.category_code === cat.category_code);
                         const showingCustomInput = customInputVisible[cat.category_code];
+                        const disabledOptionCount = Object.keys(constraintAnalysis.disabledReasons[cat.category_code] || {}).length;
 
                         return (
                           <div key={cat.category_id} className={`border rounded p-2 ${
@@ -961,6 +1002,12 @@ function OptionsConfigurator() {
                                   isReadOnly,
                                   group.super_category_id
                                 )}
+                              </div>
+                            )}
+
+                            {!hasCustom && disabledOptionCount > 0 && (
+                              <div className="text-[10px] text-amber-700 mb-1">
+                                该特征有 {disabledOptionCount} 个选项被规则限制，鼠标悬停可查看原因。
                               </div>
                             )}
 

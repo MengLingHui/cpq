@@ -48,6 +48,7 @@ import {
   Pencil,
   Save,
   X,
+  Eye,
   EyeOff,
   ArrowUp,
   ArrowDown,
@@ -99,6 +100,18 @@ function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEdi
     const newModel = JSON.parse(JSON.stringify(model)) as MarketModel;
     newModel.configuration_groups[groupIdx].categories[catIdx].options[optIdx].hide =
       !newModel.configuration_groups[groupIdx].categories[catIdx].options[optIdx].hide;
+    onUpdate(newModel);
+  }, [model, onUpdate]);
+
+  const setDefaultOption = useCallback((groupIdx: number, catIdx: number, optIdx: number) => {
+    const newModel = JSON.parse(JSON.stringify(model)) as MarketModel;
+    const options = newModel.configuration_groups[groupIdx].categories[catIdx].options;
+    options.forEach((opt, idx) => {
+      opt.is_default = idx === optIdx;
+      if (idx === optIdx) {
+        opt.hide = false;
+      }
+    });
     onUpdate(newModel);
   }, [model, onUpdate]);
 
@@ -293,12 +306,19 @@ function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEdi
                                   <Badge
                                     variant={opt.hide ? 'outline' : opt.is_default ? 'default' : 'secondary'}
                                     className={`text-[9px] h-4 cursor-pointer max-w-[180px] truncate ${opt.hide ? 'line-through text-slate-400' : ''}`}
-                                    title={opt.description}
-                                    onClick={() => toggleOptionHide(groupIdx, catIdx, optIdx)}
+                                    title={`${opt.description}${opt.is_default ? '（默认）' : ''}`}
+                                    onClick={() => setDefaultOption(groupIdx, catIdx, optIdx)}
                                   >
                                     {opt.description}
-                                    {opt.hide ? <EyeOff className="w-2 h-2 ml-0.5 shrink-0" /> : null}
                                   </Badge>
+                                  <button
+                                    type="button"
+                                    className="text-slate-300 hover:text-slate-600 leading-none"
+                                    onClick={() => toggleOptionHide(groupIdx, catIdx, optIdx)}
+                                    title={opt.hide ? '显示该选项' : '隐藏该选项'}
+                                  >
+                                    {opt.hide ? <EyeOff className="w-2.5 h-2.5" /> : <Eye className="w-2.5 h-2.5" />}
+                                  </button>
                                   {optIdx < cat.options.length - 1 && cat.options.length > 1 && (
                                     <div className="flex flex-col">
                                       <button

@@ -10,16 +10,49 @@ import {
   cloneMarketModel,
   generatePriceMapFromTable,
   generateDefaultPriceTable,
-  generateOptionPrice,
   generateConfigNumber,
   MODEL_BASE_PRICE,
   isSuperCategoryPriced,
   isConfigComplete,
   formatModelDisplayName,
 } from './cpq-data';
+import type { ConstraintAnalysis } from './cpq-rules';
+import { analyzeConstraints, repairSelectionsByRules } from './cpq-rules';
 
 interface ConfigSelection {
   [categoryCode: string]: string;
+}
+
+const EMPTY_CONSTRAINT_ANALYSIS: ConstraintAnalysis = {
+  availableOptions: {},
+  disabledReasons: {},
+  activeEnableRuleIds: [],
+  conflicts: [],
+  invalidSelectedCategories: [],
+  repairSuggestions: [],
+};
+
+function toCustomCategorySet(entries: CustomConfigEntry[]): Set<string> {
+  return new Set(entries.map(entry => entry.category_code));
+}
+
+function applyConstraintResolution(
+  model: MarketModel,
+  selections: ConfigSelection,
+  customEntries: CustomConfigEntry[],
+  preferredCategoryCode?: string
+): { selections: ConfigSelection; analysis: ConstraintAnalysis } {
+  return repairSelectionsByRules(model, selections, toCustomCategorySet(customEntries), preferredCategoryCode);
+}
+
+function enforceMarketRulesInheritance(market: MarketModel, engineer?: EngineerModel): MarketModel {
+  if (!engineer) {
+    return market;
+  }
+  return {
+    ...market,
+    rules: [...engineer.rules],
+  };
 }
 
 interface CPQState {
@@ -41,6 +74,7 @@ interface CPQState {
   activeMarketModelIndex: number;
   selections: ConfigSelection;
   customEntries: CustomConfigEntry[];
+  constraintAnalysis: ConstraintAnalysis;
 
   // Navigation
   activeTab: string;
@@ -104,6 +138,8 @@ interface CPQState {
   getPriceTablesForEngineerModel: (engineerModelId: string | undefined) => PriceTable[];
   getEngineerModelName: (engineerModelId: string | undefined) => string;
   getActiveModelDisplayName: () => string;
+  isOptionAvailable: (categoryCode: string, optionCode: string) => boolean;
+  getOptionDisableReasons: (categoryCode: string, optionCode: string) => string[];
 }
 
 export const useCPQStore = create<CPQState>((set, get) => ({
@@ -120,6 +156,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
   activeMarketModelIndex: -1,
   selections: {},
   customEntries: [],
+  constraintAnalysis: EMPTY_CONSTRAINT_ANALYSIS,
   activeTab: 'configurator',
   editingNewModelIndex: null,
   isLoading: true,
@@ -146,30 +183,31 @@ export const useCPQStore = create<CPQState>((set, get) => ({
       for (const marketModel of marketModels) {
         // Find the engineer model by ID (marketModel.engineer_model_id should match)
         const matchingEngineer = allEngineers.find(e => e.model_id === marketModel.engineer_model_id);
+        const syncedMarket = enforceMarketRulesInheritance(marketModel, matchingEngineer);
         if (matchingEngineer) {
           // Ensure engineer_model_id is set correctly
-          marketModel.engineer_model_id = matchingEngineer.model_id;
+          syncedMarket.engineer_model_id = matchingEngineer.model_id;
         }
 
         // Find matching price table by engineer_model_id
         const matchingPriceTableIndex = allPriceTables.findIndex(pt => 
-          pt.engineer_model_id === marketModel.engineer_model_id
+          pt.engineer_model_id === syncedMarket.engineer_model_id
         );
         
         if (matchingPriceTableIndex >= 0) {
           const matchingPriceTable = allPriceTables[matchingPriceTableIndex];
-          marketModel.price_table_id = matchingPriceTable.id;
+          syncedMarket.price_table_id = matchingPriceTable.id;
         } else {
           // Fallback: generate default price table if no matching JSON price table
-          const pt = generateDefaultPriceTable(marketModel, `${marketModel.model_name}默认价格表`, `${marketModel.model_name}默认配置价格`);
+          const pt = generateDefaultPriceTable(syncedMarket, `${syncedMarket.model_name}默认价格表`, `${syncedMarket.model_name}默认配置价格`);
           if (matchingEngineer) {
             pt.engineer_model_id = matchingEngineer.model_id;
           }
-          marketModel.price_table_id = pt.id;
+          syncedMarket.price_table_id = pt.id;
           allPriceTables = [...allPriceTables, pt];
         }
 
-        allMarkets.push(marketModel);
+        allMarkets.push(syncedMarket);
       }
 
       // Use first market model for initial price map
@@ -209,10 +247,11 @@ export const useCPQStore = create<CPQState>((set, get) => ({
   },
 
   saveEditingModel: () => {
-    const { editingMarketModel, editingModelIndex, marketModels } = get();
+    const { editingMarketModel, editingModelIndex, marketModels, engineerModels } = get();
     if (editingMarketModel && editingModelIndex >= 0) {
       const newModels = [...marketModels];
-      newModels[editingModelIndex] = editingMarketModel;
+      const matchingEngineer = engineerModels.find(e => e.model_id === editingMarketModel.engineer_model_id);
+      newModels[editingModelIndex] = enforceMarketRulesInheritance(editingMarketModel, matchingEngineer);
       set({
         marketModels: newModels,
         editingMarketModel: null,
@@ -284,6 +323,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
       activeMarketModelIndex: -1,
       selections: {},
       customEntries: [],
+      constraintAnalysis: EMPTY_CONSTRAINT_ANALYSIS,
     });
   },
 
@@ -293,6 +333,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
       configStage: 'options',
       selections: {},
       customEntries: [],
+      constraintAnalysis: EMPTY_CONSTRAINT_ANALYSIS,
     });
     get().initializeDefaultSelections();
     get().refreshPriceMap();
@@ -305,6 +346,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
       activeMarketModelIndex: -1,
       selections: {},
       customEntries: [],
+      constraintAnalysis: EMPTY_CONSTRAINT_ANALYSIS,
     });
   },
 
@@ -314,42 +356,65 @@ export const useCPQStore = create<CPQState>((set, get) => ({
       activeMarketModelIndex: -1,
       selections: {},
       customEntries: [],
+      constraintAnalysis: EMPTY_CONSTRAINT_ANALYSIS,
     });
   },
 
   setActiveMarketModel: (index: number) => {
-    set({ activeMarketModelIndex: index, selections: {}, customEntries: [] });
+    set({
+      activeMarketModelIndex: index,
+      selections: {},
+      customEntries: [],
+      constraintAnalysis: EMPTY_CONSTRAINT_ANALYSIS,
+    });
     get().initializeDefaultSelections();
     get().refreshPriceMap();
   },
 
   setSelection: (categoryCode: string, optionCode: string) => {
-    const { customEntries } = get();
+    const { customEntries, marketModels, activeMarketModelIndex, selections } = get();
     const filtered = customEntries.filter(e => e.category_code !== categoryCode);
-    set((state) => ({
-      selections: { ...state.selections, [categoryCode]: optionCode },
+    const model = marketModels[activeMarketModelIndex];
+    if (!model) return;
+
+    const nextSelections = { ...selections, [categoryCode]: optionCode };
+    const resolved = applyConstraintResolution(model, nextSelections, filtered, categoryCode);
+
+    set({
+      selections: resolved.selections,
       customEntries: filtered,
-    }));
+      constraintAnalysis: resolved.analysis,
+    });
   },
 
   toggleSelection: (categoryCode: string, optionCode: string) => {
-    const { selections, customEntries } = get();
+    const { selections, customEntries, marketModels, activeMarketModelIndex } = get();
+    const model = marketModels[activeMarketModelIndex];
+    if (!model) return;
+
     const currentSelection = selections[categoryCode];
     if (currentSelection === optionCode) {
       const newSelections = { ...selections };
       delete newSelections[categoryCode];
-      set({ selections: newSelections });
+      const resolved = applyConstraintResolution(model, newSelections, customEntries, categoryCode);
+      set({
+        selections: resolved.selections,
+        constraintAnalysis: resolved.analysis,
+      });
     } else {
       const filtered = customEntries.filter(e => e.category_code !== categoryCode);
+      const nextSelections = { ...selections, [categoryCode]: optionCode };
+      const resolved = applyConstraintResolution(model, nextSelections, filtered, categoryCode);
       set({
-        selections: { ...selections, [categoryCode]: optionCode },
+        selections: resolved.selections,
         customEntries: filtered,
+        constraintAnalysis: resolved.analysis,
       });
     }
   },
 
   resetSelections: () => {
-    set({ selections: {}, customEntries: [] });
+    set({ selections: {}, customEntries: [], constraintAnalysis: EMPTY_CONSTRAINT_ANALYSIS });
     get().initializeDefaultSelections();
   },
 
@@ -372,40 +437,57 @@ export const useCPQStore = create<CPQState>((set, get) => ({
         }
       }
     }
-    set({ selections: defaults });
+    const resolved = applyConstraintResolution(model, defaults, []);
+    set({
+      selections: resolved.selections,
+      customEntries: [],
+      constraintAnalysis: resolved.analysis,
+    });
   },
 
   addCustomEntry: (entry: CustomConfigEntry) => {
-    const { customEntries, selections } = get();
+    const { customEntries, selections, marketModels, activeMarketModelIndex } = get();
+    const model = marketModels[activeMarketModelIndex];
+    if (!model) return;
+
     const filtered = customEntries.filter(e => e.category_code !== entry.category_code);
     const newSelections = { ...selections };
     delete newSelections[entry.category_code];
+    const updatedCustomEntries = [...filtered, entry];
+    const analysis = analyzeConstraints(model, newSelections, toCustomCategorySet(updatedCustomEntries));
     set({
-      customEntries: [...filtered, entry],
+      customEntries: updatedCustomEntries,
       selections: newSelections,
+      constraintAnalysis: analysis,
     });
   },
 
   removeCustomEntry: (categoryCode: string) => {
-    const { customEntries } = get();
-    set({ customEntries: customEntries.filter(e => e.category_code !== categoryCode) });
-    const { marketModels, activeMarketModelIndex } = get();
+    const { customEntries, marketModels, activeMarketModelIndex, selections } = get();
+    const updatedCustomEntries = customEntries.filter(e => e.category_code !== categoryCode);
     if (activeMarketModelIndex < 0) return;
     const model = marketModels[activeMarketModelIndex];
     if (!model) return;
+
+    const nextSelections = { ...selections };
     for (const group of model.configuration_groups) {
       for (const cat of group.categories) {
         if (cat.category_code === categoryCode && !cat.hide) {
           const visibleOptions = cat.options.filter(o => !o.hide);
           const defaultOption = visibleOptions.find(o => o.is_default) || visibleOptions[0];
           if (defaultOption) {
-            set((state) => ({
-              selections: { ...state.selections, [categoryCode]: defaultOption.option_code },
-            }));
+            nextSelections[categoryCode] = defaultOption.option_code;
           }
         }
       }
     }
+
+    const resolved = applyConstraintResolution(model, nextSelections, updatedCustomEntries, categoryCode);
+    set({
+      customEntries: updatedCustomEntries,
+      selections: resolved.selections,
+      constraintAnalysis: resolved.analysis,
+    });
   },
 
   updateCustomEntry: (categoryCode: string, text: string) => {
@@ -534,6 +616,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
         activeMarketModelIndex: -1,
         selections: {},
         customEntries: [],
+        constraintAnalysis: EMPTY_CONSTRAINT_ANALYSIS,
       });
       // Auto-save to file
       saveDataToFile('saved_configurations.json', newConfigs).catch(console.error);
@@ -574,6 +657,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
         activeMarketModelIndex: -1,
         selections: {},
         customEntries: [],
+        constraintAnalysis: EMPTY_CONSTRAINT_ANALYSIS,
       });
       // Auto-save to file
       saveDataToFile('saved_configurations.json', newConfigs).then(() => {
@@ -662,6 +746,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
       activeMarketModelIndex: -1,
       selections: {},
       customEntries: [],
+      constraintAnalysis: EMPTY_CONSTRAINT_ANALYSIS,
     });
     // Auto-save to file
     saveDataToFile('saved_configurations.json', newConfigs).then(() => {
@@ -692,6 +777,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
         activeMarketModelIndex: -1,
         selections: {},
         customEntries: [],
+        constraintAnalysis: EMPTY_CONSTRAINT_ANALYSIS,
         activeTab: 'configurator',
       });
       return;
@@ -705,6 +791,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
         activeMarketModelIndex: -1,
         selections: {},
         customEntries: [],
+        constraintAnalysis: EMPTY_CONSTRAINT_ANALYSIS,
         activeTab: 'configurator',
       });
       return;
@@ -720,17 +807,26 @@ export const useCPQStore = create<CPQState>((set, get) => ({
         activeMarketModelIndex: -1,
         selections: {},
         customEntries: [],
+        constraintAnalysis: EMPTY_CONSTRAINT_ANALYSIS,
         activeTab: 'configurator',
       });
       return;
     }
 
+    const model = marketModels[modelIndex];
+    const resolved = applyConstraintResolution(
+      model,
+      { ...config.selections },
+      [...config.custom_entries]
+    );
+
     set({
       selectedSeriesId: config.series_id,
       activeMarketModelIndex: modelIndex,
       configStage: 'options',
-      selections: { ...config.selections },
+      selections: resolved.selections,
       customEntries: [...config.custom_entries],
+      constraintAnalysis: resolved.analysis,
       activeTab: 'configurator',
     });
     get().refreshPriceMap();
@@ -846,5 +942,17 @@ export const useCPQStore = create<CPQState>((set, get) => ({
     if (!model) return '';
     const engName = model.engineer_model_name || get().getEngineerModelName(model.engineer_model_id);
     return formatModelDisplayName(model.model_name, engName);
+  },
+
+  isOptionAvailable: (categoryCode: string, optionCode: string) => {
+    const { constraintAnalysis } = get();
+    const options = constraintAnalysis.availableOptions[categoryCode];
+    if (!options) return true;
+    return options.includes(optionCode);
+  },
+
+  getOptionDisableReasons: (categoryCode: string, optionCode: string) => {
+    const { constraintAnalysis } = get();
+    return constraintAnalysis.disabledReasons[categoryCode]?.[optionCode] || [];
   },
 }));
