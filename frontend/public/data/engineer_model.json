@@ -1,0 +1,1063 @@
+[
+  {
+    "model_id": "em001",
+    "model_name": "AR20J-2",
+    "product_series": "articulated_boom",
+    "series_info": {
+      "series_id": "articulated_boom",
+      "series_name": "Articulated Boom",
+      "series_description": "Articulated Boom",
+      "parent_series": "boom_lift"
+    },
+    "configurations": [
+      {
+        "category_id": 0,
+        "category_code": "SDV",
+        "category_name": "标准化版本",
+        "super_category_id": 0,
+        "super_category_name": "标准化版本",
+        "options": [
+          {
+            "option_code": "SDV00",
+            "description": "标准化版本00",
+            "is_default": true
+          },
+          {
+            "option_code": "SDV01",
+            "description": "标准化版本01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 1,
+        "category_code": "MRA",
+        "category_name": "最小转弯半径（内/外）",
+        "super_category_id": 1,
+        "super_category_name": "基础参数",
+        "options": [
+          {
+            "option_code": "MRA_AR20J-2_01",
+            "description": "内：3.5m/11.48ft\n外： 6.35m/20.83ft",
+            "is_default": true
+          }
+        ]
+      },
+      {
+        "category_id": 2,
+        "category_code": "MCA",
+        "category_name": "最大爬坡能力",
+        "super_category_id": 1,
+        "super_category_name": "基础参数",
+        "options": [
+          {
+            "option_code": "MCA_AR20J-2_01",
+            "description": "0.45",
+            "is_default": true
+          }
+        ]
+      },
+      {
+        "category_id": 3,
+        "category_code": "ADT",
+        "category_name": "轴距",
+        "super_category_id": 1,
+        "super_category_name": "基础参数",
+        "options": [
+          {
+            "option_code": "ADT_AR20J-2_01",
+            "description": "2.51m/8.23ft",
+            "is_default": true
+          }
+        ]
+      },
+      {
+        "category_id": 4,
+        "category_code": "TRA",
+        "category_name": "转台回转角度",
+        "super_category_id": 1,
+        "super_category_name": "基础参数",
+        "options": [
+          {
+            "option_code": "TRA_AR20J-2_01",
+            "description": "360°",
+            "is_default": true
+          }
+        ]
+      },
+      {
+        "category_id": 5,
+        "category_code": "WHB",
+        "category_name": "轮距",
+        "super_category_id": 1,
+        "super_category_name": "基础参数",
+        "options": [
+          {
+            "option_code": "WHB_AR20J-2_01",
+            "description": "2.19m/7.19ft",
+            "is_default": true
+          }
+        ]
+      },
+      {
+        "category_id": 6,
+        "category_code": "MDS",
+        "category_name": "最大行驶速度（收藏）",
+        "super_category_id": 1,
+        "super_category_name": "基础参数",
+        "options": [
+          {
+            "option_code": "MDS_AR20J-2_01",
+            "description": "5±0.25km/h /3.1±0.16mph",
+            "is_default": true
+          }
+        ]
+      },
+      {
+        "category_id": 7,
+        "category_code": "MDZ",
+        "category_name": "最大行驶速度（展开）",
+        "super_category_id": 1,
+        "super_category_name": "基础参数",
+        "options": [
+          {
+            "option_code": "MDZ_AR20J-2_01",
+            "description": "0.8±0.05km/h/0.5±0.03mph",
+            "is_default": true
+          }
+        ]
+      },
+      {
+        "category_id": 8,
+        "category_code": "MWS",
+        "category_name": "最大允许风速",
+        "super_category_id": 1,
+        "super_category_name": "基础参数",
+        "options": [
+          {
+            "option_code": "MWS_AR20J-2_01",
+            "description": "12.5m/s/28mph",
+            "is_default": true
+          }
+        ]
+      },
+      {
+        "category_id": 9,
+        "category_code": "VGP",
+        "category_name": "接地比压",
+        "super_category_id": 1,
+        "super_category_name": "基础参数",
+        "options": [
+          {
+            "option_code": "VGP_AR20J-2_01",
+            "description": "530.7kpa/77psi",
+            "is_default": true
+          }
+        ]
+      },
+      {
+        "category_id": 10,
+        "category_code": "HOT",
+        "category_name": "液压油加注量",
+        "super_category_id": 1,
+        "super_category_name": "基础参数",
+        "options": [
+          {
+            "option_code": "HOT_AR20J-2_01",
+            "description": "110L/29gal",
+            "is_default": true
+          }
+        ]
+      },
+      {
+        "category_id": 11,
+        "category_code": "VKM",
+        "category_name": "整备质量",
+        "super_category_id": 1,
+        "super_category_name": "基础参数",
+        "options": [
+          {
+            "option_code": "VKM_AR20J-2_01",
+            "description": "9300kg/20503lbs",
+            "is_default": true
+          }
+        ]
+      },
+      {
+        "category_id": 12,
+        "category_code": "ALA",
+        "category_name": "语音报警器",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "ALA00",
+            "description": "语音报警器00",
+            "is_default": true
+          },
+          {
+            "option_code": "ALA01",
+            "description": "语音报警器01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 13,
+        "category_code": "ASS",
+        "category_name": "防滑贴",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "ASS00",
+            "description": "防滑贴00",
+            "is_default": true
+          },
+          {
+            "option_code": "ASS01",
+            "description": "防滑贴01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 14,
+        "category_code": "BEV",
+        "category_name": "动力电池",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "BEV00",
+            "description": "动力电池00",
+            "is_default": true
+          },
+          {
+            "option_code": "BEV01",
+            "description": "动力电池01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 15,
+        "category_code": "CAC",
+        "category_name": "底盘前后防撞",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "CAC00",
+            "description": "底盘前后防撞00",
+            "is_default": true
+          },
+          {
+            "option_code": "CAC01",
+            "description": "底盘前后防撞01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 16,
+        "category_code": "CDM",
+        "category_name": "Commission Date",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "CDM00",
+            "description": "Commission Date00",
+            "is_default": true
+          },
+          {
+            "option_code": "CDM01",
+            "description": "Commission Date01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 17,
+        "category_code": "CHH",
+        "category_name": "充电线束",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "CHH00",
+            "description": "充电线束00",
+            "is_default": true
+          },
+          {
+            "option_code": "CHH01",
+            "description": "充电线束01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 18,
+        "category_code": "CPE",
+        "category_name": "低温包",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "CPE00",
+            "description": "低温包00",
+            "is_default": true
+          },
+          {
+            "option_code": "CPE01",
+            "description": "低温包01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 19,
+        "category_code": "DTT",
+        "category_name": "驱动型式",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "DTT00",
+            "description": "驱动型式00",
+            "is_default": true
+          },
+          {
+            "option_code": "DTT01",
+            "description": "驱动型式01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 20,
+        "category_code": "ENG",
+        "category_name": "发动机",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "ENG00",
+            "description": "发动机00",
+            "is_default": true
+          },
+          {
+            "option_code": "ENG01",
+            "description": "发动机01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 21,
+        "category_code": "FEB",
+        "category_name": "灭火器支架",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "FEB00",
+            "description": "灭火器支架00",
+            "is_default": true
+          },
+          {
+            "option_code": "FEB01",
+            "description": "灭火器支架01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 22,
+        "category_code": "FOO",
+        "category_name": "脚踏使能开关",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "FOO00",
+            "description": "脚踏使能开关00",
+            "is_default": true
+          },
+          {
+            "option_code": "FOO01",
+            "description": "脚踏使能开关01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 23,
+        "category_code": "FPB",
+        "category_name": "防坠落棒",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "FPB00",
+            "description": "防坠落棒00",
+            "is_default": true
+          },
+          {
+            "option_code": "FPB01",
+            "description": "防坠落棒01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 24,
+        "category_code": "FTC",
+        "category_name": "燃油箱",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "FTC00",
+            "description": "燃油箱00",
+            "is_default": true
+          },
+          {
+            "option_code": "FTC01",
+            "description": "燃油箱01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 25,
+        "category_code": "GBT",
+        "category_name": "玻璃支架",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "GBT00",
+            "description": "玻璃支架00",
+            "is_default": true
+          },
+          {
+            "option_code": "GBT01",
+            "description": "玻璃支架01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 26,
+        "category_code": "GTR",
+        "category_name": "发电机",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "GTR00",
+            "description": "发电机00",
+            "is_default": true
+          },
+          {
+            "option_code": "GTR01",
+            "description": "发电机01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 27,
+        "category_code": "HLB",
+        "category_name": "限高杆",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "HLB00",
+            "description": "限高杆00",
+            "is_default": true
+          },
+          {
+            "option_code": "HLB01",
+            "description": "限高杆01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 28,
+        "category_code": "HOR",
+        "category_name": "液压油散热器",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "HOR00",
+            "description": "液压油散热器00",
+            "is_default": true
+          },
+          {
+            "option_code": "HOR01",
+            "description": "液压油散热器01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 29,
+        "category_code": "JST",
+        "category_name": "Jump Start",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "JST00",
+            "description": "Jump Start00",
+            "is_default": true
+          },
+          {
+            "option_code": "JST01",
+            "description": "Jump Start01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 30,
+        "category_code": "LGM",
+        "category_name": "LOGO标识",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "LGM00",
+            "description": "LOGO标识00",
+            "is_default": true
+          },
+          {
+            "option_code": "LGM01",
+            "description": "LOGO标识01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 31,
+        "category_code": "NIR",
+        "category_name": "螺母指示器",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "NIR00",
+            "description": "螺母指示器00",
+            "is_default": true
+          },
+          {
+            "option_code": "NIR01",
+            "description": "螺母指示器01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 32,
+        "category_code": "NMP",
+        "category_name": "铭牌",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "NMP00",
+            "description": "铭牌00",
+            "is_default": true
+          },
+          {
+            "option_code": "NMP01",
+            "description": "铭牌01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 33,
+        "category_code": "OMG",
+        "category_name": "产地标识",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "OMG00",
+            "description": "产地标识00",
+            "is_default": true
+          },
+          {
+            "option_code": "OMG01",
+            "description": "产地标识01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 34,
+        "category_code": "PFM",
+        "category_name": "工作平台",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "PFM00",
+            "description": "工作平台00",
+            "is_default": true
+          },
+          {
+            "option_code": "PFM01",
+            "description": "工作平台01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 35,
+        "category_code": "PIP",
+        "category_name": "管架",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "PIP00",
+            "description": "管架00",
+            "is_default": true
+          },
+          {
+            "option_code": "PIP01",
+            "description": "管架01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 36,
+        "category_code": "PPM",
+        "category_name": "平台电源模块",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "PPM00",
+            "description": "平台电源模块00",
+            "is_default": true
+          },
+          {
+            "option_code": "PPM01",
+            "description": "平台电源模块01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 37,
+        "category_code": "PST",
+        "category_name": "平台半网",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "PST00",
+            "description": "平台半网00",
+            "is_default": true
+          },
+          {
+            "option_code": "PST01",
+            "description": "平台半网01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 38,
+        "category_code": "RCA",
+        "category_name": "无线防撞雷达",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "RCA00",
+            "description": "无线防撞雷达00",
+            "is_default": true
+          },
+          {
+            "option_code": "RCA01",
+            "description": "无线防撞雷达01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 39,
+        "category_code": "SBB",
+        "category_name": "安全带收纳桶",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "SBB00",
+            "description": "安全带收纳桶00",
+            "is_default": true
+          },
+          {
+            "option_code": "SBB01",
+            "description": "安全带收纳桶01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 40,
+        "category_code": "SDV",
+        "category_name": "标准化版本",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "SDV00",
+            "description": "标准化版本00",
+            "is_default": true
+          },
+          {
+            "option_code": "SDV01",
+            "description": "标准化版本01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 41,
+        "category_code": "SFF",
+        "category_name": "转向型式",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "SFF00",
+            "description": "转向型式00",
+            "is_default": true
+          },
+          {
+            "option_code": "SFF01",
+            "description": "转向型式01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 42,
+        "category_code": "SGL",
+        "category_name": "安全护栏",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "SGL00",
+            "description": "安全护栏00",
+            "is_default": true
+          },
+          {
+            "option_code": "SGL01",
+            "description": "安全护栏01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 43,
+        "category_code": "SIG",
+        "category_name": "标志标识",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "SIG00",
+            "description": "标志标识00",
+            "is_default": true
+          },
+          {
+            "option_code": "SIG01",
+            "description": "标志标识01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 44,
+        "category_code": "SRK",
+        "category_name": "置物架",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "SRK00",
+            "description": "置物架00",
+            "is_default": true
+          },
+          {
+            "option_code": "SRK01",
+            "description": "置物架01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 45,
+        "category_code": "SSB",
+        "category_name": "智能安全带挂钩",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "SSB00",
+            "description": "智能安全带挂钩00",
+            "is_default": true
+          },
+          {
+            "option_code": "SSB01",
+            "description": "智能安全带挂钩01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 46,
+        "category_code": "SWI",
+        "category_name": "电源开关",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "SWI00",
+            "description": "电源开关00",
+            "is_default": true
+          },
+          {
+            "option_code": "SWI01",
+            "description": "电源开关01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 47,
+        "category_code": "TBX",
+        "category_name": "T-BOX",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "TBX00",
+            "description": "T-BOX00",
+            "is_default": true
+          },
+          {
+            "option_code": "TBX01",
+            "description": "T-BOX01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 48,
+        "category_code": "TIR",
+        "category_name": "轮胎",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "TIR00",
+            "description": "轮胎00",
+            "is_default": true
+          },
+          {
+            "option_code": "TIR01",
+            "description": "轮胎01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 49,
+        "category_code": "UKM",
+        "category_name": "UKCA标识",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "UKM00",
+            "description": "UKCA标识00",
+            "is_default": true
+          },
+          {
+            "option_code": "UKM01",
+            "description": "UKCA标识01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 50,
+        "category_code": "WCK",
+        "category_name": "止退器",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "WCK00",
+            "description": "止退器00",
+            "is_default": true
+          },
+          {
+            "option_code": "WCK01",
+            "description": "止退器01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 51,
+        "category_code": "WHN",
+        "category_name": "白噪音",
+        "super_category_id": 2,
+        "super_category_name": "配置选择",
+        "options": [
+          {
+            "option_code": "WHN00",
+            "description": "白噪音00",
+            "is_default": true
+          },
+          {
+            "option_code": "WHN01",
+            "description": "白噪音01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 52,
+        "category_code": "COC",
+        "category_name": "整机颜色",
+        "super_category_id": 3,
+        "super_category_name": "制造属性",
+        "options": [
+          {
+            "option_code": "COC00",
+            "description": "整机颜色00",
+            "is_default": true
+          },
+          {
+            "option_code": "COC01",
+            "description": "整机颜色01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 53,
+        "category_code": "DAP",
+        "category_name": "取消防夹手",
+        "super_category_id": 3,
+        "super_category_name": "制造属性",
+        "options": [
+          {
+            "option_code": "DAP00",
+            "description": "取消防夹手00",
+            "is_default": true
+          },
+          {
+            "option_code": "DAP01",
+            "description": "取消防夹手01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 54,
+        "category_code": "GPC",
+        "category_name": "护栏防护波纹管",
+        "super_category_id": 3,
+        "super_category_name": "制造属性",
+        "options": [
+          {
+            "option_code": "GPC00",
+            "description": "护栏防护波纹管00",
+            "is_default": true
+          },
+          {
+            "option_code": "GPC01",
+            "description": "护栏防护波纹管01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 55,
+        "category_code": "HYD",
+        "category_name": "液压油",
+        "super_category_id": 3,
+        "super_category_name": "制造属性",
+        "options": [
+          {
+            "option_code": "HYD00",
+            "description": "液压油00",
+            "is_default": true
+          },
+          {
+            "option_code": "HYD01",
+            "description": "液压油01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 56,
+        "category_code": "LAO",
+        "category_name": "坑洼机构未打开可举升",
+        "super_category_id": 3,
+        "super_category_name": "制造属性",
+        "options": [
+          {
+            "option_code": "LAO00",
+            "description": "坑洼机构未打开可举升00",
+            "is_default": true
+          },
+          {
+            "option_code": "LAO01",
+            "description": "坑洼机构未打开可举升01",
+            "is_default": false
+          }
+        ]
+      },
+      {
+        "category_id": 57,
+        "category_code": "OAC",
+        "category_name": "超载报警可下降",
+        "super_category_id": 3,
+        "super_category_name": "制造属性",
+        "options": [
+          {
+            "option_code": "OAC00",
+            "description": "超载报警可下降00",
+            "is_default": true
+          },
+          {
+            "option_code": "OAC01",
+            "description": "超载报警可下降01",
+            "is_default": false
+          }
+        ]
+      }
+    ],
+    "rules": []
+  }
+]

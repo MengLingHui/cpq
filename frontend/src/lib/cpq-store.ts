@@ -1,0 +1,850 @@
+import { create } from 'zustand';
+import type { MarketModel, EngineerModel, PriceTable, SavedConfiguration, CustomConfigEntry, SeriesInfo, ConfigStage, ConfigStatus } from './cpq-data';
+import {
+  loadMarketModels,
+  loadPriceTables,
+  loadSeriesData,
+  loadEngineerModels,
+  loadSavedConfigurations,
+  saveDataToFile,
+  cloneMarketModel,
+  generatePriceMapFromTable,
+  generateDefaultPriceTable,
+  generateOptionPrice,
+  generateConfigNumber,
+  MODEL_BASE_PRICE,
+  isSuperCategoryPriced,
+  isConfigComplete,
+  formatModelDisplayName,
+} from './cpq-data';
+
+interface ConfigSelection {
+  [categoryCode: string]: string;
+}
+
+interface CPQState {
+  // Data
+  engineerModels: EngineerModel[];
+  marketModels: MarketModel[];
+  priceTables: PriceTable[];
+  priceMap: Record<string, number>;
+  savedConfigurations: SavedConfiguration[];
+  seriesList: SeriesInfo[];
+
+  // Editing state
+  editingMarketModel: MarketModel | null;
+  editingModelIndex: number;
+
+  // Configuration state - staged flow
+  configStage: ConfigStage;
+  selectedSeriesId: string;
+  activeMarketModelIndex: number;
+  selections: ConfigSelection;
+  customEntries: CustomConfigEntry[];
+
+  // Navigation
+  activeTab: string;
+  editingNewModelIndex: number | null;
+
+  // Loading
+  isLoading: boolean;
+
+  // Actions
+  initialize: () => Promise<void>;
+  setActiveTab: (tab: string) => void;
+  setEditingModel: (index: number) => void;
+  updateEditingModel: (model: MarketModel) => void;
+  saveEditingModel: () => void;
+  cancelEditing: () => void;
+  createMarketModelFromEngineer: (engineerIndex: number) => void;
+  deleteMarketModel: (index: number) => void;
+  clearEditingNewModelIndex: () => void;
+
+  // Staged configuration flow
+  selectSeries: (seriesId: string) => void;
+  confirmSeriesAndPickModel: (modelIndex: number) => void;
+  backToSeriesSelection: () => void;
+  backToModelSelection: () => void;
+
+  setActiveMarketModel: (index: number) => void;
+  setSelection: (categoryCode: string, optionCode: string) => void;
+  toggleSelection: (categoryCode: string, optionCode: string) => void;
+  resetSelections: () => void;
+  initializeDefaultSelections: () => void;
+
+  // Custom entries
+  addCustomEntry: (entry: CustomConfigEntry) => void;
+  removeCustomEntry: (categoryCode: string) => void;
+  updateCustomEntry: (categoryCode: string, text: string) => void;
+
+  // Price tables
+  addPriceTable: (table: PriceTable) => void;
+  updatePriceTable: (table: PriceTable) => void;
+  deletePriceTable: (id: string) => void;
+  linkPriceTable: (modelIndex: number, priceTableId: string) => void;
+  refreshPriceMap: () => void;
+  changePriceTableInConfig: (priceTableId: string) => void;
+
+  // Save configuration
+  saveConfiguration: () => void;
+  deleteConfiguration: (id: string) => void;
+  loadConfiguration: (config: SavedConfiguration) => void;
+
+  // Price calculation
+  getBasePrice: () => number;
+  getOptionsPrice: () => number;
+  getTotalPrice: () => string;
+  getCurrency: () => string;
+  hasCustomEntries: () => boolean;
+  isComplete: () => boolean;
+
+  // Helpers
+  getModelsForSeries: (seriesId: string) => MarketModel[];
+  getSelectedSeries: () => SeriesInfo | undefined;
+  getPriceTablesForEngineerModel: (engineerModelId: string | undefined) => PriceTable[];
+  getEngineerModelName: (engineerModelId: string | undefined) => string;
+  getActiveModelDisplayName: () => string;
+}
+
+export const useCPQStore = create<CPQState>((set, get) => ({
+  engineerModels: [],
+  marketModels: [],
+  priceTables: [],
+  priceMap: {},
+  savedConfigurations: [],
+  seriesList: [],
+  editingMarketModel: null,
+  editingModelIndex: -1,
+  configStage: 'series',
+  selectedSeriesId: '',
+  activeMarketModelIndex: -1,
+  selections: {},
+  customEntries: [],
+  activeTab: 'configurator',
+  editingNewModelIndex: null,
+  isLoading: true,
+
+  initialize: async () => {
+    try {
+      const [marketModels, priceTables, seriesList, engineerModels, savedConfigurations] = await Promise.all([
+        loadMarketModels(),
+        loadPriceTables(),
+        loadSeriesData(),
+        loadEngineerModels(),
+        loadSavedConfigurations(),
+      ]);
+
+      // Use engineer models as-is (IDs should already be prefixed in JSON if needed)
+      const allEngineers = engineerModels;
+
+      // Use price tables as-is (engineer_model_id should match engineer model IDs)
+      let allPriceTables: PriceTable[] = priceTables;
+
+      // Process all market models and link with price tables
+      const allMarkets: MarketModel[] = [];
+
+      for (const marketModel of marketModels) {
+        // Find the engineer model by ID (marketModel.engineer_model_id should match)
+        const matchingEngineer = allEngineers.find(e => e.model_id === marketModel.engineer_model_id);
+        if (matchingEngineer) {
+          // Ensure engineer_model_id is set correctly
+          marketModel.engineer_model_id = matchingEngineer.model_id;
+        }
+
+        // Find matching price table by engineer_model_id
+        const matchingPriceTableIndex = allPriceTables.findIndex(pt => 
+          pt.engineer_model_id === marketModel.engineer_model_id
+        );
+        
+        if (matchingPriceTableIndex >= 0) {
+          const matchingPriceTable = allPriceTables[matchingPriceTableIndex];
+          marketModel.price_table_id = matchingPriceTable.id;
+        } else {
+          // Fallback: generate default price table if no matching JSON price table
+          const pt = generateDefaultPriceTable(marketModel, `${marketModel.model_name}默认价格表`, `${marketModel.model_name}默认配置价格`);
+          if (matchingEngineer) {
+            pt.engineer_model_id = matchingEngineer.model_id;
+          }
+          marketModel.price_table_id = pt.id;
+          allPriceTables = [...allPriceTables, pt];
+        }
+
+        allMarkets.push(marketModel);
+      }
+
+      // Use first market model for initial price map
+      const priceMap = allMarkets.length > 0 ? generatePriceMapFromTable(allMarkets[0], allPriceTables[0]) : {};
+
+      set({
+        engineerModels: allEngineers,
+        marketModels: allMarkets,
+        priceTables: allPriceTables,
+        priceMap,
+        seriesList,
+        savedConfigurations,
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error('Failed to load CPQ data:', error);
+      set({ isLoading: false });
+    }
+  },
+
+  setActiveTab: (tab: string) => {
+    set({ activeTab: tab });
+  },
+
+  setEditingModel: (index: number) => {
+    const { marketModels } = get();
+    if (index >= 0 && index < marketModels.length) {
+      set({
+        editingMarketModel: cloneMarketModel(marketModels[index]),
+        editingModelIndex: index,
+      });
+    }
+  },
+
+  updateEditingModel: (model: MarketModel) => {
+    set({ editingMarketModel: model });
+  },
+
+  saveEditingModel: () => {
+    const { editingMarketModel, editingModelIndex, marketModels } = get();
+    if (editingMarketModel && editingModelIndex >= 0) {
+      const newModels = [...marketModels];
+      newModels[editingModelIndex] = editingMarketModel;
+      set({
+        marketModels: newModels,
+        editingMarketModel: null,
+        editingModelIndex: -1,
+      });
+      get().refreshPriceMap();
+      // Auto-save to file
+      saveDataToFile('market_model.json', newModels).catch(console.error);
+    }
+  },
+
+  cancelEditing: () => {
+    set({ editingMarketModel: null, editingModelIndex: -1 });
+  },
+
+  createMarketModelFromEngineer: (engineerIndex: number) => {
+    const { engineerModels, marketModels, priceTables } = get();
+    if (engineerIndex >= 0 && engineerIndex < engineerModels.length) {
+      const eng = engineerModels[engineerIndex];
+      // Find a price table linked to the same engineer model
+      const matchingPT = priceTables.find(pt => pt.engineer_model_id === eng.model_id);
+      const newMarket: MarketModel = {
+        model_id: `market_${Date.now()}`,
+        model_name: `${eng.model_name}-S`,
+        product_series: eng.product_series,
+        series_info: { ...eng.series_info },
+        configuration_groups: JSON.parse(JSON.stringify(eng.configuration_groups)),
+        rules: [...eng.rules],
+        price_table_id: matchingPT?.id,
+        engineer_model_id: eng.model_id,
+      };
+      const newModels = [...marketModels, newMarket];
+      const newIndex = newModels.length - 1;
+      set({
+        marketModels: newModels,
+        activeTab: 'market',
+        editingNewModelIndex: newIndex,
+      });
+      // Auto-save to file
+      saveDataToFile('market_model.json', newModels).catch(console.error);
+    }
+  },
+
+  deleteMarketModel: (index: number) => {
+    const { marketModels, activeMarketModelIndex } = get();
+    if (index < 0 || index >= marketModels.length) return;
+    const newModels = marketModels.filter((_, i) => i !== index);
+    let newActiveIndex = activeMarketModelIndex;
+    if (newActiveIndex >= newModels.length) {
+      newActiveIndex = Math.max(0, newModels.length - 1);
+    }
+    set({
+      marketModels: newModels,
+      activeMarketModelIndex: newActiveIndex,
+    });
+    // Auto-save to file
+    saveDataToFile('market_model.json', newModels).catch(console.error);
+  },
+
+  clearEditingNewModelIndex: () => {
+    set({ editingNewModelIndex: null });
+  },
+
+  // Staged configuration flow
+  selectSeries: (seriesId: string) => {
+    set({
+      selectedSeriesId: seriesId,
+      configStage: 'model',
+      activeMarketModelIndex: -1,
+      selections: {},
+      customEntries: [],
+    });
+  },
+
+  confirmSeriesAndPickModel: (modelIndex: number) => {
+    set({
+      activeMarketModelIndex: modelIndex,
+      configStage: 'options',
+      selections: {},
+      customEntries: [],
+    });
+    get().initializeDefaultSelections();
+    get().refreshPriceMap();
+  },
+
+  backToSeriesSelection: () => {
+    set({
+      configStage: 'series',
+      // Keep selectedSeriesId to maintain the navigation path
+      activeMarketModelIndex: -1,
+      selections: {},
+      customEntries: [],
+    });
+  },
+
+  backToModelSelection: () => {
+    set({
+      configStage: 'model',
+      activeMarketModelIndex: -1,
+      selections: {},
+      customEntries: [],
+    });
+  },
+
+  setActiveMarketModel: (index: number) => {
+    set({ activeMarketModelIndex: index, selections: {}, customEntries: [] });
+    get().initializeDefaultSelections();
+    get().refreshPriceMap();
+  },
+
+  setSelection: (categoryCode: string, optionCode: string) => {
+    const { customEntries } = get();
+    const filtered = customEntries.filter(e => e.category_code !== categoryCode);
+    set((state) => ({
+      selections: { ...state.selections, [categoryCode]: optionCode },
+      customEntries: filtered,
+    }));
+  },
+
+  toggleSelection: (categoryCode: string, optionCode: string) => {
+    const { selections, customEntries } = get();
+    const currentSelection = selections[categoryCode];
+    if (currentSelection === optionCode) {
+      const newSelections = { ...selections };
+      delete newSelections[categoryCode];
+      set({ selections: newSelections });
+    } else {
+      const filtered = customEntries.filter(e => e.category_code !== categoryCode);
+      set({
+        selections: { ...selections, [categoryCode]: optionCode },
+        customEntries: filtered,
+      });
+    }
+  },
+
+  resetSelections: () => {
+    set({ selections: {}, customEntries: [] });
+    get().initializeDefaultSelections();
+  },
+
+  initializeDefaultSelections: () => {
+    const { marketModels, activeMarketModelIndex } = get();
+    if (marketModels.length === 0 || activeMarketModelIndex < 0) return;
+    const model = marketModels[activeMarketModelIndex];
+    if (!model) return;
+
+    const defaults: ConfigSelection = {};
+    for (const group of model.configuration_groups) {
+      for (const category of group.categories) {
+        if (category.hide) continue;
+        const visibleOptions = category.options.filter(o => !o.hide);
+        const defaultOption = visibleOptions.find(o => o.is_default);
+        if (defaultOption) {
+          defaults[category.category_code] = defaultOption.option_code;
+        } else if (visibleOptions.length > 0) {
+          defaults[category.category_code] = visibleOptions[0].option_code;
+        }
+      }
+    }
+    set({ selections: defaults });
+  },
+
+  addCustomEntry: (entry: CustomConfigEntry) => {
+    const { customEntries, selections } = get();
+    const filtered = customEntries.filter(e => e.category_code !== entry.category_code);
+    const newSelections = { ...selections };
+    delete newSelections[entry.category_code];
+    set({
+      customEntries: [...filtered, entry],
+      selections: newSelections,
+    });
+  },
+
+  removeCustomEntry: (categoryCode: string) => {
+    const { customEntries } = get();
+    set({ customEntries: customEntries.filter(e => e.category_code !== categoryCode) });
+    const { marketModels, activeMarketModelIndex } = get();
+    if (activeMarketModelIndex < 0) return;
+    const model = marketModels[activeMarketModelIndex];
+    if (!model) return;
+    for (const group of model.configuration_groups) {
+      for (const cat of group.categories) {
+        if (cat.category_code === categoryCode && !cat.hide) {
+          const visibleOptions = cat.options.filter(o => !o.hide);
+          const defaultOption = visibleOptions.find(o => o.is_default) || visibleOptions[0];
+          if (defaultOption) {
+            set((state) => ({
+              selections: { ...state.selections, [categoryCode]: defaultOption.option_code },
+            }));
+          }
+        }
+      }
+    }
+  },
+
+  updateCustomEntry: (categoryCode: string, text: string) => {
+    const { customEntries } = get();
+    set({
+      customEntries: customEntries.map(e =>
+        e.category_code === categoryCode ? { ...e, custom_text: text } : e
+      ),
+    });
+  },
+
+  addPriceTable: (table: PriceTable) => {
+    set((state) => ({ priceTables: [...state.priceTables, table] }));
+    // Auto-save to file
+    saveDataToFile('price_table.json', get().priceTables).catch(console.error);
+  },
+
+  updatePriceTable: (table: PriceTable) => {
+    set((state) => ({
+      priceTables: state.priceTables.map(t => t.id === table.id ? table : t),
+    }));
+    get().refreshPriceMap();
+    // Auto-save to file
+    saveDataToFile('price_table.json', get().priceTables).catch(console.error);
+  },
+
+  deletePriceTable: (id: string) => {
+    set((state) => ({
+      priceTables: state.priceTables.filter(t => t.id !== id),
+    }));
+    // Auto-save to file
+    saveDataToFile('price_table.json', get().priceTables).catch(console.error);
+  },
+
+  linkPriceTable: (modelIndex: number, priceTableId: string) => {
+    const { marketModels } = get();
+    if (modelIndex >= 0 && modelIndex < marketModels.length) {
+      const model = marketModels[modelIndex];
+      const newModels = [...marketModels];
+      newModels[modelIndex] = { ...model, price_table_id: priceTableId };
+      set({ marketModels: newModels });
+      get().refreshPriceMap();
+      // Auto-save to file
+      saveDataToFile('market_model.json', newModels).catch(console.error);
+    }
+  },
+
+  refreshPriceMap: () => {
+    const { marketModels, activeMarketModelIndex, priceTables } = get();
+    if (activeMarketModelIndex < 0) return;
+    const model = marketModels[activeMarketModelIndex];
+    if (!model) return;
+    const pt = priceTables.find(t => t.id === model.price_table_id) || null;
+    const priceMap = generatePriceMapFromTable(model, pt);
+    set({ priceMap });
+  },
+
+  changePriceTableInConfig: (priceTableId: string) => {
+    const { marketModels, activeMarketModelIndex, priceTables } = get();
+    if (activeMarketModelIndex < 0) return;
+    const model = marketModels[activeMarketModelIndex];
+    if (!model) return;
+
+    // Update the model's price_table_id
+    const newModels = [...marketModels];
+    newModels[activeMarketModelIndex] = { ...model, price_table_id: priceTableId };
+
+    set({ marketModels: newModels });
+
+    // Refresh price map with new table
+    const pt = priceTables.find(t => t.id === priceTableId) || null;
+    const priceMap = generatePriceMapFromTable(newModels[activeMarketModelIndex], pt);
+    set({ priceMap });
+    // Auto-save to file
+    saveDataToFile('market_model.json', newModels).catch(console.error);
+  },
+
+  saveConfiguration: () => {
+    const { marketModels, activeMarketModelIndex, selections, customEntries, priceMap, priceTables, savedConfigurations, configStage, selectedSeriesId, seriesList } = get();
+
+    console.log('[saveConfiguration] Called with configStage:', configStage, 'selectedSeriesId:', selectedSeriesId, 'activeMarketModelIndex:', activeMarketModelIndex);
+
+    const selectedSeries = seriesList.find(s => s.series_id === selectedSeriesId);
+    const seriesName = selectedSeries?.series_name || '';
+    const seriesDescription = selectedSeries?.series_description || '';
+
+    // Determine status based on current stage
+    const getStatus = (stage: ConfigStage, complete: boolean): ConfigStatus => {
+      if (complete) return 'completed';
+      if (stage === 'series') return 'series_confirming';
+      if (stage === 'model') return 'model_confirming';
+      return 'options_incomplete';
+    };
+
+    // Save at series stage (selected a series but haven't picked a model yet)
+    if (configStage === 'series' && selectedSeriesId) {
+      console.log('[saveConfiguration] Saving at series stage');
+      const config: SavedConfiguration = {
+        id: `cfg_${Date.now()}`,
+        model_id: '',
+        model_name: '',
+        price_table_id: '',
+        price_table_name: '',
+        currency: '¥',
+        selections: {},
+        custom_entries: [],
+        base_price: 0,
+        options_price: 0,
+        total_price: '-',
+        has_custom: false,
+        saved_at: new Date().toISOString(),
+        is_complete: false,
+        config_number: '-',
+        stage: 'series',
+        series_id: selectedSeriesId,
+        series_name: seriesName,
+        series_description: seriesDescription,
+        status: 'series_confirming',
+      };
+      const newConfigs = [...savedConfigurations, config];
+      set({
+        savedConfigurations: newConfigs,
+        // Jump back to initial page
+        configStage: 'series',
+        selectedSeriesId: '',
+        activeMarketModelIndex: -1,
+        selections: {},
+        customEntries: [],
+      });
+      // Auto-save to file
+      saveDataToFile('saved_configurations.json', newConfigs).catch(console.error);
+      return;
+    }
+
+    if (configStage === 'model') {
+      console.log('[saveConfiguration] Saving at model stage');
+      // Saved at model selection stage - confirmed product line but not model
+      const config: SavedConfiguration = {
+        id: `cfg_${Date.now()}`,
+        model_id: '',
+        model_name: '',
+        price_table_id: '',
+        price_table_name: '',
+        currency: '¥',
+        selections: {},
+        custom_entries: [],
+        base_price: 0,
+        options_price: 0,
+        total_price: '-',
+        has_custom: false,
+        saved_at: new Date().toISOString(),
+        is_complete: false,
+        config_number: '-',
+        stage: 'model',
+        series_id: selectedSeriesId,
+        series_name: seriesName,
+        series_description: seriesDescription,
+        status: 'model_confirming',
+      };
+      const newConfigs = [...savedConfigurations, config];
+      set({
+        savedConfigurations: newConfigs,
+        // Jump back to initial page
+        configStage: 'series',
+        selectedSeriesId: '',
+        activeMarketModelIndex: -1,
+        selections: {},
+        customEntries: [],
+      });
+      // Auto-save to file
+      saveDataToFile('saved_configurations.json', newConfigs).then(() => {
+        console.log('Saved configurations to file, count:', newConfigs.length);
+      }).catch(err => {
+        console.error('Failed to save configurations:', err);
+      });
+      return;
+    }
+
+    // Stage: options (model selected)
+    console.log('[saveConfiguration] Saving at options stage');
+    const model = marketModels[activeMarketModelIndex];
+    if (!model) {
+      console.log('[saveConfiguration] No model found, returning');
+      return;
+    }
+
+    const pt = priceTables.find(t => t.id === model.price_table_id);
+    const currency = pt?.currency || '¥';
+    const hasCustom = customEntries.length > 0;
+    const complete = isConfigComplete(model, selections, customEntries);
+
+    let optionsPrice = 0;
+    for (const group of model.configuration_groups) {
+      if (group.hide || !isSuperCategoryPriced(group.super_category_id)) continue;
+      for (const cat of group.categories) {
+        if (cat.hide) continue;
+        const isCustom = customEntries.some(e => e.category_code === cat.category_code);
+        if (isCustom) continue;
+        const selectedCode = selections[cat.category_code];
+        if (selectedCode) {
+          optionsPrice += priceMap[selectedCode] || 0;
+        }
+      }
+    }
+
+    const basePrice = MODEL_BASE_PRICE;
+    const knownTotal = basePrice + optionsPrice;
+    const formattedTotal = `${currency}${knownTotal.toLocaleString('zh-CN')}`;
+
+    const status = getStatus('options', complete);
+
+    // Use model's series info for description
+    const modelSeriesDesc = seriesList.find(s => s.series_id === model.series_info.series_id)?.series_description
+      || model.series_info.series_description || '';
+
+    // Generate config number for completed configurations
+    const configNumber = complete 
+      ? generateConfigNumber(model.model_id, selections, customEntries)
+      : '-';
+
+    // Get engineer model name for display
+    const engName = model.engineer_model_name || get().getEngineerModelName(model.engineer_model_id);
+
+    const config: SavedConfiguration = {
+      id: `cfg_${Date.now()}`,
+      model_id: model.model_id,
+      model_name: model.model_name,
+      engineer_model_name: engName,
+      price_table_id: model.price_table_id || '',
+      price_table_name: pt?.name || '未关联',
+      currency,
+      selections: { ...selections },
+      custom_entries: [...customEntries],
+      base_price: basePrice,
+      options_price: optionsPrice,
+      total_price: hasCustom ? `${formattedTotal} + ?` : formattedTotal,
+      has_custom: hasCustom,
+      saved_at: new Date().toISOString(),
+      is_complete: complete,
+      config_number: configNumber,
+      stage: 'options',
+      series_id: model.series_info.series_id,
+      series_name: model.series_info.series_name,
+      series_description: modelSeriesDesc,
+      status,
+    };
+
+    const newConfigs = [...savedConfigurations, config];
+    set({
+      savedConfigurations: newConfigs,
+      // Jump back to initial page
+      configStage: 'series',
+      selectedSeriesId: '',
+      activeMarketModelIndex: -1,
+      selections: {},
+      customEntries: [],
+    });
+    // Auto-save to file
+    saveDataToFile('saved_configurations.json', newConfigs).then(() => {
+      console.log('Saved configurations to file, count:', newConfigs.length);
+    }).catch(err => {
+      console.error('Failed to save configurations:', err);
+    });
+  },
+
+  deleteConfiguration: (id: string) => {
+    set((state) => {
+      const newConfigs = state.savedConfigurations.filter(c => c.id !== id);
+      // Auto-save to file
+      saveDataToFile('saved_configurations.json', newConfigs).catch(console.error);
+      return { savedConfigurations: newConfigs };
+    });
+  },
+
+  loadConfiguration: (config: SavedConfiguration) => {
+    const { marketModels } = get();
+    const status = config.status || (config.is_complete ? 'completed' : 'options_incomplete');
+
+    if (status === 'series_confirming') {
+      // Resume from series stage - go back to series selection with the series expanded
+      set({
+        selectedSeriesId: config.series_id,
+        configStage: 'series',
+        activeMarketModelIndex: -1,
+        selections: {},
+        customEntries: [],
+        activeTab: 'configurator',
+      });
+      return;
+    }
+
+    if (status === 'model_confirming') {
+      // Resume from model selection stage
+      set({
+        selectedSeriesId: config.series_id,
+        configStage: 'model',
+        activeMarketModelIndex: -1,
+        selections: {},
+        customEntries: [],
+        activeTab: 'configurator',
+      });
+      return;
+    }
+
+    // Resume from options/completed stage
+    const modelIndex = marketModels.findIndex(m => m.model_id === config.model_id);
+    if (modelIndex < 0) {
+      // Model not found, go to model selection
+      set({
+        selectedSeriesId: config.series_id,
+        configStage: 'model',
+        activeMarketModelIndex: -1,
+        selections: {},
+        customEntries: [],
+        activeTab: 'configurator',
+      });
+      return;
+    }
+
+    set({
+      selectedSeriesId: config.series_id,
+      activeMarketModelIndex: modelIndex,
+      configStage: 'options',
+      selections: { ...config.selections },
+      customEntries: [...config.custom_entries],
+      activeTab: 'configurator',
+    });
+    get().refreshPriceMap();
+  },
+
+  getBasePrice: () => MODEL_BASE_PRICE,
+
+  getCurrency: () => {
+    const { marketModels, activeMarketModelIndex, priceTables } = get();
+    if (activeMarketModelIndex < 0) return '¥';
+    const model = marketModels[activeMarketModelIndex];
+    if (!model) return '¥';
+    const pt = priceTables.find(t => t.id === model.price_table_id);
+    return pt?.currency || '¥';
+  },
+
+  getOptionsPrice: () => {
+    const { selections, priceMap, customEntries, marketModels, activeMarketModelIndex } = get();
+    if (activeMarketModelIndex < 0) return 0;
+    const model = marketModels[activeMarketModelIndex];
+    if (!model) return 0;
+
+    let total = 0;
+    for (const group of model.configuration_groups) {
+      if (group.hide || !isSuperCategoryPriced(group.super_category_id)) continue;
+      for (const cat of group.categories) {
+        if (cat.hide) continue;
+        const isCustom = customEntries.some(e => e.category_code === cat.category_code);
+        if (isCustom) continue;
+        const optionCode = selections[cat.category_code];
+        if (optionCode) {
+          total += priceMap[optionCode] || 0;
+        }
+      }
+    }
+    return total;
+  },
+
+  getTotalPrice: () => {
+    const { customEntries } = get();
+    const base = get().getBasePrice();
+    const options = get().getOptionsPrice();
+    const currency = get().getCurrency();
+    const known = base + options;
+    const formatted = `${currency}${known.toLocaleString('zh-CN')}`;
+    if (customEntries.length > 0) {
+      return `${formatted} + ?`;
+    }
+    return formatted;
+  },
+
+  hasCustomEntries: () => {
+    return get().customEntries.length > 0;
+  },
+
+  isComplete: () => {
+    const { marketModels, activeMarketModelIndex, selections, customEntries } = get();
+    if (activeMarketModelIndex < 0) return false;
+    const model = marketModels[activeMarketModelIndex];
+    if (!model) return false;
+    return isConfigComplete(model, selections, customEntries);
+  },
+
+  getModelsForSeries: (seriesId: string) => {
+    const { marketModels, seriesList } = get();
+    // Find all series that belong to this series (including children)
+    const targetIds = new Set<string>();
+    const findChildren = (parentId: string) => {
+      targetIds.add(parentId);
+      for (const s of seriesList) {
+        if (s.parent_series === parentId) {
+          findChildren(s.series_id);
+        }
+      }
+    };
+    findChildren(seriesId);
+
+    // Find series names
+    const seriesNames = new Set<string>();
+    for (const s of seriesList) {
+      if (targetIds.has(s.series_id)) {
+        seriesNames.add(s.series_name);
+      }
+    }
+
+    return marketModels.filter(m =>
+      seriesNames.has(m.product_series) || targetIds.has(m.series_info.series_id)
+    );
+  },
+
+  getSelectedSeries: () => {
+    const { seriesList, selectedSeriesId } = get();
+    return seriesList.find(s => s.series_id === selectedSeriesId);
+  },
+
+  getPriceTablesForEngineerModel: (engineerModelId: string | undefined) => {
+    const { priceTables } = get();
+    if (!engineerModelId) return priceTables;
+    return priceTables.filter(pt => pt.engineer_model_id === engineerModelId);
+  },
+
+  getEngineerModelName: (engineerModelId: string | undefined) => {
+    const { engineerModels } = get();
+    if (!engineerModelId) return '-';
+    const eng = engineerModels.find(e => e.model_id === engineerModelId);
+    return eng?.model_name || engineerModelId;
+  },
+
+  getActiveModelDisplayName: () => {
+    const { marketModels, activeMarketModelIndex } = get();
+    if (activeMarketModelIndex < 0) return '';
+    const model = marketModels[activeMarketModelIndex];
+    if (!model) return '';
+    const engName = model.engineer_model_name || get().getEngineerModelName(model.engineer_model_id);
+    return formatModelDisplayName(model.model_name, engName);
+  },
+}));

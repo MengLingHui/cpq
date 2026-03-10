@@ -1,0 +1,38 @@
+[
+  {
+    "series_id": "aerial_work_platform",
+    "series_name": "Aerial Work Platform",
+    "series_description": "高空作业平台",
+    "parent_series": "null"
+  },
+  {
+    "series_id": "off-highway_dump_truck",
+    "series_name": "Off-Highway Dump Truck",
+    "series_description": "非公路自卸车",
+    "parent_series": "null"
+  },
+  {
+    "series_id": "scissor_lift",
+    "series_name": "Scissor Lift",
+    "series_description": "剪叉式升降平台",
+    "parent_series": "aerial_work_platform"
+  },
+  {
+    "series_id": "boom_lift",
+    "series_name": "Boom Lift",
+    "series_description": "臂式升降平台",
+    "parent_series": "aerial_work_platform"
+  },
+  {
+    "series_id": "articulated_boom",
+    "series_name": "Articulated Boom",
+    "series_description": "曲臂式升降平台",
+    "parent_series": "boom_lift"
+  },
+  {
+    "series_id": "telescopic_boom",
+    "series_name": "Telescopic Boom",
+    "series_description": "直臂式升降平台",
+    "parent_series": "boom_lift"
+  }
+]
