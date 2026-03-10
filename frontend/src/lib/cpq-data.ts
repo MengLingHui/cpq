@@ -9,6 +9,10 @@ export interface SeriesInfo {
   parent_series: string;
 }
 
+function hasItems<T>(value: T[] | null | undefined): value is T[] {
+  return Array.isArray(value) && value.length > 0;
+}
+
 export interface OptionItem {
   option_code: string;
   description: string;
@@ -301,7 +305,7 @@ export function generatePriceTableFromEngineer(engineerModel: EngineerModel, nam
 export async function loadSeriesData(): Promise<SeriesInfo[]> {
   // 先尝试从localStorage读取（支持导入的数据）
   const localData = userStorage.get<SeriesInfo[]>('series', null);
-  if (localData) {
+  if (hasItems(localData)) {
     console.log('[Storage] 从localStorage加载series数据');
     return localData;
   }
@@ -318,7 +322,7 @@ export async function loadMarketModels(): Promise<MarketModel[]> {
   if (!localData) {
     localData = userStorage.get<MarketModel[]>('market_model', null);
   }
-  if (localData) {
+  if (hasItems(localData)) {
     console.log('[Storage] 从localStorage加载market_models数据');
     return localData;
   }
@@ -334,7 +338,7 @@ export async function loadPriceTables(): Promise<PriceTable[]> {
   if (!localData) {
     localData = userStorage.get<PriceTable[]>('price_table', null);
   }
-  if (localData) {
+  if (hasItems(localData)) {
     console.log('[Storage] 从localStorage加载price_tables数据');
     return localData;
   }
@@ -465,7 +469,7 @@ export async function loadEngineerModels(): Promise<EngineerModel[]> {
   if (!localData) {
     localData = userStorage.get<EngineerModel[]>('engineer_model', null);
   }
-  if (localData) {
+  if (hasItems(localData)) {
     console.log('[Storage] 从localStorage加载engineer_models数据');
     return localData;
   }
