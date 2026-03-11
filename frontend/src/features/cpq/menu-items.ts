@@ -6,6 +6,7 @@ export const MENU_ITEMS = [
   { value: 'pricetable', label: '价格表', icon: DollarSign },
   { value: 'market', label: '销售机型', icon: ShoppingCart },
   { value: 'saved', label: '选配历史', icon: ClipboardList },
+  // { value: 'pure-quote', label: '纯产品报价单', icon: FileSpreadsheet },
   { value: 'configurator', label: '产品选配', icon: Settings2 },
 ] as const;
 

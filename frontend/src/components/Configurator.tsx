@@ -34,12 +34,31 @@ import {
   Lock,
   FolderOpen,
   Database,
-  FileText,
   AlertTriangle,
 } from 'lucide-react';
 import PricePanel from './PricePanel';
 import { isSuperCategoryPriced, isSuperCategoryReadOnly, supportsCustomInput, canShowHiddenItems, formatModelDisplayName } from '@/lib/cpq-data';
 import type { OptionItem, SeriesInfo } from '@/lib/cpq-data';
+
+const SAVE_PRIMARY_CLASS = 'h-8 px-3 text-xs gap-1.5 rounded-full shadow-sm';
+const SAVE_SECONDARY_CLASS = 'h-8 px-3 text-xs gap-1.5 rounded-full border-slate-300 bg-white';
+
+function buildSeriesPath(seriesList: SeriesInfo[], leafSeriesId: string): SeriesInfo[] {
+  if (!leafSeriesId) return [];
+
+  const byId = new Map(seriesList.map((series) => [series.series_id, series]));
+  const path: SeriesInfo[] = [];
+  let cursor = byId.get(leafSeriesId);
+
+  while (cursor) {
+    path.unshift(cursor);
+    const parentId = cursor.parent_series;
+    if (!parentId || parentId === 'null') break;
+    cursor = byId.get(parentId);
+  }
+
+  return path;
+}
 
 // Step 1: Series Selection - Folder navigation style
 function SeriesSelector() {
@@ -49,6 +68,8 @@ function SeriesSelector() {
     getModelsForSeries,
     saveConfiguration,
     selectedSeriesId,
+    editingConfigId,
+    savedConfigurations,
     setActiveTab,
   } = useCPQStore();
 
@@ -134,11 +155,11 @@ function SeriesSelector() {
     return currentPath.map(id => getSeries(id)).filter(Boolean) as SeriesInfo[];
   };
 
-  const handleSaveIntermediate = () => {
+  const handleSaveIntermediate = (mode: 'new' | 'overwrite' = 'new') => {
     if (currentPath.length === 0) return;
     const currentId = currentPath[currentPath.length - 1];
     useCPQStore.setState({ selectedSeriesId: currentId });
-    saveConfiguration();
+    saveConfiguration(mode);
     setSaveSuccess(true);
     setTimeout(() => {
       setSaveSuccess(false);
@@ -149,15 +170,50 @@ function SeriesSelector() {
 
   const breadcrumbs = getBreadcrumbs();
   const currentLevelSeries = getCurrentLevelSeries();
+  const editingConfig = editingConfigId ? savedConfigurations.find(cfg => cfg.id === editingConfigId) : null;
+  const overwriteLabel = '保存(覆盖)';
+  const overwriteDoneLabel = editingConfig?.source_config_id ? '已覆盖' : '已保存';
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold text-slate-800">产品选配器</h2>
           <p className="text-xs text-slate-500 mt-0.5">第一步：选择产品线</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end rounded-xl border border-slate-200 bg-white/80 px-2 py-1 shadow-sm">
+          {currentPath.length > 0 && (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs gap-1"
+                onClick={navigateBack}
+              >
+                <ArrowLeft className="w-3 h-3" />
+                返回上级
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className={SAVE_SECONDARY_CLASS}
+                onClick={() => handleSaveIntermediate('new')}
+                disabled={saveSuccess}
+              >
+                {saveSuccess ? <><CheckCircle2 className="w-3 h-3" />已保存</> : <><Save className="w-3 h-3" />保存(新增)</>}
+              </Button>
+              {editingConfigId && (
+                <Button
+                  size="sm"
+                  className={SAVE_PRIMARY_CLASS}
+                  onClick={() => handleSaveIntermediate('overwrite')}
+                  disabled={saveSuccess}
+                >
+                  {saveSuccess ? <><CheckCircle2 className="w-3 h-3" />{overwriteDoneLabel}</> : <><Save className="w-3 h-3" />{overwriteLabel}</>}
+                </Button>
+              )}
+            </>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -188,19 +244,19 @@ function SeriesSelector() {
       </div>
 
       {/* Breadcrumb navigation */}
-      {breadcrumbs.length > 0 && (
-        <div className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 rounded-lg p-3">
+      <div className="h-10 overflow-x-auto">
+        <div className="inline-flex min-w-full items-center gap-1.5 text-xs text-slate-600 bg-slate-50 rounded-lg px-2 py-2 whitespace-nowrap">
           <Button
             variant="ghost"
             size="sm"
             className="h-6 text-xs gap-1 px-2"
             onClick={() => navigateToLevel(0)}
           >
-            根目录
+            root
           </Button>
           {breadcrumbs.map((series, idx) => (
-            <div key={series.series_id} className="flex items-center gap-2">
-              <ChevronRight className="w-4 h-4 text-slate-400" />
+            <div key={series.series_id} className="flex items-center gap-1.5">
+              <ChevronRight className="w-3 h-3 text-slate-400" />
               <Button
                 variant="ghost"
                 size="sm"
@@ -212,34 +268,10 @@ function SeriesSelector() {
             </div>
           ))}
         </div>
-      )}
+      </div>
 
       {/* Current level series list */}
-      <div className="space-y-2">
-        {/* Back button if not at root */}
-        {currentPath.length > 0 && (
-          <div className="flex items-center justify-between py-2 px-3 bg-slate-50 rounded-lg">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 text-xs gap-1"
-              onClick={navigateBack}
-            >
-              <ArrowLeft className="w-3 h-3" />
-              返回上级
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs gap-1"
-              onClick={handleSaveIntermediate}
-              disabled={saveSuccess}
-            >
-              {saveSuccess ? <><CheckCircle2 className="w-3 h-3" />已保存</> : <><Save className="w-3 h-3" />保存当前层级</>}
-            </Button>
-          </div>
-        )}
-
+      <div className="space-y-1.5">
         {/* Series items */}
         {currentLevelSeries.map(series => {
           const children = getChildren(series.series_id);
@@ -250,7 +282,7 @@ function SeriesSelector() {
           return (
             <div
               key={series.series_id}
-              className={`flex items-center gap-3 p-3 transition-colors rounded-lg border ${
+              className={`flex h-11 items-center gap-2 px-3 transition-colors rounded-md border ${
                 isLeafUnavailable
                   ? 'cursor-not-allowed bg-slate-50 border-slate-200 hover:bg-slate-100'
                   : 'cursor-pointer border-transparent hover:bg-blue-50 hover:border-blue-200'
@@ -258,28 +290,27 @@ function SeriesSelector() {
               onClick={() => navigateInto(series.series_id)}
             >
               {currentPath.length === 0 ? (
-                <Layers className="w-5 h-5 text-blue-600" />
+                <Layers className="w-4 h-4 text-blue-600" />
               ) : currentPath.length === 1 ? (
-                <FolderOpen className="w-5 h-5 text-emerald-600" />
+                <FolderOpen className="w-4 h-4 text-emerald-600" />
               ) : (
-                <Monitor className="w-5 h-5 text-slate-500" />
+                <Monitor className="w-4 h-4 text-slate-500" />
               )}
-              <div className="flex-1">
-                <div className="text-sm font-medium">{series.series_name}</div>
-                <div className="text-[11px] text-slate-500">{series.series_description}</div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-medium truncate">{series.series_name}</div>
               </div>
               {hasChildren && (
                 <>
-                  <Badge variant="secondary" className="text-[10px]">{children.length} 子系列</Badge>
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                  <Badge variant="secondary" className="text-[9px] h-5 shrink-0">{children.length} 子系列</Badge>
+                  <ChevronRight className="w-3 h-3 text-slate-400" />
                 </>
               )}
               {!hasChildren && (
                 <Badge
                   variant={availableModelCount > 0 ? 'secondary' : 'destructive'}
-                  className="text-[10px]"
+                  className="text-[9px] h-5 shrink-0"
                 >
-                  {availableModelCount} 个销售机型
+                  {availableModelCount} 机型
                 </Badge>
               )}
             </div>
@@ -299,6 +330,8 @@ function ModelSelector() {
     confirmSeriesAndPickModel,
     backToSeriesSelection,
     saveConfiguration,
+    editingConfigId,
+    savedConfigurations,
     marketModels,
     engineerModels,
     seriesList,
@@ -306,6 +339,9 @@ function ModelSelector() {
   } = useCPQStore();
 
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const editingConfig = editingConfigId ? savedConfigurations.find(cfg => cfg.id === editingConfigId) : null;
+  const overwriteLabel = '保存(覆盖)';
+  const overwriteDoneLabel = editingConfig?.source_config_id ? '已覆盖' : '已保存';
 
   const series = getSelectedSeries();
   const modelsForSeries = getModelsForSeries(selectedSeriesId);
@@ -336,6 +372,12 @@ function ModelSelector() {
   };
 
   const engineerModelsForSeries = getEngineerModelsForSeries();
+  const seriesPath = buildSeriesPath(seriesList, selectedSeriesId);
+
+  const jumpToSeriesNode = (seriesId: string) => {
+    useCPQStore.setState({ selectedSeriesId: seriesId });
+    backToSeriesSelection();
+  };
 
   // Find market models linked to a specific engineer model
   const getLinkedMarketModels = (engineerModelId: string) => {
@@ -352,15 +394,12 @@ function ModelSelector() {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold text-slate-800">产品选配器</h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            第二步：选择机型
-            {series && <span className="ml-1 text-blue-600">（{series.series_name} - {series.series_description}）</span>}
-          </p>
+          <p className="text-xs text-slate-500 mt-0.5">第二步：选择机型</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end rounded-xl border border-slate-200 bg-white/80 px-2 py-1 shadow-sm">
           <Button
             variant="outline"
             size="sm"
@@ -370,6 +409,39 @@ function ModelSelector() {
             <ArrowLeft className="w-3 h-3" />
             返回产品线
           </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className={SAVE_SECONDARY_CLASS}
+            onClick={() => {
+              saveConfiguration('new');
+              setSaveSuccess(true);
+              setTimeout(() => {
+                setSaveSuccess(false);
+                setActiveTab('saved');
+              }, 800);
+            }}
+            disabled={saveSuccess}
+          >
+            {saveSuccess ? <><CheckCircle2 className="w-3 h-3" />已保存</> : <><Save className="w-3 h-3" />保存(新增)</>}
+          </Button>
+          {editingConfigId && (
+            <Button
+              size="sm"
+              className={SAVE_PRIMARY_CLASS}
+              onClick={() => {
+                saveConfiguration('overwrite');
+                setSaveSuccess(true);
+                setTimeout(() => {
+                  setSaveSuccess(false);
+                  setActiveTab('saved');
+                }, 800);
+              }}
+              disabled={saveSuccess}
+            >
+              {saveSuccess ? <><CheckCircle2 className="w-3 h-3" />{overwriteDoneLabel}</> : <><Save className="w-3 h-3" />{overwriteLabel}</>}
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -382,10 +454,10 @@ function ModelSelector() {
       </div>
 
       {/* Progress indicator */}
-      <div className="flex items-center gap-2 text-[10px] text-slate-500 bg-slate-50 rounded-lg p-2">
+      <div className="flex items-center gap-2 text-[10px] text-slate-500 bg-slate-50 rounded-lg p-2 overflow-x-auto whitespace-nowrap">
         <div className="flex items-center gap-1 text-emerald-600">
           <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">✓</div>
-          {series?.series_name || '产品线'}
+          产品线已选
         </div>
         <ChevronRight className="w-3 h-3 text-slate-300" />
         <div className="flex items-center gap-1 text-blue-600 font-semibold">
@@ -399,13 +471,41 @@ function ModelSelector() {
         </div>
       </div>
 
+      <div className="h-10 overflow-x-auto">
+        <div className="inline-flex min-w-full items-center gap-1.5 text-xs text-slate-600 bg-slate-50 rounded-lg px-2 py-2 whitespace-nowrap">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 text-xs px-2"
+            onClick={backToSeriesSelection}
+          >
+            root
+          </Button>
+          {seriesPath.map((node) => (
+            <div key={node.series_id} className="flex items-center gap-1.5">
+              <ChevronRight className="w-3 h-3 text-slate-400" />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-xs px-2"
+                onClick={() => jumpToSeriesNode(node.series_id)}
+              >
+                {node.series_name}
+              </Button>
+            </div>
+          ))}
+          <ChevronRight className="w-3 h-3 text-slate-400" />
+          <span className="text-blue-600 font-semibold">机型选择</span>
+        </div>
+      </div>
+
       {hasNoModels ? (
         <div className="text-center py-10 text-slate-400">
           <Package className="w-10 h-10 mx-auto mb-2" />
           <p className="text-sm">该产品线下暂无可用的机型</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="space-y-2">
           {/* Engineer model with linked sales models displayed as "工程机型(销售机型)" */}
           {engineerModelsForSeries.map((engModel) => {
             const linkedMarkets = getLinkedMarketModels(engModel.model_id);
@@ -414,29 +514,21 @@ function ModelSelector() {
             if (linkedMarkets.length > 0) {
               return linkedMarkets.map((mModel) => {
                 const globalIdx = marketModels.indexOf(mModel);
-                const mGroupCount = mModel.configuration_groups.filter(g => !g.hide).length;
                 return (
                   <div
                     key={mModel.model_id}
-                    className="border rounded-lg p-4 cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-all hover:shadow-sm"
+                    className="border rounded-md h-11 px-3 flex items-center cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-colors"
                     onClick={() => confirmSeriesAndPickModel(globalIdx)}
                   >
-                    <div className="flex items-start gap-3">
-                      <Package className="w-8 h-8 text-blue-600 shrink-0 mt-0.5" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-semibold text-slate-800">
+                    <div className="flex items-center gap-2.5 w-full">
+                      <Package className="w-4 h-4 text-blue-600 shrink-0" />
+                      <div className="flex-1 min-w-0 flex items-center gap-2">
+                        <div className="text-xs font-semibold text-slate-800 truncate">
                           {engModel.model_name}
                           <span className="text-blue-600">({mModel.model_name})</span>
                         </div>
-                        <div className="text-[11px] text-slate-500 mt-0.5">
-                          {mModel.series_info.series_description}
-                        </div>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Badge variant="secondary" className="text-[9px]">{mGroupCount} 配置组</Badge>
-                          <Badge variant="outline" className="text-[9px]">系列: {mModel.product_series}</Badge>
-                        </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+                      <ChevronRight className="w-3 h-3 text-slate-400 shrink-0" />
                     </div>
                   </div>
                 );
@@ -445,19 +537,14 @@ function ModelSelector() {
 
             // Engineer model without linked sales model
             return (
-              <div key={engModel.model_id} className="border rounded-lg p-4 border-dashed border-slate-300">
-                <div className="flex items-start gap-3">
-                  <Database className="w-8 h-8 text-indigo-500 shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-slate-800">{engModel.model_name}</div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">
-                      {engModel.series_info.series_description}
-                    </div>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Badge variant="outline" className="text-[9px] border-indigo-300 text-indigo-600">工程机型</Badge>
-                      <Badge variant="secondary" className="text-[9px]">{engGroupCount} 配置组</Badge>
-                      <span className="text-[9px] text-slate-400">暂无关联销售机型</span>
-                    </div>
+              <div key={engModel.model_id} className="border rounded-md h-11 px-3 flex items-center border-dashed border-slate-300">
+                <div className="flex items-center gap-2.5 w-full">
+                  <Database className="w-4 h-4 text-indigo-500 shrink-0" />
+                  <div className="flex-1 min-w-0 flex items-center gap-2">
+                    <div className="text-xs font-semibold text-slate-800 truncate">{engModel.model_name}</div>
+                    <Badge variant="outline" className="text-[9px] h-5 border-indigo-300 text-indigo-600 shrink-0">工程机型</Badge>
+                    <Badge variant="secondary" className="text-[9px] h-5 shrink-0">{engGroupCount} 配置组</Badge>
+                    <span className="text-[9px] text-slate-400 shrink-0 hidden sm:inline">未关联销售机型</span>
                   </div>
                 </div>
               </div>
@@ -467,26 +554,18 @@ function ModelSelector() {
           {/* Unlinked Market Models */}
           {unlinkedMarketModels.map((model) => {
             const globalIdx = marketModels.indexOf(model);
-            const groupCount = model.configuration_groups.filter(g => !g.hide).length;
             return (
               <div
                 key={model.model_id}
-                className="border rounded-lg p-4 cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-all hover:shadow-sm"
+                className="border rounded-md h-11 px-3 flex items-center cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-colors"
                 onClick={() => confirmSeriesAndPickModel(globalIdx)}
               >
-                <div className="flex items-start gap-3">
-                  <Package className="w-8 h-8 text-blue-600 shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-slate-800">{model.model_name}</div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">
-                      {model.series_info.series_description}
-                    </div>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Badge variant="secondary" className="text-[9px]">{groupCount} 配置组</Badge>
-                      <Badge variant="outline" className="text-[9px]">系列: {model.product_series}</Badge>
-                    </div>
+                <div className="flex items-center gap-2.5 w-full">
+                  <Package className="w-4 h-4 text-blue-600 shrink-0" />
+                  <div className="flex-1 min-w-0 flex items-center gap-2">
+                    <div className="text-xs font-semibold text-slate-800 truncate">{model.model_name}</div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+                  <ChevronRight className="w-3 h-3 text-slate-400 shrink-0" />
                 </div>
               </div>
             );
@@ -494,25 +573,6 @@ function ModelSelector() {
         </div>
       )}
 
-      {/* Save at this stage */}
-      <div className="flex justify-end">
-        <Button
-          size="sm"
-          className="h-7 text-xs gap-1"
-          onClick={() => {
-            saveConfiguration();
-            setSaveSuccess(true);
-            setTimeout(() => {
-              setSaveSuccess(false);
-              // 跳转到选配历史界面
-              setActiveTab('saved');
-            }, 800);
-          }}
-          disabled={saveSuccess}
-        >
-          {saveSuccess ? <><CheckCircle2 className="w-3 h-3" />已保存</> : <><Save className="w-3 h-3" />保存当前进度</>}
-        </Button>
-      </div>
     </div>
   );
 }
@@ -531,16 +591,19 @@ function OptionsConfigurator() {
     addCustomEntry,
     removeCustomEntry,
     saveConfiguration,
+    editingConfigId,
+    savedConfigurations,
     getCurrency,
     setActiveTab,
     backToModelSelection,
+    backToSeriesSelection,
+    selectedSeriesId,
+    seriesList,
     getSelectedSeries,
     changePriceTableInConfig,
     getPriceTablesForEngineerModel,
     toggleSelection,
     getActiveModelDisplayName,
-    hasCustomEntries,
-    isComplete,
     constraintAnalysis,
     isOptionAvailable,
     getOptionDisableReasons,
@@ -558,6 +621,17 @@ function OptionsConfigurator() {
 
   const model = marketModels[activeMarketModelIndex];
   if (!model) return null;
+
+  const seriesPath = buildSeriesPath(seriesList, selectedSeriesId || model.series_info.series_id);
+
+  const jumpToSeriesNode = (seriesId: string) => {
+    useCPQStore.setState({ selectedSeriesId: seriesId });
+    backToSeriesSelection();
+  };
+
+  const editingConfig = editingConfigId ? savedConfigurations.find(cfg => cfg.id === editingConfigId) : null;
+  const overwriteLabel = '保存(覆盖)';
+  const overwriteDoneLabel = editingConfig?.source_config_id ? '已覆盖' : '已保存';
 
   const currency = getCurrency();
   const series = getSelectedSeries();
@@ -613,8 +687,8 @@ function OptionsConfigurator() {
     setCustomInputText(prev => ({ ...prev, [categoryCode]: '' }));
   };
 
-  const handleSave = () => {
-    saveConfiguration();
+  const handleSave = (mode: 'new' | 'overwrite' = 'new') => {
+    saveConfiguration(mode);
     setSaveSuccess(true);
     setTimeout(() => {
       setSaveSuccess(false);
@@ -623,20 +697,13 @@ function OptionsConfigurator() {
     }, 800);
   };
 
-  // 判断是否需要发起ETO流程（有自定义配置且选配完成）
-  const needEtoFlow = hasCustomEntries() && isComplete();
-
-  const handleSaveOrEto = () => {
-    saveConfiguration();
+  const handleSaveOnly = (mode: 'new' | 'overwrite' = 'new') => {
+    saveConfiguration(mode);
     setSaveSuccess(true);
     setTimeout(() => {
       setSaveSuccess(false);
       // 跳转到选配历史界面
       setActiveTab('saved');
-      // 如果需要ETO流程，显示提示
-      if (needEtoFlow) {
-        alert('配置已保存！由于包含自定义配置项，ETO流程已发起，工程团队将评审确认。');
-      }
     }, 800);
   };
 
@@ -672,20 +739,20 @@ function OptionsConfigurator() {
               key={opt.option_code}
               className={`flex items-center gap-2 rounded px-2 py-1 transition-colors ${
                 isReadOnly
-                  ? isSelected ? 'bg-slate-100 border border-slate-200' : 'border border-transparent opacity-60'
+                  ? isSelected ? 'bg-slate-200 border border-slate-400 shadow-sm' : 'border border-transparent opacity-60'
                   : shouldDisable
                     ? 'bg-slate-100 border border-slate-200 opacity-55 cursor-not-allowed'
-                    : isSelected ? 'bg-blue-50 border border-blue-200 cursor-pointer' : 'hover:bg-slate-100 border border-transparent cursor-pointer'
+                    : isSelected ? 'bg-blue-100 border border-blue-500 shadow-sm cursor-pointer' : 'hover:bg-slate-100 border border-transparent cursor-pointer'
               }`}
               onClick={() => handleSelectOption(categoryCode, opt.option_code, isReadOnly, superCategoryId)}
               title={disableReasons[0] || ''}
             >
               <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
                 isReadOnly
-                  ? isSelected ? 'border-slate-400' : 'border-slate-300'
-                  : shouldDisable ? 'border-slate-300' : isSelected ? 'border-blue-500' : 'border-slate-300'
+                  ? isSelected ? 'border-slate-500' : 'border-slate-300'
+                  : shouldDisable ? 'border-slate-300' : isSelected ? 'border-blue-600' : 'border-slate-300'
               }`}>
-                {isSelected && <div className={`w-1.5 h-1.5 rounded-full ${isReadOnly || shouldDisable ? 'bg-slate-400' : 'bg-blue-500'}`} />}
+                {isSelected && <div className={`w-2 h-2 rounded-full ${isReadOnly || shouldDisable ? 'bg-slate-500' : 'bg-blue-600'}`} />}
               </div>
               {isReadOnly && <Lock className="w-2.5 h-2.5 text-slate-400 shrink-0" />}
               {shouldDisable && <AlertTriangle className="w-2.5 h-2.5 text-amber-500 shrink-0" />}
@@ -742,7 +809,7 @@ function OptionsConfigurator() {
           <h2 className="text-sm font-semibold text-slate-800">产品选配器</h2>
           <p className="text-xs text-slate-500 mt-0.5">第三步：配置选项 - {modelDisplayName}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
           <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={backToModelSelection}>
             <ArrowLeft className="w-3 h-3" />
             返回机型
@@ -753,18 +820,31 @@ function OptionsConfigurator() {
           </Button>
           <Button 
             size="sm" 
-            className={`h-7 text-xs gap-1 ${needEtoFlow ? 'bg-amber-600 hover:bg-amber-700' : ''}`} 
-            onClick={handleSaveOrEto} 
+            variant={editingConfigId ? 'outline' : 'default'}
+            className={`${editingConfigId ? SAVE_SECONDARY_CLASS : SAVE_PRIMARY_CLASS}`}
+            onClick={() => handleSaveOnly('new')} 
             disabled={saveSuccess}
           >
             {saveSuccess ? (
               <><CheckCircle2 className="w-3 h-3" />已保存</>
-            ) : needEtoFlow ? (
-              <><FileText className="w-3 h-3" />保存并发起ETO流程</>
             ) : (
-              <><Save className="w-3 h-3" />保存选配</>
+              <><Save className="w-3 h-3" />保存(新增)</>
             )}
           </Button>
+          {editingConfigId && (
+            <Button
+              size="sm"
+              className={SAVE_PRIMARY_CLASS}
+              onClick={() => handleSaveOnly('overwrite')}
+              disabled={saveSuccess}
+            >
+              {saveSuccess ? (
+                <><CheckCircle2 className="w-3 h-3" />{overwriteDoneLabel}</>
+              ) : (
+                <><Save className="w-3 h-3" />{overwriteLabel}</>
+              )}
+            </Button>
+          )}
           <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setActiveTab('saved')}>
             查看选配历史
           </Button>
@@ -787,6 +867,41 @@ function OptionsConfigurator() {
           <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">3</div>
           配置选项
         </div>
+      </div>
+
+      <div className="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 rounded-lg p-2 shrink-0 flex-wrap">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 text-xs px-2"
+          onClick={backToSeriesSelection}
+        >
+          根目录
+        </Button>
+        {seriesPath.map((node) => (
+          <div key={node.series_id} className="flex items-center gap-2">
+            <ChevronRight className="w-3 h-3 text-slate-400" />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 text-xs px-2"
+              onClick={() => jumpToSeriesNode(node.series_id)}
+            >
+              {node.series_name}
+            </Button>
+          </div>
+        ))}
+        <ChevronRight className="w-3 h-3 text-slate-400" />
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 text-xs px-2"
+          onClick={backToModelSelection}
+        >
+          机型选择
+        </Button>
+        <ChevronRight className="w-3 h-3 text-slate-400" />
+        <span className="text-blue-600 font-semibold">{modelDisplayName}</span>
       </div>
 
       <div className="flex gap-4 overflow-hidden flex-1">

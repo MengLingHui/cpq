@@ -224,7 +224,7 @@ export default function TestToolsPanel() {
       }
 
       const hasValidData = Object.keys(data).some(key =>
-        ['saved_configurations', 'series', 'engineer_models', 'market_models', 'price_tables'].some(
+        ['saved_configurations', 'pure_product_quote_sheets', 'series', 'engineer_models', 'market_models', 'price_tables'].some(
           prefix => key.includes(prefix)
         )
       );

@@ -56,6 +56,7 @@ import {
   Trash2,
   DollarSign,
   Database,
+  Printer,
 } from 'lucide-react';
 import type { MarketModel, Category, ConfigurationGroup } from '@/lib/cpq-data';
 
@@ -100,6 +101,14 @@ function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEdi
     const newModel = JSON.parse(JSON.stringify(model)) as MarketModel;
     newModel.configuration_groups[groupIdx].categories[catIdx].options[optIdx].hide =
       !newModel.configuration_groups[groupIdx].categories[catIdx].options[optIdx].hide;
+    onUpdate(newModel);
+  }, [model, onUpdate]);
+
+  const toggleCategoryPrint = useCallback((groupIdx: number, catIdx: number) => {
+    const newModel = JSON.parse(JSON.stringify(model)) as MarketModel;
+    const category = newModel.configuration_groups[groupIdx].categories[catIdx];
+    const current = category.print_enabled !== false;
+    category.print_enabled = !current;
     onUpdate(newModel);
   }, [model, onUpdate]);
 
@@ -230,10 +239,10 @@ function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEdi
           </Select>
         </div>
         <div className="flex-1" />
-        <Button size="sm" className="h-7 text-xs gap-1" onClick={onSave}>
+        <Button size="sm" className="h-8 px-3 text-xs gap-1.5 rounded-full shadow-sm" onClick={onSave}>
           <Save className="w-3 h-3" /> 保存
         </Button>
-        <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={onCancel}>
+        <Button size="sm" variant="outline" className="h-8 px-3 text-xs gap-1.5 rounded-full border-slate-300 bg-white" onClick={onCancel}>
           <X className="w-3 h-3" /> 取消
         </Button>
       </div>
@@ -275,6 +284,7 @@ function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEdi
                         <TableHead className="h-6 text-[10px]">排序</TableHead>
                         <TableHead className="h-6 text-[10px]">名称</TableHead>
                         <TableHead className="h-6 text-[10px]">选项</TableHead>
+                        <TableHead className="h-6 text-[10px] text-center">打印</TableHead>
                         <TableHead className="h-6 text-[10px] text-center">显隐</TableHead>
                         <TableHead className="h-6 text-[10px] text-center">排序操作</TableHead>
                       </TableRow>
@@ -298,7 +308,16 @@ function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEdi
                           <TableCell className="py-1 font-mono text-[10px] text-slate-400">
                             {cat.seq_id}
                           </TableCell>
-                          <TableCell className="py-1">{cat.category_name}</TableCell>
+                          <TableCell className="py-1">
+                            <div className="flex items-center gap-1.5">
+                              <span>{cat.category_name}</span>
+                              {cat.print_enabled === false && (
+                                <Badge variant="outline" className="text-[9px] h-4 text-amber-700 border-amber-300">
+                                  不打印
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
                           <TableCell className="py-1">
                             <div className="flex flex-wrap gap-0.5">
                               {cat.options.map((opt, optIdx) => (
@@ -339,6 +358,16 @@ function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEdi
                                   )}
                                 </div>
                               ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-1 text-center">
+                            <div className="inline-flex items-center gap-1">
+                              <Printer className={`w-3 h-3 ${cat.print_enabled === false ? 'text-amber-600' : 'text-slate-400'}`} />
+                              <Switch
+                                checked={cat.print_enabled !== false}
+                                onCheckedChange={() => toggleCategoryPrint(groupIdx, catIdx)}
+                                className="scale-75"
+                              />
                             </div>
                           </TableCell>
                           <TableCell className="py-1 text-center">

@@ -33,6 +33,8 @@ export interface Category {
   category_name: string;
   super_category_id: number;
   super_category_name: string;
+  // Whether this category should appear in printable quote details
+  print_enabled?: boolean;
   options: OptionItem[];
   seq_id: number;
   hide: boolean;
@@ -188,6 +190,26 @@ function normalizeModelRules<T extends { rules?: unknown }>(model: T): T & { rul
   };
 }
 
+function normalizeMarketModelOptions(model: MarketModel): MarketModel {
+  return {
+    ...model,
+    configuration_groups: model.configuration_groups.map((group) => ({
+      ...group,
+      categories: group.categories.map((category) => ({
+        ...category,
+        // Backward compatibility: migrate legacy option-level print_enabled to category-level.
+        print_enabled: category.print_enabled !== false && !category.options.every((option) => {
+          const legacyOption = option as OptionItem & { print_enabled?: boolean };
+          return legacyOption.print_enabled === false;
+        }),
+        options: category.options.map((option) => ({
+          ...option,
+        })),
+      })),
+    })),
+  };
+}
+
 // Price table entry with description
 export interface PriceTableEntry {
   option_code: string;
@@ -246,6 +268,7 @@ export interface SavedConfiguration {
   options_price: number;
   total_price: string; // e.g. "¥285,000" or "$285,000 + ?"
   has_custom: boolean;
+  order_number?: string; // 6-digit order number, e.g. 000123
   saved_at: string;
   is_complete: boolean; // whether all categories have been selected
   config_number: string; // configuration number, "-" if not generated
@@ -255,7 +278,104 @@ export interface SavedConfiguration {
   series_name: string;
   series_description: string; // e.g. "Articulated Boom" instead of "AB"
   status: ConfigStatus; // derived status for display
+  updated_at?: string;
+  source_config_id?: string;
+  version?: number;
 }
+
+export interface PureProductQuotePrintableDetail {
+  category_code: string;
+  category_name: string;
+  option_code: string;
+  option_description: string;
+}
+
+export interface PureProductQuoteItem {
+  saved_config_id: string;
+  saved_at: string;
+  model_name: string;
+  engineer_model_name?: string;
+  series_name: string;
+  price_table_name: string;
+  currency: string;
+  base_price: number;
+  options_price: number;
+  total_price: string;
+  has_custom: boolean;
+  printable_details: PureProductQuotePrintableDetail[];
+}
+
+export interface PureProductQuoteSheet {
+  id: string;
+  name: string;
+  source_config_ids: string[];
+  item_count: number;
+  totals_by_currency: Record<string, number>;
+  items: PureProductQuoteItem[];
+  created_at: string;
+  updated_at: string;
+}
+
+function normalizePureProductQuoteSheets(data: unknown): PureProductQuoteSheet[] {
+  if (!Array.isArray(data)) return [];
+
+  return data
+    .filter((item): item is Record<string, unknown> => !!item && typeof item === 'object')
+    .map((item, index) => {
+      const sourceConfigIds = Array.isArray(item.source_config_ids)
+        ? item.source_config_ids.filter((id): id is string => typeof id === 'string')
+        : [];
+
+      const rawItems = Array.isArray(item.items) ? item.items : [];
+      const normalizedItems: PureProductQuoteItem[] = rawItems
+        .filter((entry): entry is Record<string, unknown> => !!entry && typeof entry === 'object')
+        .map((entry) => ({
+          saved_config_id: typeof entry.saved_config_id === 'string' ? entry.saved_config_id : '',
+          saved_at: typeof entry.saved_at === 'string' ? entry.saved_at : '',
+          model_name: typeof entry.model_name === 'string' ? entry.model_name : '',
+          engineer_model_name: typeof entry.engineer_model_name === 'string' ? entry.engineer_model_name : undefined,
+          series_name: typeof entry.series_name === 'string' ? entry.series_name : '-',
+          price_table_name: typeof entry.price_table_name === 'string' ? entry.price_table_name : '-',
+          currency: typeof entry.currency === 'string' ? entry.currency : '¥',
+          base_price: typeof entry.base_price === 'number' ? entry.base_price : 0,
+          options_price: typeof entry.options_price === 'number' ? entry.options_price : 0,
+          total_price: typeof entry.total_price === 'string' ? entry.total_price : '-',
+          has_custom: entry.has_custom === true,
+          printable_details: Array.isArray(entry.printable_details)
+            ? entry.printable_details
+                .filter((d): d is Record<string, unknown> => !!d && typeof d === 'object')
+                .map((d) => ({
+                  category_code: typeof d.category_code === 'string' ? d.category_code : '',
+                  category_name: typeof d.category_name === 'string' ? d.category_name : '',
+                  option_code: typeof d.option_code === 'string' ? d.option_code : '',
+                  option_description: typeof d.option_description === 'string' ? d.option_description : '',
+                }))
+            : [],
+        }));
+
+      const totals = item.totals_by_currency;
+      const totalsByCurrency = totals && typeof totals === 'object'
+        ? Object.fromEntries(
+            Object.entries(totals).map(([key, value]) => [key, typeof value === 'number' ? value : 0])
+          )
+        : {};
+
+      const createdAt = typeof item.created_at === 'string' ? item.created_at : new Date().toISOString();
+      const updatedAt = typeof item.updated_at === 'string' ? item.updated_at : createdAt;
+
+      return {
+        id: typeof item.id === 'string' ? item.id : `ppq_legacy_${index}`,
+        name: typeof item.name === 'string' ? item.name : `纯产品报价单-${index + 1}`,
+        source_config_ids: sourceConfigIds,
+        item_count: typeof item.item_count === 'number' ? item.item_count : normalizedItems.length,
+        totals_by_currency: totalsByCurrency,
+        items: normalizedItems,
+        created_at: createdAt,
+        updated_at: updatedAt,
+      };
+    });
+}
+
 
 // Format model display name as "工程机型(销售机型)"
 // If engineer model name is available and different from market model name, show "engName(marketName)"
@@ -451,12 +571,12 @@ export async function loadMarketModels(): Promise<MarketModel[]> {
   }
   if (hasItems(localData)) {
     console.log('[Storage] 从localStorage加载market_models数据');
-    return localData.map(model => normalizeModelRules(model as MarketModel));
+    return localData.map(model => normalizeMarketModelOptions(normalizeModelRules(model as MarketModel)));
   }
   const response = await fetch(getDataUrl('market_model.json'));
   const data = await response.json();
   const models = Array.isArray(data) ? data : [data];
-  return models.map(model => normalizeModelRules(model as MarketModel));
+  return models.map(model => normalizeMarketModelOptions(normalizeModelRules(model as MarketModel)));
 }
 
 // Load price tables from JSON -优先从localStorage读取
@@ -482,6 +602,7 @@ const FILE_TO_STORAGE_KEY: Record<string, string> = {
   'price_table.json': 'price_tables',
   'series.json': 'series',
   'saved_configurations.json': 'saved_configurations',
+  'pure_product_quote_sheets.json': 'pure_product_quote_sheets',
 };
 
 // Save data to localStorage (user-isolated)
@@ -509,6 +630,27 @@ export async function loadSavedConfigurations(): Promise<SavedConfiguration[]> {
     return configs;
   } catch (err) {
     console.error('[Storage] 加载配置失败:', err);
+    return [];
+  }
+}
+
+// Load pure product quote sheets - 优先从localStorage读取，如果没有则从JSON文件加载
+export async function loadPureProductQuoteSheets(): Promise<PureProductQuoteSheet[]> {
+  try {
+    const localData = userStorage.get<PureProductQuoteSheet[]>('pure_product_quote_sheets', null);
+    const normalizedLocal = normalizePureProductQuoteSheets(localData);
+    if (normalizedLocal.length > 0) {
+      console.log('[Storage] 从localStorage加载pure_product_quote_sheets数据:', normalizedLocal.length, '条');
+      return normalizedLocal;
+    }
+
+    const response = await fetch(getDataUrl('pure_product_quote_sheets.json'));
+    const data = await response.json();
+    const sheets = normalizePureProductQuoteSheets(data);
+    console.log('[Storage] 从JSON文件加载pure_product_quote_sheets数据:', sheets.length, '条');
+    return sheets;
+  } catch (err) {
+    console.error('[Storage] 加载纯产品报价单失败:', err);
     return [];
   }
 }
@@ -630,27 +772,107 @@ export function cloneMarketModel(model: MarketModel): MarketModel {
   return JSON.parse(JSON.stringify(model));
 }
 
-// Global counter for configuration numbers (in-memory only, resets on refresh)
-let stdCounter = 0;
-let tmpCounter = 0;
+function formatOrderSerial(serial: number): string {
+  const normalized = ((serial % 1000000) + 1000000) % 1000000;
+  return normalized.toString().padStart(6, '0');
+}
 
-// Generate a configuration number
-// - No custom entries: std000000 (6 digits, auto-increment)
-// - Has custom entries: tmp00000 (5 digits, auto-increment)
-export function generateConfigNumber(
-  modelId: string,
-  selections: Record<string, string>,
-  customEntries: { category_code: string }[]
-): string {
-  const hasCustom = customEntries.length > 0;
-  
-  if (hasCustom) {
-    tmpCounter++;
-    return `tmp${tmpCounter.toString().padStart(5, '0')}`;
-  } else {
-    stdCounter++;
-    return `std${stdCounter.toString().padStart(6, '0')}`;
+function extractOrderSerial(config: SavedConfiguration): number | null {
+  if (config.order_number && /^\d{6}$/.test(config.order_number)) {
+    return Number(config.order_number);
   }
+
+  if (typeof config.config_number === 'string') {
+    const match = config.config_number.match(/(\d{6})$/);
+    if (match) return Number(match[1]);
+  }
+
+  return null;
+}
+
+// Generate next order number: 6-digit流水号, 000000-999999 (rolls over after max)
+export function generateOrderNumber(existing: SavedConfiguration[]): string {
+  let maxSerial = -1;
+  for (const config of existing) {
+    const serial = extractOrderSerial(config);
+    if (serial !== null) {
+      maxSerial = Math.max(maxSerial, serial);
+    }
+  }
+  return formatOrderSerial(maxSerial + 1);
+}
+
+function sanitizeEngineerModelName(name: string): string {
+  const trimmed = (name || '').trim();
+  if (!trimmed) return 'MODEL';
+  return trimmed.replace(/\s+/g, '');
+}
+
+// Generate configuration number: 工程机型名称 + 6位订单流水号
+// Example: AR20J-2 + 000000 => AR20J-2000000
+export function generateConfigNumber(engineerModelName: string, orderNumber: string): string {
+  const serial = /^\d{6}$/.test(orderNumber) ? orderNumber : formatOrderSerial(Number(orderNumber) || 0);
+  return `${sanitizeEngineerModelName(engineerModelName)}${serial}`;
+}
+
+function fnv1a32(input: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+}
+
+function normalizeSelectionsForFingerprint(selections: Record<string, string>): string {
+  return Object.entries(selections)
+    .filter(([, optionCode]) => !!optionCode)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([categoryCode, optionCode]) => `${categoryCode}=${optionCode}`)
+    .join('|');
+}
+
+function normalizeCustomEntriesForFingerprint(customEntries: CustomConfigEntry[]): string {
+  return [...(customEntries || [])]
+    .map((entry) => ({
+      category_code: entry.category_code || '',
+      custom_text: (entry.custom_text || '').trim(),
+    }))
+    .sort((a, b) => {
+      if (a.category_code === b.category_code) {
+        return a.custom_text.localeCompare(b.custom_text);
+      }
+      return a.category_code.localeCompare(b.category_code);
+    })
+    .map((entry) => `${entry.category_code}~${entry.custom_text}`)
+    .join('|');
+}
+
+// Configuration fingerprint used for serial-number reuse
+export function generateConfigFingerprint(
+  engineerModelName: string,
+  selections: Record<string, string>,
+  customEntries: CustomConfigEntry[] = []
+): string {
+  const modelKey = sanitizeEngineerModelName(engineerModelName);
+  const selectionKey = normalizeSelectionsForFingerprint(selections);
+  const customKey = normalizeCustomEntriesForFingerprint(customEntries);
+  return `${modelKey}|${selectionKey}|${customKey}`;
+}
+
+// Stable configuration number: 工程机型名称 + selections指纹（与保存次数无关）
+export function generateStableConfigNumber(
+  engineerModelName: string,
+  selections: Record<string, string>
+): string {
+  const modelKey = sanitizeEngineerModelName(engineerModelName);
+  const selectionKey = normalizeSelectionsForFingerprint(selections);
+  const hash = fnv1a32(`${modelKey}|${selectionKey}`)
+    .toString(36)
+    .toUpperCase()
+    .padStart(7, '0')
+    .slice(-7);
+  return `${modelKey}-${hash}`;
 }
 
 // Check if all visible categories have selections

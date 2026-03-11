@@ -168,10 +168,10 @@ function PriceTableEditor({
       </div>
 
       <DialogFooter>
-        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={onCancel}>
+        <Button variant="outline" size="sm" className="h-8 px-3 text-xs rounded-full border-slate-300 bg-white" onClick={onCancel}>
           取消
         </Button>
-        <Button size="sm" className="h-7 text-xs" onClick={handleSave}>
+        <Button size="sm" className="h-8 px-3 text-xs rounded-full shadow-sm" onClick={handleSave}>
           保存
         </Button>
       </DialogFooter>

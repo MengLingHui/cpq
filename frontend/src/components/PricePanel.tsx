@@ -29,14 +29,16 @@ export default function PricePanel() {
     getActiveModelDisplayName,
   } = useCPQStore();
 
+  const [orderNumber, setOrderNumber] = useState('-');
   const [configNumber, setConfigNumber] = useState('-');
   const [copied, setCopied] = useState(false);
   const prevSelectionsRef = useRef<string>('');
 
-  // Reset config number when selections change
+  // Reset order/config number preview when selections change
   useEffect(() => {
     const currentKey = JSON.stringify(selections) + JSON.stringify(customEntries);
     if (prevSelectionsRef.current && prevSelectionsRef.current !== currentKey) {
+      setOrderNumber('-');
       setConfigNumber('-');
     }
     prevSelectionsRef.current = currentKey;
@@ -56,7 +58,15 @@ export default function PricePanel() {
   const fp = (price: number) => `${currency}${price.toLocaleString('zh-CN')}`;
 
   const handleGetConfigNumber = () => {
-    const num = generateConfigNumber(model.model_id, selections, customEntries);
+    const nextOrder = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+    setOrderNumber(nextOrder);
+    if (hasCustom) {
+      setConfigNumber('-');
+      return;
+    }
+
+    const engineerModelName = model.engineer_model_name || model.model_name;
+    const num = generateConfigNumber(engineerModelName, nextOrder);
     setConfigNumber(num);
   };
 
@@ -192,13 +202,13 @@ export default function PricePanel() {
             </p>
           )}
 
-          {/* Configuration Number - inline */}
+          {/* Order / Configuration Number - inline */}
           <Separator />
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1 text-[10px] text-slate-500 font-medium">
                 <Hash className="w-3 h-3" />
-                配置号
+                订单号 / 配置号
               </div>
               <div className="flex items-center gap-1">
                 {configNumber !== '-' && (
@@ -234,15 +244,20 @@ export default function PricePanel() {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-[10px]">
-                    获取配置号
+                    生成订单号与配置号
                   </TooltipContent>
                 </Tooltip>
               </div>
             </div>
             <div className={`text-xs font-mono text-center py-1 rounded ${
+              orderNumber === '-' ? 'text-slate-400' : 'text-slate-700 bg-slate-100 font-bold'
+            }`}>
+              订单号: {orderNumber}
+            </div>
+            <div className={`text-xs font-mono text-center py-1 rounded ${
               configNumber === '-' ? 'text-slate-400' : 'text-blue-700 bg-blue-50 font-bold'
             }`}>
-              {configNumber}
+              配置号: {configNumber === '-' ? (hasCustom && orderNumber !== '-' ? 'ETO评审后生成' : '-') : configNumber}
             </div>
           </div>
 

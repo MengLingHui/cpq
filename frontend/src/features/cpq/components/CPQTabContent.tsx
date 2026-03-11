@@ -23,6 +23,7 @@ const TAB_CONTENT: Record<CPQTab, React.ReactNode> = {
   market: wrapInCard(<MarketModelManager />),
   engineer: wrapInCard(<EngineerModelList />),
   pricetable: wrapInCard(<PriceTableManager />),
+  // 'pure-quote': wrapInCard(<PureProductQuoteSheet />),
   test: wrapInCard(<TestToolsPanel />),
 };
 

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useCPQStore } from '@/lib/cpq-store';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Trash2, Eye, ClipboardList, Play, FileJson, FileSpreadsheet } from 'lucide-react';
+import { Trash2, Eye, ClipboardList, Play, FileJson, FileSpreadsheet, ShieldCheck } from 'lucide-react';
 import type { SavedConfiguration, ConfigStatus } from '@/lib/cpq-data';
 import { CONFIG_STATUS_LABELS, formatModelDisplayName } from '@/lib/cpq-data';
 import { userStorage } from '@/lib/utils';
@@ -38,6 +38,7 @@ function exportToJSON(config: SavedConfiguration) {
   const plmData: Record<string, string> = {};
   
   // Add basic info
+  plmData['order_number'] = config.order_number || '-';
   plmData['config_number'] = config.config_number || '-';
   plmData['series_id'] = config.series_id || '';
   plmData['series_name'] = config.series_name || '';
@@ -70,6 +71,7 @@ function exportToCSV(config: SavedConfiguration) {
   const plmData: Record<string, string> = {};
   
   // Add basic info
+  plmData['order_number'] = config.order_number || '-';
   plmData['config_number'] = config.config_number || '-';
   plmData['series_id'] = config.series_id || '';
   plmData['series_name'] = config.series_name || '';
@@ -199,6 +201,10 @@ function ConfigDetail({ config }: { config: SavedConfiguration }) {
           <Badge variant={statusInfo.variant} className={`text-[9px] h-4 ${statusInfo.color}`}>{statusInfo.label}</Badge>
         </div>
         <div>
+          <span className="text-slate-500">订单号:</span>{' '}
+          <span className="font-mono text-[11px]">{config.order_number || '-'}</span>
+        </div>
+        <div>
           <span className="text-slate-500">配置号:</span>{' '}
           <span className="font-mono text-[11px]">{config.config_number}</span>
         </div>
@@ -264,7 +270,13 @@ function ConfigDetail({ config }: { config: SavedConfiguration }) {
 }
 
 export default function SavedConfigList() {
-  const { savedConfigurations, deleteConfiguration, loadConfiguration } = useCPQStore();
+  const {
+    savedConfigurations,
+    deleteConfiguration,
+    confirmEtoFeasible,
+    loadConfiguration,
+    setActiveTab,
+  } = useCPQStore();
   const [detailConfig, setDetailConfig] = useState<SavedConfiguration | null>(null);
 
   if (savedConfigurations.length === 0) {
@@ -288,6 +300,7 @@ export default function SavedConfigList() {
             共 {savedConfigurations.length} 条记录
           </p>
         </div>
+        {/* 暂时注释：纯产品报价单功能入口 */}
       </div>
 
       <Table>
@@ -298,6 +311,7 @@ export default function SavedConfigList() {
             <TableHead className="h-8 text-xs">销售机型</TableHead>
             <TableHead className="h-8 text-xs">价格表</TableHead>
             <TableHead className="h-8 text-xs">状态</TableHead>
+            <TableHead className="h-8 text-xs">订单号</TableHead>
             <TableHead className="h-8 text-xs">配置号</TableHead>
             <TableHead className="h-8 text-xs">总价</TableHead>
             <TableHead className="h-8 text-xs text-right">操作</TableHead>
@@ -306,7 +320,6 @@ export default function SavedConfigList() {
         <TableBody>
           {savedConfigurations.map((cfg) => {
             const statusInfo = getStatusDisplay(cfg);
-            const isCompleted = cfg.status === 'completed' || cfg.is_complete;
             return (
               <TableRow key={cfg.id}>
                 <TableCell className="py-2 text-xs">
@@ -316,7 +329,7 @@ export default function SavedConfigList() {
                   {cfg.series_description || cfg.series_name || '-'}
                 </TableCell>
                 <TableCell className="py-2 text-xs font-medium">
-                  {cfg.model_name ? formatModelDisplayName(cfg.model_name, cfg.engineer_model_name) : '-'}
+                  {cfg.model_name|| '-'}
                 </TableCell>
                 <TableCell className="py-2 text-xs text-slate-600">
                   {cfg.price_table_name || '-'}
@@ -328,6 +341,9 @@ export default function SavedConfigList() {
                   >
                     {statusInfo.label}
                   </Badge>
+                </TableCell>
+                <TableCell className="py-2 text-xs font-mono text-slate-500">
+                  {cfg.order_number || '-'}
                 </TableCell>
                 <TableCell className="py-2 text-xs font-mono text-slate-500">
                   {cfg.config_number}
@@ -343,17 +359,15 @@ export default function SavedConfigList() {
                 </TableCell>
                 <TableCell className="py-2 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    {!isCompleted && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 text-xs gap-1 text-blue-600 hover:text-blue-700"
-                        onClick={() => loadConfiguration(cfg)}
-                      >
-                        <Play className="w-3 h-3" />
-                        继续选配
-                      </Button>
-                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs gap-1 text-blue-600 hover:text-blue-700"
+                      onClick={() => loadConfiguration(cfg)}
+                    >
+                      <Play className="w-3 h-3" />
+                      继续选配
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -384,13 +398,27 @@ export default function SavedConfigList() {
                           <AlertDialogCancel className="h-7 text-xs">取消</AlertDialogCancel>
                           <AlertDialogAction
                             className="h-7 text-xs bg-red-600 hover:bg-red-700"
-                            onClick={() => deleteConfiguration(cfg.id)}
+                            onClick={() => {
+                              deleteConfiguration(cfg.id);
+                            }}
                           >
                             删除
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
+                    {cfg.is_complete && cfg.has_custom && (!cfg.config_number || cfg.config_number === '-') && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="ml-0.5 h-4 w-4 min-w-0 p-0 text-emerald-700/10 hover:text-emerald-700/40 opacity-10 hover:opacity-40"
+                        onClick={() => confirmEtoFeasible(cfg.id)}
+                        aria-label="ETO确认可行（演示隐藏按钮）"
+                        title="ETO确认可行"
+                      >
+                        <ShieldCheck className="w-2 h-2" />
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
