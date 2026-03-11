@@ -46,6 +46,7 @@ function SeriesSelector() {
   const {
     seriesList,
     selectSeries,
+    getModelsForSeries,
     saveConfiguration,
     selectedSeriesId,
     setActiveTab,
@@ -96,7 +97,12 @@ function SeriesSelector() {
 
     const children = getChildren(seriesId);
     if (children.length === 0) {
-      // Leaf node - select and proceed
+      const availableModels = getModelsForSeries(seriesId);
+      if (availableModels.length === 0) {
+        alert(`产品线「${series.series_name}」暂无可用销售机型，请先在“销售机型”中发布或关联后再试。`);
+        return;
+      }
+      // Leaf node with models - select and proceed
       selectSeries(seriesId);
     } else {
       // Has children - navigate into it, hiding siblings
@@ -238,11 +244,17 @@ function SeriesSelector() {
         {currentLevelSeries.map(series => {
           const children = getChildren(series.series_id);
           const hasChildren = children.length > 0;
+          const availableModelCount = hasChildren ? 0 : getModelsForSeries(series.series_id).length;
+          const isLeafUnavailable = !hasChildren && availableModelCount === 0;
 
           return (
             <div
               key={series.series_id}
-              className="flex items-center gap-3 p-3 cursor-pointer hover:bg-blue-50 transition-colors rounded-lg border border-transparent hover:border-blue-200"
+              className={`flex items-center gap-3 p-3 transition-colors rounded-lg border ${
+                isLeafUnavailable
+                  ? 'cursor-not-allowed bg-slate-50 border-slate-200 hover:bg-slate-100'
+                  : 'cursor-pointer border-transparent hover:bg-blue-50 hover:border-blue-200'
+              }`}
               onClick={() => navigateInto(series.series_id)}
             >
               {currentPath.length === 0 ? (
@@ -261,6 +273,14 @@ function SeriesSelector() {
                   <Badge variant="secondary" className="text-[10px]">{children.length} 子系列</Badge>
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </>
+              )}
+              {!hasChildren && (
+                <Badge
+                  variant={availableModelCount > 0 ? 'secondary' : 'destructive'}
+                  className="text-[10px]"
+                >
+                  {availableModelCount} 个销售机型
+                </Badge>
               )}
             </div>
           );

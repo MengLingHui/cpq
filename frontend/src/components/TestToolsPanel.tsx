@@ -7,6 +7,33 @@ import JSZip from 'jszip';
 import { userStorage } from '@/lib/utils';
 import { useCPQStore } from '@/lib/cpq-store';
 
+interface RawEngineerConfig {
+  category_id: number;
+  category_code: string;
+  category_name: string;
+  super_category_id: number;
+  super_category_name: string;
+  options: Array<{
+    option_code: string;
+    description: string;
+    is_default: boolean;
+  }>;
+}
+
+interface RawEngineerModel {
+  model_id: string;
+  model_name: string;
+  product_series: string;
+  series_info: {
+    series_id: string;
+    series_name: string;
+    series_description: string;
+    parent_series: string;
+  };
+  configurations: RawEngineerConfig[];
+  rules?: unknown[];
+}
+
 function toEngineerInitFormat(engineerModels: ReturnType<typeof useCPQStore.getState>['engineerModels']) {
   return engineerModels.map((model) => {
     const configurations = model.configuration_groups.flatMap((group) =>
@@ -33,6 +60,103 @@ function toEngineerInitFormat(engineerModels: ReturnType<typeof useCPQStore.getS
       rules: model.rules,
     };
   });
+}
+
+function toEngineerRuntimeFormat(rawEngineerModels: RawEngineerModel[]) {
+  return rawEngineerModels.map((model) => {
+    const groupMap = new Map<number, {
+      super_category_id: number;
+      super_category_name: string;
+      categories: Array<{
+        category_id: number;
+        category_code: string;
+        category_name: string;
+        super_category_id: number;
+        super_category_name: string;
+        options: Array<{
+          option_code: string;
+          description: string;
+          is_default: boolean;
+          seq_id: number;
+          hide: boolean;
+        }>;
+        seq_id: number;
+        hide: boolean;
+      }>;
+    }>();
+
+    for (const config of model.configurations || []) {
+      if (!groupMap.has(config.super_category_id)) {
+        groupMap.set(config.super_category_id, {
+          super_category_id: config.super_category_id,
+          super_category_name: config.super_category_name,
+          categories: [],
+        });
+      }
+
+      const group = groupMap.get(config.super_category_id)!;
+      group.categories.push({
+        category_id: config.category_id,
+        category_code: config.category_code,
+        category_name: config.category_name,
+        super_category_id: config.super_category_id,
+        super_category_name: config.super_category_name,
+        options: (config.options || []).map((option, idx) => ({
+          option_code: option.option_code,
+          description: option.description,
+          is_default: !!option.is_default,
+          seq_id: idx + 1,
+          hide: false,
+        })),
+        seq_id: group.categories.length + 1,
+        hide: false,
+      });
+    }
+
+    const configuration_groups = Array.from(groupMap.values())
+      .sort((a, b) => a.super_category_id - b.super_category_id)
+      .map((group, idx) => ({
+        super_category_id: group.super_category_id,
+        super_category_name: group.super_category_name,
+        categories: group.categories,
+        seq_id: idx + 1,
+        hide: false,
+      }));
+
+    return {
+      model_id: model.model_id,
+      model_name: model.model_name,
+      product_series: model.product_series,
+      series_info: model.series_info,
+      configuration_groups,
+      rules: Array.isArray(model.rules) ? model.rules : [],
+    };
+  });
+}
+
+async function parseZipImport(file: File) {
+  const zip = await JSZip.loadAsync(file);
+  const marketText = await zip.file('market_model.json')?.async('string');
+  const engineerText = await zip.file('engineer_model.json')?.async('string');
+  const priceText = await zip.file('price_table.json')?.async('string');
+
+  if (!marketText || !engineerText || !priceText) {
+    throw new Error('ZIP missing required files');
+  }
+
+  const marketModels = JSON.parse(marketText);
+  const rawEngineerModels = JSON.parse(engineerText) as RawEngineerModel[];
+  const priceTables = JSON.parse(priceText);
+
+  if (!Array.isArray(marketModels) || !Array.isArray(rawEngineerModels) || !Array.isArray(priceTables)) {
+    throw new Error('ZIP JSON structure invalid');
+  }
+
+  return {
+    market_models: marketModels,
+    engineer_models: toEngineerRuntimeFormat(rawEngineerModels),
+    price_tables: priceTables,
+  } as Record<string, unknown>;
 }
 
 export default function TestToolsPanel() {
@@ -81,55 +205,49 @@ export default function TestToolsPanel() {
   };
 
   // 导入数据
-  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target?.result as string);
-        
-        // 验证导入的数据格式
-        if (!data || typeof data !== 'object') {
-          throw new Error('Invalid data format');
-        }
-        
-        // 检查是否包含关键的底表数据
-        const hasValidData = Object.keys(data).some(key => 
-          ['saved_configurations', 'series', 'engineer_models', 'market_models', 'price_tables'].some(
-            prefix => key.includes(prefix)
-          )
-        );
-        
-        if (!hasValidData && Object.keys(data).length > 0) {
-          console.warn('[Import] 导入的数据可能不包含标准的CPQ数据');
-        }
-        
-        // 导入数据到 localStorage
-        userStorage.import(data);
-        
-        setImportError(null);
-        setImportSuccess(true);
-        
-        // 延迟刷新页面以重新加载应用状态
-        setTimeout(() => {
-          setImportSuccess(false);
-          window.location.reload();
-        }, 1500);
-      } catch (err) {
-        console.error('[Import] 导入失败:', err);
-        setImportError('文件格式错误，无法导入。请确保导入的是有效的CPQ备份文件。');
-        setImportSuccess(false);
+    try {
+      let data: Record<string, unknown>;
+
+      if (file.name.toLowerCase().endsWith('.zip')) {
+        data = await parseZipImport(file);
+      } else {
+        const text = await file.text();
+        data = JSON.parse(text);
       }
-    };
-    
-    reader.onerror = () => {
-      setImportError('文件读取失败，请重试');
+
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid data format');
+      }
+
+      const hasValidData = Object.keys(data).some(key =>
+        ['saved_configurations', 'series', 'engineer_models', 'market_models', 'price_tables'].some(
+          prefix => key.includes(prefix)
+        )
+      );
+
+      if (!hasValidData && Object.keys(data).length > 0) {
+        console.warn('[Import] 导入的数据可能不包含标准的CPQ数据');
+      }
+
+      userStorage.import(data);
+
+      setImportError(null);
+      setImportSuccess(true);
+
+      setTimeout(() => {
+        setImportSuccess(false);
+        window.location.reload();
+      }, 1500);
+    } catch (err) {
+      console.error('[Import] 导入失败:', err);
+      setImportError('文件格式错误，无法导入。请使用系统导出的ZIP或有效的CPQ备份JSON文件。');
       setImportSuccess(false);
-    };
-    
-    reader.readAsText(file);
+    }
+
     // 重置 input 以便可以重复选择同一文件
     event.target.value = '';
   };
@@ -170,7 +288,7 @@ export default function TestToolsPanel() {
         <CardContent className="space-y-3">
           <input
             type="file"
-            accept=".json"
+            accept=".json,.zip"
             ref={fileInputRef}
             onChange={handleImport}
             className="hidden"
@@ -216,7 +334,7 @@ export default function TestToolsPanel() {
         </CardHeader>
         <CardContent className="text-xs text-slate-600 space-y-2">
           <p>• <strong>导出ZIP</strong>：下载一个压缩包，包含 market_model.json、engineer_model.json、price_table.json 三个初始化底表文件</p>
-          <p>• <strong>导入数据</strong>：从 JSON 备份文件恢复数据，导入后页面会自动刷新以重新加载系统状态</p>
+          <p>• <strong>导入数据</strong>：支持导入系统导出的 ZIP（推荐）或历史 JSON 备份，导入后页面会自动刷新</p>
           <p>• <strong>重置默认</strong>：清除导入的底表数据，恢复从原始 JSON 文件加载数据</p>
           <p>• 导出的数据可用于程序初始化或数据迁移</p>
           <p>• 此功能仅供测试使用，请妥善保管备份文件</p>
