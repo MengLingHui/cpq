@@ -3,12 +3,45 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Download, Upload, Database, AlertCircle, CheckCircle2, RotateCcw } from 'lucide-react';
+import JSZip from 'jszip';
 import { userStorage } from '@/lib/utils';
+import { useCPQStore } from '@/lib/cpq-store';
+
+function toEngineerInitFormat(engineerModels: ReturnType<typeof useCPQStore.getState>['engineerModels']) {
+  return engineerModels.map((model) => {
+    const configurations = model.configuration_groups.flatMap((group) =>
+      group.categories.map((category) => ({
+        category_id: category.category_id,
+        category_code: category.category_code,
+        category_name: category.category_name,
+        super_category_id: category.super_category_id,
+        super_category_name: category.super_category_name,
+        options: category.options.map((option) => ({
+          option_code: option.option_code,
+          description: option.description,
+          is_default: option.is_default,
+        })),
+      }))
+    );
+
+    return {
+      model_id: model.model_id,
+      model_name: model.model_name,
+      product_series: model.product_series,
+      series_info: model.series_info,
+      configurations,
+      rules: model.rules,
+    };
+  });
+}
 
 export default function TestToolsPanel() {
   const [importError, setImportError] = useState<string | null>(null);
   const [importSuccess, setImportSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const marketModels = useCPQStore(state => state.marketModels);
+  const engineerModels = useCPQStore(state => state.engineerModels);
+  const priceTables = useCPQStore(state => state.priceTables);
 
   // 重置为默认数据（清除localStorage中的底表数据）
   const handleReset = () => {
@@ -27,14 +60,22 @@ export default function TestToolsPanel() {
     }
   };
 
-  // 导出所有数据
-  const handleExport = () => {
-    const data = userStorage.export();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
+  // 导出三张初始化底表
+  const handleExport = async () => {
+    const zip = new JSZip();
+    const marketJson = JSON.stringify(marketModels, null, 2);
+    const engineerJson = JSON.stringify(toEngineerInitFormat(engineerModels), null, 2);
+    const priceJson = JSON.stringify(priceTables, null, 2);
+
+    zip.file('market_model.json', marketJson);
+    zip.file('engineer_model.json', engineerJson);
+    zip.file('price_table.json', priceJson);
+
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(zipBlob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `cpq-backup-${userStorage.getUserId()}-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `cpq-init-tables-${new Date().toISOString().slice(0, 10)}.zip`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -123,7 +164,7 @@ export default function TestToolsPanel() {
             数据备份与恢复
           </CardTitle>
           <CardDescription className="text-xs">
-            导出所有测试数据（系列、机型、价格表、选配历史等），可用于程序初始化或数据迁移
+            导出压缩包（含销售机型、工程机型、价格表三张初始化底表）
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -150,7 +191,7 @@ export default function TestToolsPanel() {
               onClick={handleExport}
             >
               <Download className="w-3.5 h-3.5" />
-              导出数据
+              导出ZIP
             </Button>
             <Button
               variant="outline"
@@ -164,7 +205,7 @@ export default function TestToolsPanel() {
 
           <div className="text-[10px] text-slate-400 bg-slate-50 rounded p-2">
             <p>用户ID: <span className="font-mono">{userStorage.getUserId()}</span></p>
-            <p className="mt-0.5">导出文件包含所有用户的选配历史数据</p>
+            <p className="mt-0.5">导出将下载一个 ZIP，内含 market_model.json、engineer_model.json、price_table.json</p>
           </div>
         </CardContent>
       </Card>
@@ -174,7 +215,7 @@ export default function TestToolsPanel() {
           <CardTitle className="text-sm">使用说明</CardTitle>
         </CardHeader>
         <CardContent className="text-xs text-slate-600 space-y-2">
-          <p>• <strong>导出数据</strong>：将所有底表数据（系列、机型、价格表、选配历史等）导出为 JSON 文件</p>
+          <p>• <strong>导出ZIP</strong>：下载一个压缩包，包含 market_model.json、engineer_model.json、price_table.json 三个初始化底表文件</p>
           <p>• <strong>导入数据</strong>：从 JSON 备份文件恢复数据，导入后页面会自动刷新以重新加载系统状态</p>
           <p>• <strong>重置默认</strong>：清除导入的底表数据，恢复从原始 JSON 文件加载数据</p>
           <p>• 导出的数据可用于程序初始化或数据迁移</p>

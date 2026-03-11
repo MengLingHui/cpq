@@ -819,12 +819,22 @@
         "options": [
           {
             "option_code": "TBX00",
-            "description": "车联网盒子-不安装",
+            "description": "加装北谷TBOX",
             "is_default": true
           },
           {
             "option_code": "TBX01",
-            "description": "车联网盒子 4G 已安装",
+            "description": "加装Trackunit",
+            "is_default": false
+          },
+          {
+            "option_code": "TBX02",
+            "description": "仅预留teletrack接口",
+            "is_default": false
+          },
+          {
+            "option_code": "TBX03",
+            "description": "仅预留Trackunit接口",
             "is_default": false
           }
         ]
