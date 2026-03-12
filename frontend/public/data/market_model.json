@@ -37,7 +37,8 @@
               }
             ],
             "seq_id": 1,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           }
         ],
         "seq_id": 1,
@@ -63,7 +64,8 @@
               }
             ],
             "seq_id": 1,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 2,
@@ -81,7 +83,8 @@
               }
             ],
             "seq_id": 2,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 3,
@@ -99,7 +102,8 @@
               }
             ],
             "seq_id": 3,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 4,
@@ -117,7 +121,8 @@
               }
             ],
             "seq_id": 4,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 5,
@@ -135,7 +140,8 @@
               }
             ],
             "seq_id": 5,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 6,
@@ -153,7 +159,8 @@
               }
             ],
             "seq_id": 6,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 7,
@@ -171,7 +178,8 @@
               }
             ],
             "seq_id": 7,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 8,
@@ -189,7 +197,8 @@
               }
             ],
             "seq_id": 8,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 9,
@@ -207,7 +216,8 @@
               }
             ],
             "seq_id": 9,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 10,
@@ -225,7 +235,8 @@
               }
             ],
             "seq_id": 10,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 11,
@@ -243,7 +254,8 @@
               }
             ],
             "seq_id": 11,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           }
         ],
         "seq_id": 2,
@@ -276,7 +288,8 @@
               }
             ],
             "seq_id": 1,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 13,
@@ -301,7 +314,8 @@
               }
             ],
             "seq_id": 2,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 14,
@@ -326,7 +340,8 @@
               }
             ],
             "seq_id": 3,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 15,
@@ -351,7 +366,8 @@
               }
             ],
             "seq_id": 4,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 17,
@@ -376,7 +392,8 @@
               }
             ],
             "seq_id": 5,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 18,
@@ -401,7 +418,8 @@
               }
             ],
             "seq_id": 6,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 19,
@@ -426,7 +444,8 @@
               }
             ],
             "seq_id": 7,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 20,
@@ -451,7 +470,8 @@
               }
             ],
             "seq_id": 8,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 21,
@@ -476,7 +496,8 @@
               }
             ],
             "seq_id": 9,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 22,
@@ -501,7 +522,8 @@
               }
             ],
             "seq_id": 10,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 23,
@@ -526,7 +548,8 @@
               }
             ],
             "seq_id": 11,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 24,
@@ -551,7 +574,8 @@
               }
             ],
             "seq_id": 12,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 25,
@@ -576,7 +600,8 @@
               }
             ],
             "seq_id": 13,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 26,
@@ -601,7 +626,8 @@
               }
             ],
             "seq_id": 14,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 27,
@@ -626,7 +652,8 @@
               }
             ],
             "seq_id": 15,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 28,
@@ -651,7 +678,8 @@
               }
             ],
             "seq_id": 16,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 29,
@@ -676,7 +704,8 @@
               }
             ],
             "seq_id": 17,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 30,
@@ -701,7 +730,8 @@
               }
             ],
             "seq_id": 18,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 31,
@@ -726,7 +756,8 @@
               }
             ],
             "seq_id": 19,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 32,
@@ -751,7 +782,8 @@
               }
             ],
             "seq_id": 20,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 33,
@@ -776,7 +808,8 @@
               }
             ],
             "seq_id": 21,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 34,
@@ -801,7 +834,8 @@
               }
             ],
             "seq_id": 22,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 35,
@@ -826,7 +860,8 @@
               }
             ],
             "seq_id": 23,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 36,
@@ -851,7 +886,8 @@
               }
             ],
             "seq_id": 24,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 37,
@@ -876,7 +912,8 @@
               }
             ],
             "seq_id": 25,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 38,
@@ -901,7 +938,8 @@
               }
             ],
             "seq_id": 26,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 39,
@@ -926,7 +964,8 @@
               }
             ],
             "seq_id": 27,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 41,
@@ -951,7 +990,8 @@
               }
             ],
             "seq_id": 28,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 42,
@@ -976,7 +1016,8 @@
               }
             ],
             "seq_id": 29,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 43,
@@ -1001,7 +1042,8 @@
               }
             ],
             "seq_id": 30,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 44,
@@ -1026,7 +1068,8 @@
               }
             ],
             "seq_id": 31,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 45,
@@ -1051,7 +1094,8 @@
               }
             ],
             "seq_id": 32,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 46,
@@ -1076,7 +1120,8 @@
               }
             ],
             "seq_id": 33,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 47,
@@ -1115,7 +1160,8 @@
               }
             ],
             "seq_id": 34,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 48,
@@ -1140,7 +1186,8 @@
               }
             ],
             "seq_id": 35,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 49,
@@ -1165,7 +1212,8 @@
               }
             ],
             "seq_id": 36,
-            "hide": true
+            "hide": true,
+            "print_enabled": true
           },
           {
             "category_id": 50,
@@ -1190,7 +1238,8 @@
               }
             ],
             "seq_id": 37,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 51,
@@ -1215,7 +1264,8 @@
               }
             ],
             "seq_id": 38,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           }
         ],
         "seq_id": 3,
@@ -1248,7 +1298,8 @@
               }
             ],
             "seq_id": 1,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 53,
@@ -1273,7 +1324,8 @@
               }
             ],
             "seq_id": 2,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 54,
@@ -1298,7 +1350,8 @@
               }
             ],
             "seq_id": 3,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 55,
@@ -1323,7 +1376,8 @@
               }
             ],
             "seq_id": 4,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 56,
@@ -1348,7 +1402,8 @@
               }
             ],
             "seq_id": 5,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 57,
@@ -1373,7 +1428,8 @@
               }
             ],
             "seq_id": 6,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           }
         ],
         "seq_id": 4,
@@ -1645,7 +1701,8 @@
               }
             ],
             "seq_id": 1,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           }
         ],
         "seq_id": 1,
@@ -1671,7 +1728,8 @@
               }
             ],
             "seq_id": 1,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 2,
@@ -1689,7 +1747,8 @@
               }
             ],
             "seq_id": 2,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 3,
@@ -1707,7 +1766,8 @@
               }
             ],
             "seq_id": 3,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 4,
@@ -1725,7 +1785,8 @@
               }
             ],
             "seq_id": 4,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 5,
@@ -1743,7 +1804,8 @@
               }
             ],
             "seq_id": 5,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 6,
@@ -1761,7 +1823,8 @@
               }
             ],
             "seq_id": 6,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 7,
@@ -1779,7 +1842,8 @@
               }
             ],
             "seq_id": 7,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 8,
@@ -1797,7 +1861,8 @@
               }
             ],
             "seq_id": 8,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 9,
@@ -1815,7 +1880,8 @@
               }
             ],
             "seq_id": 9,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 10,
@@ -1833,7 +1899,8 @@
               }
             ],
             "seq_id": 10,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 11,
@@ -1851,7 +1918,8 @@
               }
             ],
             "seq_id": 11,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           }
         ],
         "seq_id": 2,
@@ -1884,7 +1952,8 @@
               }
             ],
             "seq_id": 1,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 13,
@@ -1909,7 +1978,8 @@
               }
             ],
             "seq_id": 2,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 14,
@@ -1934,7 +2004,8 @@
               }
             ],
             "seq_id": 3,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 15,
@@ -1959,7 +2030,8 @@
               }
             ],
             "seq_id": 4,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 17,
@@ -1984,7 +2056,8 @@
               }
             ],
             "seq_id": 5,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 18,
@@ -2009,7 +2082,8 @@
               }
             ],
             "seq_id": 6,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 19,
@@ -2034,7 +2108,8 @@
               }
             ],
             "seq_id": 7,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 20,
@@ -2059,7 +2134,8 @@
               }
             ],
             "seq_id": 8,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 21,
@@ -2084,7 +2160,8 @@
               }
             ],
             "seq_id": 9,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 22,
@@ -2109,7 +2186,8 @@
               }
             ],
             "seq_id": 10,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 23,
@@ -2134,7 +2212,8 @@
               }
             ],
             "seq_id": 11,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 24,
@@ -2159,7 +2238,8 @@
               }
             ],
             "seq_id": 12,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 25,
@@ -2184,7 +2264,8 @@
               }
             ],
             "seq_id": 13,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 26,
@@ -2209,7 +2290,8 @@
               }
             ],
             "seq_id": 14,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 27,
@@ -2234,7 +2316,8 @@
               }
             ],
             "seq_id": 15,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 28,
@@ -2259,7 +2342,8 @@
               }
             ],
             "seq_id": 16,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 29,
@@ -2284,7 +2368,8 @@
               }
             ],
             "seq_id": 17,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 30,
@@ -2309,7 +2394,8 @@
               }
             ],
             "seq_id": 18,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 31,
@@ -2334,7 +2420,8 @@
               }
             ],
             "seq_id": 19,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 32,
@@ -2359,7 +2446,8 @@
               }
             ],
             "seq_id": 20,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 33,
@@ -2384,7 +2472,8 @@
               }
             ],
             "seq_id": 21,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 34,
@@ -2409,7 +2498,8 @@
               }
             ],
             "seq_id": 22,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 35,
@@ -2434,7 +2524,8 @@
               }
             ],
             "seq_id": 23,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 36,
@@ -2459,7 +2550,8 @@
               }
             ],
             "seq_id": 24,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 37,
@@ -2484,7 +2576,8 @@
               }
             ],
             "seq_id": 25,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 38,
@@ -2509,7 +2602,8 @@
               }
             ],
             "seq_id": 26,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 39,
@@ -2534,7 +2628,8 @@
               }
             ],
             "seq_id": 27,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 41,
@@ -2559,7 +2654,8 @@
               }
             ],
             "seq_id": 28,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 42,
@@ -2584,7 +2680,8 @@
               }
             ],
             "seq_id": 29,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 43,
@@ -2609,7 +2706,8 @@
               }
             ],
             "seq_id": 30,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 44,
@@ -2634,7 +2732,8 @@
               }
             ],
             "seq_id": 31,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 45,
@@ -2659,7 +2758,8 @@
               }
             ],
             "seq_id": 32,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 46,
@@ -2684,7 +2784,8 @@
               }
             ],
             "seq_id": 33,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 47,
@@ -2723,7 +2824,8 @@
               }
             ],
             "seq_id": 34,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 48,
@@ -2748,7 +2850,8 @@
               }
             ],
             "seq_id": 35,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 49,
@@ -2773,7 +2876,8 @@
               }
             ],
             "seq_id": 36,
-            "hide": true
+            "hide": true,
+            "print_enabled": true
           },
           {
             "category_id": 50,
@@ -2798,7 +2902,8 @@
               }
             ],
             "seq_id": 37,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 51,
@@ -2823,7 +2928,8 @@
               }
             ],
             "seq_id": 38,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           }
         ],
         "seq_id": 3,
@@ -2856,7 +2962,8 @@
               }
             ],
             "seq_id": 1,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 53,
@@ -2881,7 +2988,8 @@
               }
             ],
             "seq_id": 2,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 54,
@@ -2906,7 +3014,8 @@
               }
             ],
             "seq_id": 3,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 55,
@@ -2931,7 +3040,8 @@
               }
             ],
             "seq_id": 4,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 56,
@@ -2956,7 +3066,8 @@
               }
             ],
             "seq_id": 5,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           },
           {
             "category_id": 57,
@@ -2981,7 +3092,8 @@
               }
             ],
             "seq_id": 6,
-            "hide": false
+            "hide": false,
+            "print_enabled": true
           }
         ],
         "seq_id": 4,

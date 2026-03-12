@@ -139,6 +139,7 @@ async function parseZipImport(file: File) {
   const marketText = await zip.file('market_model.json')?.async('string');
   const engineerText = await zip.file('engineer_model.json')?.async('string');
   const priceText = await zip.file('price_table.json')?.async('string');
+  const savedConfigsText = await zip.file('saved_configurations.json')?.async('string');
 
   if (!marketText || !engineerText || !priceText) {
     throw new Error('ZIP missing required files');
@@ -147,15 +148,21 @@ async function parseZipImport(file: File) {
   const marketModels = JSON.parse(marketText);
   const rawEngineerModels = JSON.parse(engineerText) as RawEngineerModel[];
   const priceTables = JSON.parse(priceText);
+  const savedConfigurations = savedConfigsText ? JSON.parse(savedConfigsText) : null;
 
   if (!Array.isArray(marketModels) || !Array.isArray(rawEngineerModels) || !Array.isArray(priceTables)) {
     throw new Error('ZIP JSON structure invalid');
+  }
+
+  if (savedConfigurations !== null && !Array.isArray(savedConfigurations)) {
+    throw new Error('saved_configurations.json format invalid');
   }
 
   return {
     market_models: marketModels,
     engineer_models: toEngineerRuntimeFormat(rawEngineerModels),
     price_tables: priceTables,
+    ...(savedConfigurations !== null ? { saved_configurations: savedConfigurations } : {}),
   } as Record<string, unknown>;
 }
 
@@ -166,6 +173,7 @@ export default function TestToolsPanel() {
   const marketModels = useCPQStore(state => state.marketModels);
   const engineerModels = useCPQStore(state => state.engineerModels);
   const priceTables = useCPQStore(state => state.priceTables);
+  const savedConfigurations = useCPQStore(state => state.savedConfigurations);
 
   // 重置为默认数据（清除localStorage中的底表数据）
   const handleReset = () => {
@@ -190,16 +198,18 @@ export default function TestToolsPanel() {
     }
   };
 
-  // 导出三张初始化底表
+  // 导出初始化底表 + 选配历史
   const handleExport = async () => {
     const zip = new JSZip();
     const marketJson = JSON.stringify(marketModels, null, 2);
     const engineerJson = JSON.stringify(toEngineerInitFormat(engineerModels), null, 2);
     const priceJson = JSON.stringify(priceTables, null, 2);
+    const savedConfigsJson = JSON.stringify(savedConfigurations, null, 2);
 
     zip.file('market_model.json', marketJson);
     zip.file('engineer_model.json', engineerJson);
     zip.file('price_table.json', priceJson);
+    zip.file('saved_configurations.json', savedConfigsJson);
 
     const zipBlob = await zip.generateAsync({ type: 'blob' });
     const url = URL.createObjectURL(zipBlob);
@@ -288,7 +298,7 @@ export default function TestToolsPanel() {
             数据备份与恢复
           </CardTitle>
           <CardDescription className="text-xs">
-            导出压缩包（含销售机型、工程机型、价格表三张初始化底表）
+            导出压缩包（含销售机型、工程机型、价格表及选配历史）
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -329,7 +339,7 @@ export default function TestToolsPanel() {
 
           <div className="text-[10px] text-slate-400 bg-slate-50 rounded p-2">
             <p>用户ID: <span className="font-mono">{userStorage.getUserId()}</span></p>
-            <p className="mt-0.5">导出将下载一个 ZIP，内含 market_model.json、engineer_model.json、price_table.json</p>
+            <p className="mt-0.5">导出将下载一个 ZIP，内含 market_model.json、engineer_model.json、price_table.json、saved_configurations.json</p>
           </div>
         </CardContent>
       </Card>
@@ -340,6 +350,7 @@ export default function TestToolsPanel() {
         </CardHeader>
         <CardContent className="text-xs text-slate-600 space-y-2">
           <p>• <strong>导出ZIP</strong>：下载一个压缩包，包含 market_model.json、engineer_model.json、price_table.json 三个初始化底表文件</p>
+          <p>• <strong>选配历史</strong>：导出ZIP中包含 saved_configurations.json，可用于恢复“已保存配置”历史</p>
           <p>• <strong>导入数据</strong>：支持导入系统导出的 ZIP（推荐）或历史 JSON 备份，导入后页面会自动刷新</p>
           <p>• <strong>重置默认</strong>：清除导入的底表数据，恢复从原始 JSON 文件加载数据</p>
           <p>• 导出的数据可用于程序初始化或数据迁移</p>
