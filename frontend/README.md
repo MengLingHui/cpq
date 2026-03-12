@@ -42,20 +42,31 @@ The `@/` path alias points to the `src/` directory
 
 # Commands
 
-**Install Dependencies**
+**From workspace root (recommended)**
 
 ```shell
-pnpm i
+npm install
+npm run dev
 ```
 
-**Start Preview**
+This starts the frontend dev server at `http://localhost:5173/`.
+
+**From `frontend/` directory**
+
+Install dependencies:
 
 ```shell
-pnpm run dev
+npm install
 ```
 
-**To build**
+Start local dev server:
 
 ```shell
-pnpm run build
+npm run dev:host
+```
+
+Build:
+
+```shell
+npm run build
 ```

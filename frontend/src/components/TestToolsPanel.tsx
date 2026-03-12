@@ -171,10 +171,16 @@ export default function TestToolsPanel() {
   const handleReset = () => {
     if (confirm('确定要重置为默认数据吗？这将清除所有导入的底表数据，恢复从JSON文件加载原始数据。')) {
       // 清除底表数据，保留选配历史
-      userStorage.remove('series');
-      userStorage.remove('market_models');
-      userStorage.remove('engineer_models');
-      userStorage.remove('price_tables');
+      const keysToReset = [
+        'series',
+        'market_models',
+        'market_model',
+        'engineer_models',
+        'engineer_model',
+        'price_tables',
+        'price_table',
+      ];
+      keysToReset.forEach((key) => userStorage.remove(key));
       
       setImportSuccess(true);
       setTimeout(() => {
