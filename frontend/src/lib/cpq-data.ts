@@ -782,11 +782,6 @@ function extractOrderSerial(config: SavedConfiguration): number | null {
     return Number(config.order_number);
   }
 
-  if (typeof config.config_number === 'string') {
-    const match = config.config_number.match(/(\d{6})$/);
-    if (match) return Number(match[1]);
-  }
-
   return null;
 }
 
@@ -802,16 +797,36 @@ export function generateOrderNumber(existing: SavedConfiguration[]): string {
   return formatOrderSerial(maxSerial + 1);
 }
 
+function extractConfigSerial(config: SavedConfiguration): number | null {
+  if (typeof config.config_number === 'string') {
+    const match = config.config_number.match(/(\d{6})$/);
+    if (match) return Number(match[1]);
+  }
+  return null;
+}
+
+// Generate next config serial: independent 6-digit流水号, 000000-999999 (rolls over after max)
+export function generateConfigSerial(existing: SavedConfiguration[]): string {
+  let maxSerial = -1;
+  for (const config of existing) {
+    const serial = extractConfigSerial(config);
+    if (serial !== null) {
+      maxSerial = Math.max(maxSerial, serial);
+    }
+  }
+  return formatOrderSerial(maxSerial + 1);
+}
+
 function sanitizeEngineerModelName(name: string): string {
   const trimmed = (name || '').trim();
   if (!trimmed) return 'MODEL';
   return trimmed.replace(/\s+/g, '');
 }
 
-// Generate configuration number: 工程机型名称 + 6位订单流水号
+// Generate configuration number: 工程机型名称 + 6位配置流水号（与订单号独立）
 // Example: AR20J-2 + 000000 => AR20J-2000000
-export function generateConfigNumber(engineerModelName: string, orderNumber: string): string {
-  const serial = /^\d{6}$/.test(orderNumber) ? orderNumber : formatOrderSerial(Number(orderNumber) || 0);
+export function generateConfigNumber(engineerModelName: string, configSerial: string): string {
+  const serial = /^\d{6}$/.test(configSerial) ? configSerial : formatOrderSerial(Number(configSerial) || 0);
   return `${sanitizeEngineerModelName(engineerModelName)}${serial}`;
 }
 

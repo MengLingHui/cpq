@@ -25,6 +25,7 @@ import {
   generateDefaultPriceTable,
   generateConfigFingerprint,
   generateConfigNumber,
+  generateConfigSerial,
   generateOrderNumber,
   MODEL_BASE_PRICE,
   isSuperCategoryPriced,
@@ -801,14 +802,14 @@ export const useCPQStore = create<CPQState>((set, get) => ({
       )
       : existingOrderNumber;
 
-    // Config number: reuse for same fingerprint, otherwise engineer model + current order serial
+    // Config number: reuse for same fingerprint, otherwise engineer model + independent config serial
     const configNumber = readyForConfigNumber
       ? (
         ((existingRecord?.config_number && existingRecord.config_number !== '-' && existingFingerprint === fingerprint)
           ? existingRecord.config_number
           : undefined)
         || reusedConfig?.config_number
-        || generateConfigNumber(engName || model.model_name, orderNumber || generateOrderNumber(savedConfigurations))
+        || generateConfigNumber(engName || model.model_name, generateConfigSerial(savedConfigurations))
       )
       : '-';
 
@@ -896,10 +897,10 @@ export const useCPQStore = create<CPQState>((set, get) => ({
 
     // Order number: independent 6-digit increasing serial
     const orderNumber = target.order_number || generateOrderNumber(savedConfigurations);
-    // Config number: reuse by fingerprint, otherwise engineer model + current order serial
+    // Config number: reuse by fingerprint, otherwise engineer model + independent config serial
     const configNumber = (target.config_number && target.config_number !== '-')
       ? target.config_number
-      : (reusedConfig?.config_number || generateConfigNumber(engineerModelName, orderNumber));
+      : (reusedConfig?.config_number || generateConfigNumber(engineerModelName, generateConfigSerial(savedConfigurations)));
 
     const nextConfigs = savedConfigurations.map((cfg) => {
       if (cfg.id !== id) return cfg;

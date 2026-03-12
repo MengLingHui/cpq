@@ -59,6 +59,7 @@ export default function PricePanel() {
 
   const handleGetConfigNumber = () => {
     const nextOrder = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+    const nextConfigSerial = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
     setOrderNumber(nextOrder);
     if (hasCustom) {
       setConfigNumber('-');
@@ -66,7 +67,7 @@ export default function PricePanel() {
     }
 
     const engineerModelName = model.engineer_model_name || model.model_name;
-    const num = generateConfigNumber(engineerModelName, nextOrder);
+    const num = generateConfigNumber(engineerModelName, nextConfigSerial);
     setConfigNumber(num);
   };
 
