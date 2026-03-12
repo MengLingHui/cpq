@@ -283,6 +283,27 @@ export interface SavedConfiguration {
   version?: number;
 }
 
+export interface ConfigDetailItem {
+  super_category_id: number;
+  super_category_name: string;
+  category_code: string;
+  category_name: string;
+  value_type: 'option' | 'custom' | 'empty';
+  option_code?: string;
+  option_description?: string;
+  custom_text?: string;
+}
+
+export interface ConfigDetailByNumber {
+  config_number: string;
+  engineer_model_name: string;
+  series_name: string;
+  series_description: string;
+  details: ConfigDetailItem[];
+}
+
+export type ConfigDetailsByNumberTable = Record<string, ConfigDetailByNumber>;
+
 export interface PureProductQuotePrintableDetail {
   category_code: string;
   category_name: string;
@@ -602,6 +623,7 @@ const FILE_TO_STORAGE_KEY: Record<string, string> = {
   'price_table.json': 'price_tables',
   'series.json': 'series',
   'saved_configurations.json': 'saved_configurations',
+  'config_details_by_number.json': 'config_details_by_number',
   'pure_product_quote_sheets.json': 'pure_product_quote_sheets',
 };
 
@@ -631,6 +653,28 @@ export async function loadSavedConfigurations(): Promise<SavedConfiguration[]> {
   } catch (err) {
     console.error('[Storage] 加载配置失败:', err);
     return [];
+  }
+}
+
+export async function loadConfigDetailsByNumber(): Promise<ConfigDetailsByNumberTable> {
+  try {
+    const localData = userStorage.get<ConfigDetailsByNumberTable>('config_details_by_number', null);
+    if (localData && typeof localData === 'object' && Object.keys(localData).length > 0) {
+      console.log('[Storage] 从localStorage加载config_details_by_number数据:', Object.keys(localData).length, '条');
+      return localData;
+    }
+
+    const response = await fetch(getDataUrl('config_details_by_number.json'));
+    const data = await response.json();
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      return {};
+    }
+    const table = data as ConfigDetailsByNumberTable;
+    console.log('[Storage] 从JSON文件加载config_details_by_number数据:', Object.keys(table).length, '条');
+    return table;
+  } catch (err) {
+    console.error('[Storage] 加载配置号详情表失败:', err);
+    return {};
   }
 }
 

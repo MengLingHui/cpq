@@ -4,6 +4,9 @@ import type {
   EngineerModel,
   PriceTable,
   SavedConfiguration,
+  ConfigDetailsByNumberTable,
+  ConfigDetailByNumber,
+  ConfigDetailItem,
   PureProductQuoteSheet,
   PureProductQuoteItem,
   PureProductQuotePrintableDetail,
@@ -18,6 +21,7 @@ import {
   loadSeriesData,
   loadEngineerModels,
   loadSavedConfigurations,
+  loadConfigDetailsByNumber,
   loadPureProductQuoteSheets,
   saveDataToFile,
   cloneMarketModel,
@@ -71,6 +75,132 @@ function enforceMarketRulesInheritance(market: MarketModel, engineer?: EngineerM
   };
 }
 
+function ensureCategoryDefaultOption(market: MarketModel): MarketModel {
+  return {
+    ...market,
+    configuration_groups: market.configuration_groups.map((group) => ({
+      ...group,
+      categories: group.categories.map((category) => {
+        if (!category.options || category.options.length === 0) {
+          return category;
+        }
+
+        let defaultIndex = category.options.findIndex((option) => option.is_default);
+        if (defaultIndex < 0) {
+          defaultIndex = 0;
+        }
+
+        return {
+          ...category,
+          options: category.options.map((option, index) => ({
+            ...option,
+            is_default: index === defaultIndex,
+          })),
+        };
+      }),
+    })),
+  };
+}
+
+function isConfigSnapshotNewer(left: SavedConfiguration, right: SavedConfiguration): boolean {
+  const leftVersion = left.version ?? 0;
+  const rightVersion = right.version ?? 0;
+  if (leftVersion !== rightVersion) {
+    return leftVersion > rightVersion;
+  }
+  const leftTs = new Date(left.updated_at || left.saved_at || 0).getTime();
+  const rightTs = new Date(right.updated_at || right.saved_at || 0).getTime();
+  return leftTs > rightTs;
+}
+
+function buildConfigDetailEntry(config: SavedConfiguration, model: MarketModel): ConfigDetailByNumber {
+  const customMap = new Map(config.custom_entries.map((entry) => [entry.category_code, entry]));
+  const details: ConfigDetailItem[] = [];
+
+  for (const group of model.configuration_groups) {
+    for (const category of group.categories) {
+      const customEntry = customMap.get(category.category_code);
+      if (customEntry) {
+        details.push({
+          super_category_id: group.super_category_id,
+          super_category_name: group.super_category_name,
+          category_code: category.category_code,
+          category_name: category.category_name,
+          value_type: 'custom',
+          custom_text: customEntry.custom_text || '',
+        });
+        continue;
+      }
+
+      const selectedCode = config.selections[category.category_code]
+        || category.options.find((opt) => opt.is_default)?.option_code
+        || category.options[0]?.option_code
+        || '';
+      const selectedOption = category.options.find((opt) => opt.option_code === selectedCode);
+
+      if (selectedOption) {
+        details.push({
+          super_category_id: group.super_category_id,
+          super_category_name: group.super_category_name,
+          category_code: category.category_code,
+          category_name: category.category_name,
+          value_type: 'option',
+          option_code: selectedOption.option_code,
+          option_description: selectedOption.description,
+        });
+      } else {
+        details.push({
+          super_category_id: group.super_category_id,
+          super_category_name: group.super_category_name,
+          category_code: category.category_code,
+          category_name: category.category_name,
+          value_type: 'empty',
+        });
+      }
+    }
+  }
+
+  return {
+    config_number: config.config_number,
+    engineer_model_name: config.engineer_model_name || config.model_name || '-',
+    series_name: config.series_name || '-',
+    series_description: config.series_description || config.series_name || '-',
+    details,
+  };
+}
+
+function buildConfigDetailsByNumberTable(
+  savedConfigurations: SavedConfiguration[],
+  marketModels: MarketModel[],
+  fallback: ConfigDetailsByNumberTable = {}
+): ConfigDetailsByNumberTable {
+  const latestByNumber = new Map<string, SavedConfiguration>();
+
+  for (const cfg of savedConfigurations) {
+    const key = (cfg.config_number || '').trim();
+    if (!key || key === '-') continue;
+
+    const current = latestByNumber.get(key);
+    if (!current || isConfigSnapshotNewer(cfg, current)) {
+      latestByNumber.set(key, cfg);
+    }
+  }
+
+  const nextTable: ConfigDetailsByNumberTable = {};
+  for (const [configNumber, snapshot] of latestByNumber.entries()) {
+    const model = marketModels.find((item) => item.model_id === snapshot.model_id);
+    if (model) {
+      nextTable[configNumber] = buildConfigDetailEntry(snapshot, model);
+      continue;
+    }
+    if (fallback[configNumber]) {
+      nextTable[configNumber] = fallback[configNumber];
+    }
+  }
+
+  return nextTable;
+}
+
 interface CPQState {
   // Data
   engineerModels: EngineerModel[];
@@ -78,6 +208,7 @@ interface CPQState {
   priceTables: PriceTable[];
   priceMap: Record<string, number>;
   savedConfigurations: SavedConfiguration[];
+  configDetailsByNumber: ConfigDetailsByNumberTable;
   pureProductQuoteSheets: PureProductQuoteSheet[];
   seriesList: SeriesInfo[];
 
@@ -170,6 +301,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
   priceTables: [],
   priceMap: {},
   savedConfigurations: [],
+  configDetailsByNumber: {},
   pureProductQuoteSheets: [],
   seriesList: [],
   editingMarketModel: null,
@@ -187,12 +319,13 @@ export const useCPQStore = create<CPQState>((set, get) => ({
 
   initialize: async () => {
     try {
-      const [marketModels, priceTables, seriesList, engineerModels, savedConfigurations, pureProductQuoteSheets] = await Promise.all([
+      const [marketModels, priceTables, seriesList, engineerModels, savedConfigurations, loadedConfigDetailsByNumber, pureProductQuoteSheets] = await Promise.all([
         loadMarketModels(),
         loadPriceTables(),
         loadSeriesData(),
         loadEngineerModels(),
         loadSavedConfigurations(),
+        loadConfigDetailsByNumber(),
         loadPureProductQuoteSheets(),
       ]);
 
@@ -237,6 +370,10 @@ export const useCPQStore = create<CPQState>((set, get) => ({
 
       // Use first market model for initial price map
       const priceMap = allMarkets.length > 0 ? generatePriceMapFromTable(allMarkets[0], allPriceTables[0]) : {};
+      const configDetailsByNumber = buildConfigDetailsByNumberTable(savedConfigurations, allMarkets, loadedConfigDetailsByNumber);
+      if (JSON.stringify(configDetailsByNumber) !== JSON.stringify(loadedConfigDetailsByNumber)) {
+        saveDataToFile('config_details_by_number.json', configDetailsByNumber).catch(console.error);
+      }
 
       set({
         engineerModels: allEngineers,
@@ -245,6 +382,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
         priceMap,
         seriesList,
         savedConfigurations,
+        configDetailsByNumber,
         pureProductQuoteSheets,
         isLoading: false,
       });
@@ -277,7 +415,8 @@ export const useCPQStore = create<CPQState>((set, get) => ({
     if (editingMarketModel && editingModelIndex >= 0) {
       const newModels = [...marketModels];
       const matchingEngineer = engineerModels.find(e => e.model_id === editingMarketModel.engineer_model_id);
-      newModels[editingModelIndex] = enforceMarketRulesInheritance(editingMarketModel, matchingEngineer);
+      const modelWithDefaultOption = ensureCategoryDefaultOption(editingMarketModel);
+      newModels[editingModelIndex] = enforceMarketRulesInheritance(modelWithDefaultOption, matchingEngineer);
       set({
         marketModels: newModels,
         editingMarketModel: null,
@@ -309,7 +448,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
         price_table_id: matchingPT?.id,
         engineer_model_id: eng.model_id,
       };
-      const newModels = [...marketModels, newMarket];
+      const newModels = [...marketModels, ensureCategoryDefaultOption(newMarket)];
       const newIndex = newModels.length - 1;
       set({
         marketModels: newModels,
@@ -649,6 +788,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
         options_price: 0,
         total_price: '-',
         has_custom: false,
+        order_number: '-',
         saved_at: new Date().toISOString(),
         is_complete: false,
         config_number: '-',
@@ -662,8 +802,10 @@ export const useCPQStore = create<CPQState>((set, get) => ({
         version: shouldOverwrite ? (existingRecord?.version ?? 1) + 1 : 1,
       };
       const newConfigs = upsertConfigs(config);
+      const detailsTable = buildConfigDetailsByNumberTable(newConfigs, marketModels, get().configDetailsByNumber);
       set({
         savedConfigurations: newConfigs,
+        configDetailsByNumber: detailsTable,
         // Jump back to initial page
         configStage: 'series',
         selectedSeriesId: '',
@@ -675,6 +817,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
       });
       // Auto-save to file
       saveDataToFile('saved_configurations.json', newConfigs).catch(console.error);
+      saveDataToFile('config_details_by_number.json', detailsTable).catch(console.error);
       return;
     }
 
@@ -694,6 +837,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
         options_price: 0,
         total_price: '-',
         has_custom: false,
+        order_number: '-',
         saved_at: new Date().toISOString(),
         is_complete: false,
         config_number: '-',
@@ -707,8 +851,10 @@ export const useCPQStore = create<CPQState>((set, get) => ({
         version: shouldOverwrite ? (existingRecord?.version ?? 1) + 1 : 1,
       };
       const newConfigs = upsertConfigs(config);
+      const detailsTable = buildConfigDetailsByNumberTable(newConfigs, marketModels, get().configDetailsByNumber);
       set({
         savedConfigurations: newConfigs,
+        configDetailsByNumber: detailsTable,
         // Jump back to initial page
         configStage: 'series',
         selectedSeriesId: '',
@@ -724,6 +870,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
       }).catch(err => {
         console.error('Failed to save configurations:', err);
       });
+      saveDataToFile('config_details_by_number.json', detailsTable).catch(console.error);
       return;
     }
 
@@ -827,7 +974,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
       options_price: optionsPrice,
       total_price: hasCustom ? `${formattedTotal} + ?` : formattedTotal,
       has_custom: hasCustom,
-      order_number: orderNumber,
+      order_number: orderNumber || '-',
       saved_at: new Date().toISOString(),
       is_complete: complete,
       config_number: configNumber,
@@ -842,9 +989,11 @@ export const useCPQStore = create<CPQState>((set, get) => ({
     };
 
     const newConfigs = upsertConfigs(config);
+    const detailsTable = buildConfigDetailsByNumberTable(newConfigs, marketModels, get().configDetailsByNumber);
 
     set({
       savedConfigurations: newConfigs,
+      configDetailsByNumber: detailsTable,
       // Jump back to initial page
       configStage: 'series',
       selectedSeriesId: '',
@@ -860,14 +1009,20 @@ export const useCPQStore = create<CPQState>((set, get) => ({
     }).catch(err => {
       console.error('Failed to save configurations:', err);
     });
+    saveDataToFile('config_details_by_number.json', detailsTable).catch(console.error);
   },
 
   deleteConfiguration: (id: string) => {
     set((state) => {
       const newConfigs = state.savedConfigurations.filter(c => c.id !== id);
+      const detailsTable = buildConfigDetailsByNumberTable(newConfigs, state.marketModels, state.configDetailsByNumber);
       // Auto-save to file
       saveDataToFile('saved_configurations.json', newConfigs).catch(console.error);
-      return { savedConfigurations: newConfigs };
+      saveDataToFile('config_details_by_number.json', detailsTable).catch(console.error);
+      return {
+        savedConfigurations: newConfigs,
+        configDetailsByNumber: detailsTable,
+      };
     });
   },
 
@@ -912,8 +1067,14 @@ export const useCPQStore = create<CPQState>((set, get) => ({
       };
     });
 
-    set({ savedConfigurations: nextConfigs });
+    const detailsTable = buildConfigDetailsByNumberTable(nextConfigs, get().marketModels, get().configDetailsByNumber);
+
+    set({
+      savedConfigurations: nextConfigs,
+      configDetailsByNumber: detailsTable,
+    });
     saveDataToFile('saved_configurations.json', nextConfigs).catch(console.error);
+    saveDataToFile('config_details_by_number.json', detailsTable).catch(console.error);
   },
 
   loadConfiguration: (config: SavedConfiguration) => {

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useCPQStore } from '@/lib/cpq-store';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -27,7 +28,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Trash2, Eye, ClipboardList, Play, FileJson, FileSpreadsheet, ShieldCheck } from 'lucide-react';
+import { Trash2, Eye, ClipboardList, Play, FileJson, FileSpreadsheet, ShieldCheck, Search } from 'lucide-react';
 import type { SavedConfiguration, ConfigStatus } from '@/lib/cpq-data';
 import { CONFIG_STATUS_LABELS, formatModelDisplayName } from '@/lib/cpq-data';
 import { userStorage } from '@/lib/utils';
@@ -143,47 +144,67 @@ const SUPER_CATEGORY_CONFIG: Record<number, { name: string; color: string; bgCol
   3: { name: '制造属性', color: 'text-emerald-700', bgColor: 'bg-emerald-50' },
 };
 
+function normalizeConfigNumber(value: string): string {
+  return (value || '').trim().toUpperCase();
+}
+
 function ConfigDetail({ config }: { config: SavedConfiguration }) {
   const { marketModels } = useCPQStore();
   const model = marketModels.find(m => m.model_id === config.model_id);
-  const currency = config.currency || '¥';
+  const engineerModelName = config.engineer_model_name || config.model_name || '-';
 
-  const optDescMap: Record<string, string> = {};
-  const catNameMap: Record<string, string> = {};
-  const catSuperMap: Record<string, number> = {}; // category_code -> super_category_id
-  
-  if (model) {
-    for (const group of model.configuration_groups) {
-      for (const cat of group.categories) {
-        catNameMap[cat.category_code] = cat.category_name;
-        catSuperMap[cat.category_code] = group.super_category_id;
-        for (const opt of cat.options) {
-          optDescMap[opt.option_code] = opt.description;
-        }
-      }
-    }
-  }
-
-  // 按超级分类分组 selections
-  const groupedSelections: Record<number, Array<{ catCode: string; optCode: string; catName: string; optDesc: string }>> = {
+  const groupedSelections: Record<number, Array<{ catCode: string; catName: string; valueText: string; isCustom: boolean }>> = {
     0: [], 1: [], 2: [], 3: []
   };
-  
-  for (const [catCode, optCode] of Object.entries(config.selections)) {
-    const superId = catSuperMap[catCode] ?? 2; // 默认归入配置选择
-    groupedSelections[superId].push({
-      catCode,
-      optCode,
-      catName: catNameMap[catCode] || catCode,
-      optDesc: optDescMap[optCode] || '-',
-    });
-  }
 
-  // 按超级分类分组 custom_entries
-  const groupedCustoms: Record<number, typeof config.custom_entries> = { 0: [], 1: [], 2: [], 3: [] };
-  for (const entry of config.custom_entries) {
-    const superId = entry.super_category_id ?? 2;
-    groupedCustoms[superId].push(entry);
+  const customMap = new Map(config.custom_entries.map((entry) => [entry.category_code, entry]));
+
+  if (model) {
+    for (const group of model.configuration_groups) {
+      const superId = group.super_category_id;
+      for (const cat of group.categories) {
+        const customEntry = customMap.get(cat.category_code);
+        if (customEntry) {
+          groupedSelections[superId]?.push({
+            catCode: cat.category_code,
+            catName: cat.category_name,
+            valueText: customEntry.custom_text || '-',
+            isCustom: true,
+          });
+          continue;
+        }
+
+        const selectedCode = config.selections[cat.category_code]
+          || cat.options.find((opt) => opt.is_default)?.option_code
+          || cat.options[0]?.option_code
+          || '';
+        const selectedOption = cat.options.find((opt) => opt.option_code === selectedCode);
+        groupedSelections[superId]?.push({
+          catCode: cat.category_code,
+          catName: cat.category_name,
+          valueText: selectedOption?.description || '-',
+          isCustom: false,
+        });
+      }
+    }
+  } else {
+    // Fallback when model snapshot is not found in current market models.
+    for (const [catCode, optCode] of Object.entries(config.selections)) {
+      groupedSelections[2].push({
+        catCode,
+        catName: catCode,
+        valueText: optCode || '-',
+        isCustom: false,
+      });
+    }
+    for (const entry of config.custom_entries) {
+      groupedSelections[entry.super_category_id ?? 2].push({
+        catCode: entry.category_code,
+        catName: entry.category_name || entry.category_code,
+        valueText: entry.custom_text || '-',
+        isCustom: true,
+      });
+    }
   }
 
   const statusInfo = getStatusDisplay(config);
@@ -191,10 +212,9 @@ function ConfigDetail({ config }: { config: SavedConfiguration }) {
   return (
     <div className="max-h-[60vh] overflow-y-auto space-y-3">
       <div className="grid grid-cols-2 gap-2 text-xs p-2 bg-slate-50 rounded">
+        <div><span className="text-slate-500">工程机型:</span> {engineerModelName}</div>
+        <div><span className="text-slate-500">销售机型:</span> {config.model_name ? formatModelDisplayName(config.model_name, config.engineer_model_name) : '-'}</div>
         <div><span className="text-slate-500">产品线:</span> {config.series_description || config.series_name || '-'}</div>
-        <div><span className="text-slate-500">机型:</span> {config.model_name ? formatModelDisplayName(config.model_name, config.engineer_model_name) : '-'}</div>
-        <div><span className="text-slate-500">价格表:</span> {config.price_table_name || '-'}</div>
-        <div><span className="text-slate-500">币种:</span> {currency}</div>
         <div><span className="text-slate-500">保存时间:</span> {new Date(config.saved_at).toLocaleString('zh-CN')}</div>
         <div>
           <span className="text-slate-500">状态:</span>{' '}
@@ -210,61 +230,33 @@ function ConfigDetail({ config }: { config: SavedConfiguration }) {
         </div>
       </div>
 
-      {Object.keys(config.selections).length > 0 && (
-        <div className="space-y-2">
-          <h4 className="text-xs font-semibold">选配明细</h4>
-          {[0, 1, 2, 3].map(superId => {
-            const items = groupedSelections[superId];
-            const customItems = groupedCustoms[superId];
-            if (items.length === 0 && customItems.length === 0) return null;
-            
-            const cfg = SUPER_CATEGORY_CONFIG[superId];
-            return (
-              <div key={superId} className={`rounded border ${cfg.bgColor}`}>
-                <div className={`px-2 py-1 text-[10px] font-semibold ${cfg.color} border-b bg-white/50`}>
-                  {cfg.name}
-                  <span className="ml-1 text-slate-400 font-normal">({items.length + customItems.length}项)</span>
-                </div>
-                <Table>
-                  <TableBody>
-                    {items.map(({ catCode, catName, optDesc }) => (
-                      <TableRow key={catCode}>
-                        <TableCell className="py-1 text-[11px] w-[40%]">{catName}</TableCell>
-                        <TableCell className="py-1 text-[11px] text-slate-600">{optDesc}</TableCell>
-                      </TableRow>
-                    ))}
-                    {customItems.map((entry) => (
-                      <TableRow key={`custom-${entry.category_code}`}>
-                        <TableCell className="py-1 text-[11px]">{entry.category_name}</TableCell>
-                        <TableCell className="py-1 text-[11px] text-amber-700">{entry.custom_text}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <div className="space-y-2">
+        <h4 className="text-xs font-semibold">配置明细（全量 Category）</h4>
+        {[0, 1, 2, 3].map(superId => {
+          const items = groupedSelections[superId] || [];
+          if (items.length === 0) return null;
 
-      {config.model_id && (
-        <div className="border-t pt-2 space-y-1">
-          <div className="flex justify-between text-xs">
-            <span className="text-slate-500">基础价格</span>
-            <span>{currency}{config.base_price.toLocaleString('zh-CN')}</span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-slate-500">选配加价</span>
-            <span className="text-emerald-600">+{currency}{config.options_price.toLocaleString('zh-CN')}</span>
-          </div>
-          <div className="flex justify-between text-sm font-bold pt-1 border-t">
-            <span>总价</span>
-            <span className={config.has_custom ? 'text-amber-600' : 'text-blue-700'}>
-              {config.total_price}
-            </span>
-          </div>
-        </div>
-      )}
+          const cfg = SUPER_CATEGORY_CONFIG[superId];
+          return (
+            <div key={superId} className={`rounded border ${cfg.bgColor}`}>
+              <div className={`px-2 py-1 text-[10px] font-semibold ${cfg.color} border-b bg-white/50`}>
+                {cfg.name}
+                <span className="ml-1 text-slate-400 font-normal">({items.length}项)</span>
+              </div>
+              <Table>
+                <TableBody>
+                  {items.map(({ catCode, catName, valueText, isCustom }) => (
+                    <TableRow key={catCode}>
+                      <TableCell className="py-1 text-[11px] w-[40%]">{catName}</TableCell>
+                      <TableCell className={`py-1 text-[11px] ${isCustom ? 'text-amber-700' : 'text-slate-600'}`}>{valueText}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -278,6 +270,12 @@ export default function SavedConfigList() {
     setActiveTab,
   } = useCPQStore();
   const [detailConfig, setDetailConfig] = useState<SavedConfiguration | null>(null);
+  const [configNumberQuery, setConfigNumberQuery] = useState('');
+
+  const normalizedQuery = normalizeConfigNumber(configNumberQuery);
+  const displayConfigs = normalizedQuery
+    ? savedConfigurations.filter(cfg => normalizeConfigNumber(cfg.config_number) === normalizedQuery)
+    : savedConfigurations;
 
   if (savedConfigurations.length === 0) {
     return (
@@ -303,6 +301,30 @@ export default function SavedConfigList() {
         {/* 暂时注释：纯产品报价单功能入口 */}
       </div>
 
+      <div className="flex items-center gap-2 rounded-lg border bg-slate-50 px-3 py-2">
+        <Search className="w-3.5 h-3.5 text-slate-400" />
+        <Input
+          value={configNumberQuery}
+          onChange={(e) => setConfigNumberQuery(e.target.value)}
+          placeholder="输入配置号精确查询（例如 AR20J2000123）"
+          className="h-8 text-xs bg-white"
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 text-xs"
+          onClick={() => setConfigNumberQuery('')}
+          disabled={!configNumberQuery.trim()}
+        >
+          清空
+        </Button>
+      </div>
+      {normalizedQuery && (
+        <p className="text-[11px] text-slate-500 px-1">
+          查询“{normalizedQuery}”命中 {displayConfigs.length} 条记录
+        </p>
+      )}
+
       <Table>
         <TableHeader>
           <TableRow>
@@ -318,7 +340,7 @@ export default function SavedConfigList() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {savedConfigurations.map((cfg) => {
+          {displayConfigs.map((cfg) => {
             const statusInfo = getStatusDisplay(cfg);
             return (
               <TableRow key={cfg.id}>
@@ -426,6 +448,12 @@ export default function SavedConfigList() {
           })}
         </TableBody>
       </Table>
+
+      {displayConfigs.length === 0 && (
+        <div className="text-xs text-slate-400 text-center py-4 border rounded-lg bg-white">
+          未找到匹配配置号的记录
+        </div>
+      )}
 
       <Dialog open={!!detailConfig} onOpenChange={(open) => { if (!open) setDetailConfig(null); }}>
         <DialogContent className="max-w-2xl max-h-[85vh]">

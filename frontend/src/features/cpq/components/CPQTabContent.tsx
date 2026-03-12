@@ -4,6 +4,7 @@ import EngineerModelList from '@/components/EngineerModelList';
 import MarketModelManager from '@/components/MarketModelManager';
 import PriceTableManager from '@/components/PriceTableManager';
 import SavedConfigList from '@/components/SavedConfigList';
+import ConfigNumberQuery from '@/components/ConfigNumberQuery';
 import TestToolsPanel from '@/components/TestToolsPanel';
 import type { CPQTab } from '@/features/cpq/menu-items';
 
@@ -20,6 +21,7 @@ function wrapInCard(content: ReactNode) {
 const TAB_CONTENT: Record<CPQTab, React.ReactNode> = {
   configurator: <Configurator />,
   saved: wrapInCard(<SavedConfigList />),
+  query: wrapInCard(<ConfigNumberQuery />),
   market: wrapInCard(<MarketModelManager />),
   engineer: wrapInCard(<EngineerModelList />),
   pricetable: wrapInCard(<PriceTableManager />),
