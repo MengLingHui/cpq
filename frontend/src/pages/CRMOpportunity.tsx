@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useCPQStore } from '@/lib/cpq-store';
-import { formatNumber, useI18n } from '@/lib/i18n';
+import { useI18n } from '@/lib/i18n';
 import Configurator from '@/components/Configurator';
 import { toast } from '@/components/ui/sonner';
 import { Badge } from '@/components/ui/badge';
@@ -52,13 +52,11 @@ type OpportunityProductLine = {
 };
 
 const OPPORTUNITY = {
-  id: 'DEAL-4207',
-  name: '华东某大型装备项目',
-  owner: '张明',
-  stage: '方案确认中',
-  expectedCloseDate: '2026-04-15',
-  amountHint: '待根据产品行自动汇总',
-  org: '华东智能制造集团',
+  id: 'DEAL-7812',
+  name: 'Global Packaging Line Expansion',
+  owner: 'Alex Morgan',
+  expectedCloseDate: '2026-05-20',
+  org: 'NorthBridge Industrial Solutions',
 };
 
 const CRM_DEMO_STORAGE_KEY = 'cpq-crm-demo-state-v1';
@@ -71,20 +69,25 @@ type CommercialTerms = {
   notes: string;
 };
 
-function formatCurrency(value: number, currency: string) {
-  return `${currency}${formatNumber(value)}`;
+function formatCurrency(value: number, currency: string, locale: string) {
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  } catch {
+    return `${currency} ${value.toLocaleString()}`;
+  }
 }
 
 function configStatusLabel(hasCustom: boolean, t: (key: string) => string) {
   return hasCustom ? t('crm.status.etoPending') : t('crm.status.directOrder');
 }
 
-function getProgressLabel(status: string | undefined, t: (key: string) => string) {
-  if (status === 'series_confirming') return t('crm.status.seriesConfirming');
-  if (status === 'model_confirming') return t('crm.status.modelConfirming');
-  if (status === 'options_incomplete') return t('crm.status.optionsIncomplete');
-  if (status === 'completed') return t('crm.status.completed');
-  return t('crm.status.processing');
+function getProgressLabel(_status: string | undefined, t: (key: string) => string) {
+  return t('crm.status.pendingConfig');
 }
 
 function resolveProductName(
@@ -94,8 +97,12 @@ function resolveProductName(
   stage: string | undefined,
   t: (key: string) => string,
 ) {
+  // Prefer engineer model name in CRM line items and hide sales model naming.
+  if (engineerModelName) {
+    return engineerModelName;
+  }
   if (modelName) {
-    return engineerModelName ? `${engineerModelName} (${modelName})` : modelName;
+    return modelName;
   }
   const safeSeries = seriesName || t('crm.placeholder.unnamedSeries');
   if (stage === 'model') {
@@ -121,7 +128,8 @@ interface CRMOpportunityPageProps {
 }
 
 export default function CRMOpportunityPage({ embedded = false }: CRMOpportunityPageProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const opportunityCurrency = 'EUR';
   const {
     initialize,
     isLoading,
@@ -240,8 +248,11 @@ export default function CRMOpportunityPage({ embedded = false }: CRMOpportunityP
     );
 
     const isComplete = !!cfg.is_complete;
+    const normalizedCurrency = opportunityCurrency;
     const knownUnitPrice = isComplete ? cfg.base_price + cfg.options_price : null;
-    const totalLabel = isComplete ? cfg.total_price : '待完成';
+    const totalLabel = isComplete && knownUnitPrice !== null
+      ? formatCurrency(knownUnitPrice, normalizedCurrency, locale)
+      : t('crm.status.pendingConfig');
 
     setProductLines((prev) => {
       const target = prev.find((item) => item.id === lineId);
@@ -258,7 +269,7 @@ export default function CRMOpportunityPage({ embedded = false }: CRMOpportunityP
           productName,
           modelId: cfg.model_id || '-',
           unitPrice: knownUnitPrice,
-          currency: cfg.currency || '¥',
+          currency: normalizedCurrency,
           totalLabel,
           displayCode: resolveDisplayCode(cfg.config_number, cfg.order_number),
           configStatus: isComplete ? configStatusLabel(cfg.has_custom, t) : getProgressLabel(cfg.status, t),
@@ -308,32 +319,38 @@ export default function CRMOpportunityPage({ embedded = false }: CRMOpportunityP
     );
     const latestIsComplete = !!latest.is_complete;
 
-    if (editingLineIdRef.current) {
-      applyConfigToLine(editingLineIdRef.current, latest);
+    const shouldOverwriteLine = !!editingLineIdRef.current && !!updatedExisting && latest.id === updatedExisting.id;
+
+    if (shouldOverwriteLine && editingLineIdRef.current && updatedExisting) {
+      applyConfigToLine(editingLineIdRef.current, updatedExisting);
     } else {
+      const sourceConfig = latestNew || latest;
       const productName = resolveProductName(
-        latest.series_name,
-        latest.model_name,
-        latest.engineer_model_name,
-        latest.stage,
+        sourceConfig.series_name,
+        sourceConfig.model_name,
+        sourceConfig.engineer_model_name,
+        sourceConfig.stage,
         t,
       );
 
-      const isComplete = latestIsComplete;
-      const knownUnitPrice = isComplete ? latest.base_price + latest.options_price : null;
-      const totalLabel = isComplete ? latest.total_price : '待完成';
+      const isComplete = !!sourceConfig.is_complete;
+      const normalizedCurrency = opportunityCurrency;
+      const knownUnitPrice = isComplete ? sourceConfig.base_price + sourceConfig.options_price : null;
+      const totalLabel = isComplete && knownUnitPrice !== null
+        ? formatCurrency(knownUnitPrice, normalizedCurrency, locale)
+        : t('crm.status.pendingConfig');
 
       const nextLine: OpportunityProductLine = {
         id: `line_${Date.now()}`,
         productName,
-        modelId: latest.model_id || '-',
+        modelId: sourceConfig.model_id || '-',
         quantity: 1,
         unitPrice: knownUnitPrice,
-        currency: latest.currency || '¥',
+        currency: normalizedCurrency,
         totalLabel,
-        displayCode: resolveDisplayCode(latest.config_number, latest.order_number),
-        configStatus: isComplete ? configStatusLabel(latest.has_custom, t) : getProgressLabel(latest.status, t),
-        savedConfigId: latest.id,
+        displayCode: resolveDisplayCode(sourceConfig.config_number, sourceConfig.order_number),
+        configStatus: isComplete ? configStatusLabel(sourceConfig.has_custom, t) : getProgressLabel(sourceConfig.status, t),
+        savedConfigId: sourceConfig.id,
         isComplete,
       };
 
@@ -431,6 +448,7 @@ export default function CRMOpportunityPage({ embedded = false }: CRMOpportunityP
                       <TableHead>{t('crm.productLines.columns.configNo')}</TableHead>
                       <TableHead>{t('crm.productLines.columns.qty')}</TableHead>
                       <TableHead>{t('crm.productLines.columns.unitPrice')}</TableHead>
+                      <TableHead>{t('crm.productLines.columns.lineTotal')}</TableHead>
                       <TableHead>{t('crm.productLines.columns.status')}</TableHead>
                       <TableHead className="text-right">{t('crm.productLines.columns.actions')}</TableHead>
                     </TableRow>
@@ -446,8 +464,6 @@ export default function CRMOpportunityPage({ embedded = false }: CRMOpportunityP
                           >
                             {line.productName}
                           </button>
-                          {line.modelId !== '-' && <div className="text-xs text-slate-500">{t('crm.productLines.modelId')} {line.modelId}</div>}
-                          <div className="text-xs text-slate-500">{t('crm.productLines.total')} {line.totalLabel}</div>
                         </TableCell>
                         <TableCell className="font-mono text-xs">{line.displayCode}</TableCell>
                         <TableCell>
@@ -460,7 +476,12 @@ export default function CRMOpportunityPage({ embedded = false }: CRMOpportunityP
                           />
                         </TableCell>
                         <TableCell>
-                          {line.isComplete && line.unitPrice !== null ? formatCurrency(line.unitPrice, line.currency) : '-'}
+                          {line.isComplete && line.unitPrice !== null ? formatCurrency(line.unitPrice, opportunityCurrency, locale) : '-'}
+                        </TableCell>
+                        <TableCell>
+                          {line.isComplete && line.unitPrice !== null
+                            ? formatCurrency(line.unitPrice * line.quantity, opportunityCurrency, locale)
+                            : '-'}
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary" className="rounded-full">
@@ -503,7 +524,7 @@ export default function CRMOpportunityPage({ embedded = false }: CRMOpportunityP
 
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-500">{t('crm.productLines.knownSubtotal')}</span>
-                <span className="text-base font-semibold text-slate-900">{formatCurrency(knownSubtotal, '¥')}</span>
+                <span className="text-base font-semibold text-slate-900">{formatCurrency(knownSubtotal, opportunityCurrency, locale)}</span>
               </div>
             </CardContent>
           </Card>

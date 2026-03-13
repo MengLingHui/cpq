@@ -31,6 +31,7 @@ import { ClipboardList, Eye, FileDown, FileJson, Trash2 } from 'lucide-react';
 import type { PureProductQuoteSheet as PureProductQuoteSheetType } from '@/lib/cpq-data';
 import { formatModelDisplayName } from '@/lib/cpq-data';
 import { formatDateTime, formatNumber, useI18n } from '@/lib/i18n';
+import { toast } from '@/components/ui/sonner';
 
 function exportSheetAsJSON(sheet: PureProductQuoteSheetType) {
   const payload = {
@@ -148,7 +149,7 @@ function exportSheetAsPDF(sheet: PureProductQuoteSheetType, t: (key: string) => 
     const printWindow = iframe.contentWindow;
     if (!printWindow) {
       cleanup();
-      alert(t('quote.printInitFailed'));
+      toast.error(t('quote.printInitFailed'));
       return;
     }
     printWindow.focus();
@@ -159,7 +160,7 @@ function exportSheetAsPDF(sheet: PureProductQuoteSheetType, t: (key: string) => 
   const doc = iframe.contentDocument || iframe.contentWindow?.document;
   if (!doc) {
     cleanup();
-    alert(t('quote.printContentInitFailed'));
+    toast.error(t('quote.printContentInitFailed'));
     return;
   }
 

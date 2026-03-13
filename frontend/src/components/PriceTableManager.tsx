@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/dialog';
 import { Plus, Pencil, Trash2, DollarSign, Copy, Database } from 'lucide-react';
 import { formatDate, useI18n } from '@/lib/i18n';
+import { toast } from '@/components/ui/sonner';
 
 function PriceTableEditor({
   table,
@@ -191,7 +192,7 @@ export default function PriceTableManager() {
 
   const handleCreate = () => {
     if (engineerModels.length === 0) {
-      alert(t('pricetable.noEngineerAlert'));
+      toast.warning(t('pricetable.noEngineerAlert'));
       return;
     }
     if (engineerModels.length === 1) {
@@ -247,7 +248,7 @@ export default function PriceTableManager() {
   const handleDelete = (id: string) => {
     const inUse = marketModels.some(m => m.price_table_id === id);
     if (inUse) {
-      alert(t('pricetable.inUseAlert'));
+      toast.warning(t('pricetable.inUseAlert'));
       return;
     }
     deletePriceTable(id);

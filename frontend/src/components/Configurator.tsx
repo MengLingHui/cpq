@@ -41,6 +41,7 @@ import PricePanel from './PricePanel';
 import { isSuperCategoryPriced, isSuperCategoryReadOnly, supportsCustomInput, canShowHiddenItems, formatModelDisplayName } from '@/lib/cpq-data';
 import type { OptionItem, SeriesInfo } from '@/lib/cpq-data';
 import { useI18n } from '@/lib/i18n';
+import { toast } from '@/components/ui/sonner';
 
 const SAVE_PRIMARY_CLASS = 'h-8 px-3 text-xs gap-1.5 rounded-full shadow-sm';
 const SAVE_SECONDARY_CLASS = 'h-8 px-3 text-xs gap-1.5 rounded-full border-slate-300 bg-white';
@@ -125,9 +126,11 @@ function SeriesSelector() {
     if (children.length === 0) {
       const availableModels = getModelsForSeries(seriesId);
       if (availableModels.length === 0) {
-        alert(isZh
-          ? `产品线「${series.series_name}」暂无可用销售机型，请先在“销售机型”中发布或关联后再试。`
-          : `No available market model for series "${series.series_name}". Please publish or link one in Market Models first.`);
+        toast.warning(
+          isZh
+            ? `产品线「${series.series_name}」暂无可用销售机型，请先在“销售机型”中发布或关联后再试。`
+            : `No available market model for series "${series.series_name}". Please publish or link one in Market Models first.`,
+        );
         return;
       }
       // Leaf node with models - select and proceed
@@ -623,7 +626,6 @@ function OptionsConfigurator() {
     getActiveModelDisplayName,
     constraintAnalysis,
     isOptionAvailable,
-    getOptionDisableReasons,
     postSaveTab,
   } = useCPQStore();
 
@@ -636,6 +638,7 @@ function OptionsConfigurator() {
   const [showHiddenHintFor, setShowHiddenHintFor] = useState<string | null>(null);
   // Track which specific categories should show hidden options (per category_code)
   const [showHiddenOptionsForCategory, setShowHiddenOptionsForCategory] = useState<Record<string, boolean>>({});
+  const hasPendingCustomEdit = Object.values(customInputVisible).some(Boolean);
 
   const model = marketModels[activeMarketModelIndex];
   if (!model) return null;
@@ -706,6 +709,12 @@ function OptionsConfigurator() {
   };
 
   const handleSave = (mode: 'new' | 'overwrite' = 'new') => {
+    if (hasPendingCustomEdit) {
+      toast.warning(isZh
+        ? '正在编辑自定义需求，请先确认或取消后再保存配置。'
+        : 'Custom requirement is being edited. Please confirm or cancel it before saving.');
+      return;
+    }
     saveConfiguration(mode);
     setSaveSuccess(true);
     setTimeout(() => {
@@ -717,6 +726,12 @@ function OptionsConfigurator() {
   };
 
   const handleSaveOnly = (mode: 'new' | 'overwrite' = 'new') => {
+    if (hasPendingCustomEdit) {
+      toast.warning(isZh
+        ? '正在编辑自定义需求，请先确认或取消后再保存配置。'
+        : 'Custom requirement is being edited. Please confirm or cancel it before saving.');
+      return;
+    }
     saveConfiguration(mode);
     setSaveSuccess(true);
     setTimeout(() => {
@@ -752,7 +767,6 @@ function OptionsConfigurator() {
           const price = priceMap[opt.option_code] || 0;
           const isSelected = selectedCode === opt.option_code;
           const available = isOptionAvailable(categoryCode, opt.option_code);
-          const disableReasons = getOptionDisableReasons(categoryCode, opt.option_code);
           const shouldDisable = !isReadOnly && !available;
           return (
             <div
@@ -765,7 +779,6 @@ function OptionsConfigurator() {
                     : isSelected ? 'bg-blue-100 border border-blue-500 shadow-sm cursor-pointer' : 'hover:bg-slate-100 border border-transparent cursor-pointer'
               }`}
               onClick={() => handleSelectOption(categoryCode, opt.option_code, isReadOnly, superCategoryId)}
-              title={disableReasons[0] || ''}
             >
               <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
                 isReadOnly
@@ -843,7 +856,7 @@ function OptionsConfigurator() {
             variant={editingConfigId ? 'outline' : 'default'}
             className={`${editingConfigId ? SAVE_SECONDARY_CLASS : SAVE_PRIMARY_CLASS}`}
             onClick={() => handleSaveOnly('new')} 
-            disabled={saveSuccess}
+            disabled={saveSuccess || hasPendingCustomEdit}
           >
             {saveSuccess ? (
               <><CheckCircle2 className="w-3 h-3" />{isZh ? '已保存' : 'Saved'}</>
@@ -856,7 +869,7 @@ function OptionsConfigurator() {
               size="sm"
               className={SAVE_PRIMARY_CLASS}
               onClick={() => handleSaveOnly('overwrite')}
-              disabled={saveSuccess}
+              disabled={saveSuccess || hasPendingCustomEdit}
             >
               {saveSuccess ? (
                 <><CheckCircle2 className="w-3 h-3" />{overwriteDoneLabel}</>
@@ -870,6 +883,14 @@ function OptionsConfigurator() {
           </Button>
         </div>
       </div>
+
+      {hasPendingCustomEdit && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+          {isZh
+            ? '当前正在编辑自定义需求，请先点击“确认”或“取消”，再执行保存配置。'
+            : 'A custom requirement edit is in progress. Please click "Confirm" or "Cancel" before saving the configuration.'}
+        </div>
+      )}
 
       {/* Progress indicator */}
       <div className="flex items-center gap-2 text-[10px] text-slate-500 bg-slate-50 rounded-lg p-2 shrink-0">
@@ -1096,7 +1117,6 @@ function OptionsConfigurator() {
                         const hasCustom = isCustomActive(cat.category_code);
                         const customEntry = customEntries.find(e => e.category_code === cat.category_code);
                         const showingCustomInput = customInputVisible[cat.category_code];
-                        const disabledOptionCount = Object.keys(constraintAnalysis.disabledReasons[cat.category_code] || {}).length;
 
                         return (
                           <div key={cat.category_id} className={`border rounded p-2 ${
@@ -1161,14 +1181,6 @@ function OptionsConfigurator() {
                                   isReadOnly,
                                   group.super_category_id
                                 )}
-                              </div>
-                            )}
-
-                            {!hasCustom && disabledOptionCount > 0 && (
-                              <div className="text-[10px] text-amber-700 mb-1">
-                                {isZh
-                                  ? `该特征有 ${disabledOptionCount} 个选项被规则限制，鼠标悬停可查看原因。`
-                                  : `${disabledOptionCount} options are restricted by rules. Hover to see reasons.`}
                               </div>
                             )}
 

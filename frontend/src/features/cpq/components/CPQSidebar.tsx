@@ -10,7 +10,7 @@ interface CPQSidebarProps {
 
 export default function CPQSidebar({ activeTab, onTabChange }: CPQSidebarProps) {
   const { t } = useI18n();
-  const [isDemoExpanded, setIsDemoExpanded] = useState(true);
+  const [isDemoExpanded, setIsDemoExpanded] = useState(false);
   const [isManagementExpanded, setIsManagementExpanded] = useState(false);
 
   const alwaysVisibleValues = useMemo(() => new Set(['configurator', 'query', 'saved']), []);

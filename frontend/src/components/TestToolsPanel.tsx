@@ -2,6 +2,17 @@ import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Download, Upload, Database, AlertCircle, CheckCircle2, RotateCcw } from 'lucide-react';
 import JSZip from 'jszip';
 import { userStorage } from '@/lib/utils';
@@ -191,28 +202,24 @@ export default function TestToolsPanel() {
 
   // 重置为默认数据（清除localStorage中的底表数据）
   const handleReset = () => {
-    if (confirm(isZh
-      ? '确定要重置为默认数据吗？这将清除所有导入的底表数据，恢复从JSON文件加载原始数据。'
-      : 'Reset to default data? This will clear imported base tables and reload original JSON data.')) {
-      // 清除底表数据，保留选配历史
-      const keysToReset = [
-        'series',
-        'market_models',
-        'market_model',
-        'engineer_models',
-        'engineer_model',
-        'price_tables',
-        'price_table',
-        'config_details_by_number',
-      ];
-      keysToReset.forEach((key) => userStorage.remove(key));
-      
-      setImportSuccess(true);
-      setTimeout(() => {
-        setImportSuccess(false);
-        window.location.reload();
-      }, 1500);
-    }
+    // 清除底表数据，保留选配历史
+    const keysToReset = [
+      'series',
+      'market_models',
+      'market_model',
+      'engineer_models',
+      'engineer_model',
+      'price_tables',
+      'price_table',
+      'config_details_by_number',
+    ];
+    keysToReset.forEach((key) => userStorage.remove(key));
+
+    setImportSuccess(true);
+    setTimeout(() => {
+      setImportSuccess(false);
+      window.location.reload();
+    }, 1500);
   };
 
   // 导出初始化底表 + 选配历史
@@ -350,14 +357,31 @@ export default function TestToolsPanel() {
               <Download className="w-3.5 h-3.5" />
               {isZh ? '导出ZIP' : 'Export ZIP'}
             </Button>
-            <Button
-              variant="outline"
-              className="h-9 text-xs gap-2 text-amber-600 hover:text-amber-700"
-              onClick={handleReset}
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              {isZh ? '重置默认' : 'Reset Default'}
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="h-9 text-xs gap-2 text-amber-600 hover:text-amber-700"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  {isZh ? '重置默认' : 'Reset Default'}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{isZh ? '确认重置默认数据？' : 'Confirm reset to default data?'}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {isZh
+                      ? '这将清除所有导入的底表数据，并恢复从 JSON 文件加载原始数据。'
+                      : 'This will clear imported base tables and restore loading from original JSON files.'}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{isZh ? '取消' : 'Cancel'}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleReset}>{isZh ? '确认重置' : 'Confirm Reset'}</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
 
           <div className="text-[10px] text-slate-400 bg-slate-50 rounded p-2">
