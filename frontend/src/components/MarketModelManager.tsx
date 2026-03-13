@@ -58,6 +58,7 @@ import {
   Database,
   Printer,
 } from 'lucide-react';
+import { useI18n } from '@/lib/i18n';
 import type { MarketModel, Category, ConfigurationGroup } from '@/lib/cpq-data';
 
 interface MarketModelEditorProps {
@@ -68,6 +69,8 @@ interface MarketModelEditorProps {
 }
 
 function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEditorProps) {
+  const { locale } = useI18n();
+  const isZh = locale === 'zh-CN';
   const { priceTables, linkPriceTable, editingModelIndex, getEngineerModelName, getPriceTablesForEngineerModel } = useCPQStore();
   const [modelName, setModelName] = useState(model.model_name);
   const [dragOverCatId, setDragOverCatId] = useState<string | null>(null);
@@ -195,7 +198,7 @@ function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEdi
     <div className="space-y-3">
       <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border flex-wrap">
         <div className="flex items-center gap-2">
-          <Label className="text-xs font-medium whitespace-nowrap">名称:</Label>
+          <Label className="text-xs font-medium whitespace-nowrap">{isZh ? '名称' : 'Name'}:</Label>
           <Input
             value={modelName}
             onChange={(e) => handleNameChange(e.target.value)}
@@ -205,7 +208,7 @@ function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEdi
         <div className="flex items-center gap-2">
           <Label className="text-xs font-medium whitespace-nowrap flex items-center gap-1">
             <Database className="w-3 h-3" />
-            工程机型:
+            {isZh ? '工程机型' : 'Engineer Model'}:
           </Label>
           <Badge variant="outline" className="text-[10px] h-6">
             {engineerModelName}
@@ -214,19 +217,19 @@ function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEdi
         <div className="flex items-center gap-2">
           <Label className="text-xs font-medium whitespace-nowrap flex items-center gap-1">
             <DollarSign className="w-3 h-3" />
-            默认价格表:
+            {isZh ? '默认价格表' : 'Default Price Table'}:
           </Label>
           <Select
             value={model.price_table_id || ''}
             onValueChange={handlePriceTableChange}
           >
             <SelectTrigger className="h-7 text-xs w-[180px]">
-              <SelectValue placeholder="选择价格表" />
+              <SelectValue placeholder={isZh ? '选择价格表' : 'Select price table'} />
             </SelectTrigger>
             <SelectContent>
               {availablePriceTables.length === 0 ? (
                 <div className="px-2 py-1.5 text-[10px] text-slate-400">
-                  无可用价格表（需先为对应工程机型创建价格表）
+                  {isZh ? '无可用价格表（需先为对应工程机型创建价格表）' : 'No available price table (create one for this engineer model first)'}
                 </div>
               ) : (
                 availablePriceTables.map(pt => (
@@ -240,10 +243,10 @@ function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEdi
         </div>
         <div className="flex-1" />
         <Button size="sm" className="h-8 px-3 text-xs gap-1.5 rounded-full shadow-sm" onClick={onSave}>
-          <Save className="w-3 h-3" /> 保存
+          <Save className="w-3 h-3" /> {isZh ? '保存' : 'Save'}
         </Button>
         <Button size="sm" variant="outline" className="h-8 px-3 text-xs gap-1.5 rounded-full border-slate-300 bg-white" onClick={onCancel}>
-          <X className="w-3 h-3" /> 取消
+          <X className="w-3 h-3" /> {isZh ? '取消' : 'Cancel'}
         </Button>
       </div>
 
@@ -257,16 +260,16 @@ function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEdi
                     {group.super_category_name}
                   </span>
                   <Badge variant={group.hide ? 'outline' : 'secondary'} className="text-[10px] h-4">
-                    {group.categories.length} 项
+                    {group.categories.length} {isZh ? '项' : 'items'}
                   </Badge>
                   {group.hide && (
                     <Badge variant="outline" className="text-[10px] h-4 text-amber-600 border-amber-300">
-                      已隐藏
+                      {isZh ? '已隐藏' : 'Hidden'}
                     </Badge>
                   )}
                   <div className="flex-1" />
                   <div className="flex items-center gap-1 mr-2" onClick={(e) => e.stopPropagation()}>
-                    <Label className="text-[10px] text-slate-500">显示</Label>
+                    <Label className="text-[10px] text-slate-500">{isZh ? '显示' : 'Show'}</Label>
                     <Switch
                       checked={!group.hide}
                       onCheckedChange={() => toggleGroupHide(groupIdx)}
@@ -281,12 +284,12 @@ function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEdi
                     <TableHeader>
                       <TableRow className="text-[10px]">
                         <TableHead className="h-6 w-8 text-[10px]"></TableHead>
-                        <TableHead className="h-6 text-[10px]">排序</TableHead>
-                        <TableHead className="h-6 text-[10px]">名称</TableHead>
-                        <TableHead className="h-6 text-[10px]">选项</TableHead>
-                        <TableHead className="h-6 text-[10px] text-center">打印</TableHead>
-                        <TableHead className="h-6 text-[10px] text-center">显隐</TableHead>
-                        <TableHead className="h-6 text-[10px] text-center">排序操作</TableHead>
+                        <TableHead className="h-6 text-[10px]">{isZh ? '排序' : 'Order'}</TableHead>
+                        <TableHead className="h-6 text-[10px]">{isZh ? '名称' : 'Name'}</TableHead>
+                        <TableHead className="h-6 text-[10px]">{isZh ? '选项' : 'Options'}</TableHead>
+                        <TableHead className="h-6 text-[10px] text-center">{isZh ? '打印' : 'Print'}</TableHead>
+                        <TableHead className="h-6 text-[10px] text-center">{isZh ? '显隐' : 'Visibility'}</TableHead>
+                        <TableHead className="h-6 text-[10px] text-center">{isZh ? '排序操作' : 'Reorder'}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -313,7 +316,7 @@ function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEdi
                               <span>{cat.category_name}</span>
                               {cat.print_enabled === false && (
                                 <Badge variant="outline" className="text-[9px] h-4 text-amber-700 border-amber-300">
-                                  不打印
+                                  {isZh ? '不打印' : 'Not Printed'}
                                 </Badge>
                               )}
                             </div>
@@ -325,7 +328,7 @@ function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEdi
                                   <Badge
                                     variant={opt.hide ? 'outline' : opt.is_default ? 'default' : 'secondary'}
                                     className={`text-[9px] h-4 cursor-pointer max-w-[180px] truncate ${opt.hide ? 'line-through text-slate-400' : ''}`}
-                                    title={`${opt.description}${opt.is_default ? '（默认）' : ''}`}
+                                    title={`${opt.description}${opt.is_default ? (isZh ? '（默认）' : ' (Default)') : ''}`}
                                     onClick={() => setDefaultOption(groupIdx, catIdx, optIdx)}
                                   >
                                     {opt.description}
@@ -334,7 +337,7 @@ function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEdi
                                     type="button"
                                     className="text-slate-300 hover:text-slate-600 leading-none"
                                     onClick={() => toggleOptionHide(groupIdx, catIdx, optIdx)}
-                                    title={opt.hide ? '显示该选项' : '隐藏该选项'}
+                                    title={opt.hide ? (isZh ? '显示该选项' : 'Show this option') : (isZh ? '隐藏该选项' : 'Hide this option')}
                                   >
                                     {opt.hide ? <EyeOff className="w-2.5 h-2.5" /> : <Eye className="w-2.5 h-2.5" />}
                                   </button>
@@ -413,6 +416,8 @@ function MarketModelEditor({ model, onUpdate, onSave, onCancel }: MarketModelEdi
 }
 
 export default function MarketModelManager() {
+  const { locale } = useI18n();
+  const isZh = locale === 'zh-CN';
   const {
     marketModels,
     editingMarketModel,
@@ -457,8 +462,8 @@ export default function MarketModelManager() {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-slate-400">
         <ShoppingCart className="w-12 h-12 mb-3" />
-        <p className="text-sm">暂无销售机型</p>
-        <p className="text-xs mt-1">请先从工程机型创建销售机型</p>
+        <p className="text-sm">{isZh ? '暂无销售机型' : 'No market models yet'}</p>
+        <p className="text-xs mt-1">{isZh ? '请先从工程机型创建销售机型' : 'Create one from an engineer model first'}</p>
       </div>
     );
   }
@@ -467,25 +472,25 @@ export default function MarketModelManager() {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-slate-800">销售机型管理</h2>
-          <p className="text-xs text-slate-500 mt-0.5">编辑销售机型的配置项顺序和显隐性，关联价格表</p>
+          <h2 className="text-sm font-semibold text-slate-800">{isZh ? '销售机型管理' : 'Market Model Management'}</h2>
+          <p className="text-xs text-slate-500 mt-0.5">{isZh ? '编辑销售机型的配置项顺序和显隐性，关联价格表' : 'Edit option order/visibility and linked price table for market models'}</p>
         </div>
         <Badge variant="outline" className="text-[10px]">
-          共 {marketModels.length} 个机型
+          {isZh ? '共' : 'Total'} {marketModels.length} {isZh ? '个机型' : 'models'}
         </Badge>
       </div>
 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="h-8 text-xs">机型ID</TableHead>
-            <TableHead className="h-8 text-xs">销售机型名称</TableHead>
-            <TableHead className="h-8 text-xs">关联工程机型</TableHead>
-            <TableHead className="h-8 text-xs">产品系列</TableHead>
-            <TableHead className="h-8 text-xs">默认价格表</TableHead>
-            <TableHead className="h-8 text-xs">配置组</TableHead>
-            <TableHead className="h-8 text-xs">可见/隐藏</TableHead>
-            <TableHead className="h-8 text-xs text-right">操作</TableHead>
+            <TableHead className="h-8 text-xs">{isZh ? '机型ID' : 'Model ID'}</TableHead>
+            <TableHead className="h-8 text-xs">{isZh ? '销售机型名称' : 'Market Model Name'}</TableHead>
+            <TableHead className="h-8 text-xs">{isZh ? '关联工程机型' : 'Engineer Model'}</TableHead>
+            <TableHead className="h-8 text-xs">{isZh ? '产品系列' : 'Series'}</TableHead>
+            <TableHead className="h-8 text-xs">{isZh ? '默认价格表' : 'Default Price Table'}</TableHead>
+            <TableHead className="h-8 text-xs">{isZh ? '配置组' : 'Groups'}</TableHead>
+            <TableHead className="h-8 text-xs">{isZh ? '可见/隐藏' : 'Visible/Hidden'}</TableHead>
+            <TableHead className="h-8 text-xs text-right">{isZh ? '操作' : 'Actions'}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -516,7 +521,7 @@ export default function MarketModelManager() {
                       {linkedPT.name}
                     </Badge>
                   ) : (
-                    <span className="text-slate-400 text-[10px]">未关联</span>
+                    <span className="text-slate-400 text-[10px]">{isZh ? '未关联' : 'Unlinked'}</span>
                   )}
                 </TableCell>
                 <TableCell className="py-2 text-xs">
@@ -527,11 +532,11 @@ export default function MarketModelManager() {
                 <TableCell className="py-2 text-xs">
                   <div className="flex gap-1">
                     <Badge variant="secondary" className="text-[10px]">
-                      {totalCats - hiddenCats} 可见
+                      {totalCats - hiddenCats} {isZh ? '可见' : 'visible'}
                     </Badge>
                     {hiddenCats > 0 && (
                       <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-300">
-                        {hiddenCats} 隐藏
+                        {hiddenCats} {isZh ? '隐藏' : 'hidden'}
                       </Badge>
                     )}
                   </div>
@@ -545,7 +550,7 @@ export default function MarketModelManager() {
                       onClick={() => handleEdit(index)}
                     >
                       <Pencil className="w-3 h-3" />
-                      修订
+                      {isZh ? '修订' : 'Edit'}
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -555,23 +560,25 @@ export default function MarketModelManager() {
                           className="h-7 text-xs gap-1 text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="w-3 h-3" />
-                          删除
+                          {isZh ? '删除' : 'Delete'}
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle className="text-sm">确认删除</AlertDialogTitle>
+                          <AlertDialogTitle className="text-sm">{isZh ? '确认删除' : 'Confirm Deletion'}</AlertDialogTitle>
                           <AlertDialogDescription className="text-xs">
-                            确定要删除销售机型 "{model.model_name}" 吗？此操作不可撤销。
+                            {isZh
+                              ? `确定要删除销售机型 "${model.model_name}" 吗？此操作不可撤销。`
+                              : `Delete market model "${model.model_name}"? This action cannot be undone.`}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel className="h-7 text-xs">取消</AlertDialogCancel>
+                          <AlertDialogCancel className="h-7 text-xs">{isZh ? '取消' : 'Cancel'}</AlertDialogCancel>
                           <AlertDialogAction
                             className="h-7 text-xs bg-red-600 hover:bg-red-700"
                             onClick={() => deleteMarketModel(index)}
                           >
-                            删除
+                            {isZh ? '删除' : 'Delete'}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -588,7 +595,7 @@ export default function MarketModelManager() {
         <DialogContent className="max-w-4xl max-h-[85vh]">
           <DialogHeader>
             <DialogTitle className="text-sm">
-              编辑销售机型 - {editingMarketModel?.model_name}
+              {(isZh ? '编辑销售机型' : 'Edit Market Model')} - {editingMarketModel?.model_name}
             </DialogTitle>
           </DialogHeader>
           {editingMarketModel && (

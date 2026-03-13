@@ -6,6 +6,7 @@ import { Download, Upload, Database, AlertCircle, CheckCircle2, RotateCcw } from
 import JSZip from 'jszip';
 import { userStorage } from '@/lib/utils';
 import { useCPQStore } from '@/lib/cpq-store';
+import { useI18n } from '@/lib/i18n';
 
 interface RawEngineerConfig {
   category_id: number;
@@ -177,6 +178,8 @@ async function parseZipImport(file: File) {
 }
 
 export default function TestToolsPanel() {
+  const { locale } = useI18n();
+  const isZh = locale === 'zh-CN';
   const [importError, setImportError] = useState<string | null>(null);
   const [importSuccess, setImportSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -188,7 +191,9 @@ export default function TestToolsPanel() {
 
   // 重置为默认数据（清除localStorage中的底表数据）
   const handleReset = () => {
-    if (confirm('确定要重置为默认数据吗？这将清除所有导入的底表数据，恢复从JSON文件加载原始数据。')) {
+    if (confirm(isZh
+      ? '确定要重置为默认数据吗？这将清除所有导入的底表数据，恢复从JSON文件加载原始数据。'
+      : 'Reset to default data? This will clear imported base tables and reload original JSON data.')) {
       // 清除底表数据，保留选配历史
       const keysToReset = [
         'series',
@@ -260,7 +265,7 @@ export default function TestToolsPanel() {
       );
 
       if (!hasValidData && Object.keys(data).length > 0) {
-        console.warn('[Import] 导入的数据可能不包含标准的CPQ数据');
+        console.warn(isZh ? '[Import] 导入的数据可能不包含标准的CPQ数据' : '[Import] Imported file may not contain standard CPQ data');
       }
 
       userStorage.import(data);
@@ -273,8 +278,10 @@ export default function TestToolsPanel() {
         window.location.reload();
       }, 1500);
     } catch (err) {
-      console.error('[Import] 导入失败:', err);
-      setImportError('文件格式错误，无法导入。请使用系统导出的ZIP或有效的CPQ备份JSON文件。');
+      console.error(isZh ? '[Import] 导入失败:' : '[Import] Failed:', err);
+      setImportError(isZh
+        ? '文件格式错误，无法导入。请使用系统导出的ZIP或有效的CPQ备份JSON文件。'
+        : 'Invalid file format. Please import a system-exported ZIP or a valid CPQ backup JSON file.');
       setImportSuccess(false);
     }
 
@@ -286,8 +293,8 @@ export default function TestToolsPanel() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-slate-800">测试工具</h2>
-          <p className="text-xs text-slate-500 mt-0.5">数据导入导出等测试功能</p>
+          <h2 className="text-sm font-semibold text-slate-800">{isZh ? '测试工具' : 'Test Tools'}</h2>
+          <p className="text-xs text-slate-500 mt-0.5">{isZh ? '数据导入导出等测试功能' : 'Import/export and other test utilities'}</p>
         </div>
       </div>
 
@@ -301,7 +308,7 @@ export default function TestToolsPanel() {
       {importSuccess && (
         <Alert className="text-xs border-emerald-200 bg-emerald-50 text-emerald-800">
           <CheckCircle2 className="w-4 h-4" />
-          <AlertDescription>导入成功，页面即将刷新...</AlertDescription>
+          <AlertDescription>{isZh ? '导入成功，页面即将刷新...' : 'Import succeeded, page will refresh shortly...'}</AlertDescription>
         </Alert>
       )}
 
@@ -309,10 +316,12 @@ export default function TestToolsPanel() {
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2">
             <Database className="w-4 h-4 text-blue-600" />
-            数据备份与恢复
+            {isZh ? '数据备份与恢复' : 'Data Backup and Restore'}
           </CardTitle>
           <CardDescription className="text-xs">
-            导出压缩包（含销售机型、工程机型、价格表、选配历史及配置号详情表）
+            {isZh
+              ? '导出压缩包（含销售机型、工程机型、价格表、选配历史及配置号详情表）'
+              : 'Export ZIP including market models, engineer models, price tables, saved configurations, and config details'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -331,7 +340,7 @@ export default function TestToolsPanel() {
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="w-3.5 h-3.5" />
-              导入数据
+              {isZh ? '导入数据' : 'Import Data'}
             </Button>
             <Button
               variant="outline"
@@ -339,7 +348,7 @@ export default function TestToolsPanel() {
               onClick={handleExport}
             >
               <Download className="w-3.5 h-3.5" />
-              导出ZIP
+              {isZh ? '导出ZIP' : 'Export ZIP'}
             </Button>
             <Button
               variant="outline"
@@ -347,29 +356,31 @@ export default function TestToolsPanel() {
               onClick={handleReset}
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              重置默认
+              {isZh ? '重置默认' : 'Reset Default'}
             </Button>
           </div>
 
           <div className="text-[10px] text-slate-400 bg-slate-50 rounded p-2">
-            <p>用户ID: <span className="font-mono">{userStorage.getUserId()}</span></p>
-            <p className="mt-0.5">导出将下载一个 ZIP，内含 market_model.json、engineer_model.json、price_table.json、saved_configurations.json、config_details_by_number.json</p>
+            <p>{isZh ? '用户ID' : 'User ID'}: <span className="font-mono">{userStorage.getUserId()}</span></p>
+            <p className="mt-0.5">{isZh
+              ? '导出将下载一个 ZIP，内含 market_model.json、engineer_model.json、price_table.json、saved_configurations.json、config_details_by_number.json'
+              : 'Export downloads a ZIP including market_model.json, engineer_model.json, price_table.json, saved_configurations.json, and config_details_by_number.json'}</p>
           </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm">使用说明</CardTitle>
+          <CardTitle className="text-sm">{isZh ? '使用说明' : 'Instructions'}</CardTitle>
         </CardHeader>
         <CardContent className="text-xs text-slate-600 space-y-2">
-          <p>• <strong>导出ZIP</strong>：下载一个压缩包，包含 market_model.json、engineer_model.json、price_table.json 三个初始化底表文件</p>
-          <p>• <strong>选配历史</strong>：导出ZIP中包含 saved_configurations.json，可用于恢复“已保存配置”历史</p>
-          <p>• <strong>配置号详情表</strong>：导出ZIP中包含 config_details_by_number.json，用于配置号主键查询</p>
-          <p>• <strong>导入数据</strong>：支持导入系统导出的 ZIP（推荐）或历史 JSON 备份，导入后页面会自动刷新</p>
-          <p>• <strong>重置默认</strong>：清除导入的底表数据，恢复从原始 JSON 文件加载数据</p>
-          <p>• 导出的数据可用于程序初始化或数据迁移</p>
-          <p>• 此功能仅供测试使用，请妥善保管备份文件</p>
+          <p>{isZh ? '• ' : ''}<strong>{isZh ? '导出ZIP' : 'Export ZIP'}</strong>{isZh ? '：下载一个压缩包，包含 market_model.json、engineer_model.json、price_table.json 三个初始化底表文件' : ': Download a ZIP including market_model.json, engineer_model.json, and price_table.json as base tables'}</p>
+          <p>{isZh ? '• ' : ''}<strong>{isZh ? '选配历史' : 'Saved Configurations'}</strong>{isZh ? '：导出ZIP中包含 saved_configurations.json，可用于恢复“已保存配置”历史' : ': Export includes saved_configurations.json for restoring saved configuration history'}</p>
+          <p>{isZh ? '• ' : ''}<strong>{isZh ? '配置号详情表' : 'Config Details Table'}</strong>{isZh ? '：导出ZIP中包含 config_details_by_number.json，用于配置号主键查询' : ': Export includes config_details_by_number.json for config-number keyed lookup'}</p>
+          <p>{isZh ? '• ' : ''}<strong>{isZh ? '导入数据' : 'Import Data'}</strong>{isZh ? '：支持导入系统导出的 ZIP（推荐）或历史 JSON 备份，导入后页面会自动刷新' : ': Supports importing exported ZIP (recommended) or JSON backup; page refreshes after import'}</p>
+          <p>{isZh ? '• ' : ''}<strong>{isZh ? '重置默认' : 'Reset Default'}</strong>{isZh ? '：清除导入的底表数据，恢复从原始 JSON 文件加载数据' : ': Clears imported base tables and restores loading from original JSON files'}</p>
+          <p>{isZh ? '• 导出的数据可用于程序初始化或数据迁移' : 'Exported data can be used for initialization or migration'}</p>
+          <p>{isZh ? '• 此功能仅供测试使用，请妥善保管备份文件' : 'This feature is for testing only; keep backup files secure'}</p>
         </CardContent>
       </Card>
     </div>

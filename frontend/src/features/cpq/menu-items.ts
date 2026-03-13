@@ -1,14 +1,15 @@
 import { ClipboardList, Database, DollarSign, Search, Settings2, ShoppingCart, Wrench } from 'lucide-react';
 
 export const MENU_ITEMS = [
-  { value: 'test', label: '测试工具', icon: Wrench },
-  { value: 'engineer', label: '工程机型', icon: Database },
-  { value: 'pricetable', label: '价格表', icon: DollarSign },
-  { value: 'market', label: '销售机型', icon: ShoppingCart },
-  { value: 'saved', label: '选配历史', icon: ClipboardList },
-  { value: 'query', label: '配置查询', icon: Search },
-  // { value: 'pure-quote', label: '纯产品报价单', icon: FileSpreadsheet },
-  { value: 'configurator', label: '产品选配', icon: Settings2 },
+  { value: 'test', labelKey: 'test', icon: Wrench },
+  { value: 'engineer', labelKey: 'engineer', icon: Database },
+  { value: 'pricetable', labelKey: 'pricetable', icon: DollarSign },
+  { value: 'market', labelKey: 'market', icon: ShoppingCart },
+
+  // { value: 'pure-quote', labelKey: 'pure-quote', icon: FileSpreadsheet },
+  { value: 'configurator', labelKey: 'configurator', icon: Settings2 },
+    { value: 'saved', labelKey: 'saved', icon: ClipboardList },
+  { value: 'query', labelKey: 'query', icon: Search },
 ] as const;
 
 export type CPQTab = (typeof MENU_ITEMS)[number]['value'];

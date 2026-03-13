@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useI18n } from '@/lib/i18n';
 import { Search, Eye } from 'lucide-react';
 import type { ConfigDetailByNumber } from '@/lib/cpq-data';
 
@@ -31,6 +32,8 @@ function normalizeConfigNumber(value: string): string {
 }
 
 function QueryDetail({ config }: { config: ConfigDetailByNumber }) {
+  const { locale } = useI18n();
+  const isZh = locale === 'zh-CN';
   const groupedSelections: Record<number, Array<{ catCode: string; catName: string; valueText: string; isCustom: boolean }>> = {
     0: [], 1: [], 2: [], 3: [],
   };
@@ -84,13 +87,13 @@ function QueryDetail({ config }: { config: ConfigDetailByNumber }) {
   return (
     <div className="max-h-[60vh] overflow-y-auto space-y-3">
       <div className="grid grid-cols-2 gap-2 text-xs p-2 bg-slate-50 rounded">
-        <div><span className="text-slate-500">工程机型:</span> {config.engineer_model_name || '-'}</div>
-        <div><span className="text-slate-500">产品线:</span> {config.series_description || config.series_name || '-'}</div>
-        <div><span className="text-slate-500">配置号:</span> <span className="font-mono text-[11px]">{config.config_number}</span></div>
+        <div><span className="text-slate-500">{isZh ? '工程机型' : 'Engineer Model'}:</span> {config.engineer_model_name || '-'}</div>
+        <div><span className="text-slate-500">{isZh ? '产品线' : 'Series'}:</span> {config.series_description || config.series_name || '-'}</div>
+        <div><span className="text-slate-500">{isZh ? '配置号' : 'Config No.'}:</span> <span className="font-mono text-[11px]">{config.config_number}</span></div>
       </div>
 
       <div className="space-y-2">
-        <h4 className="text-xs font-semibold">配置明细（全量 Category）</h4>
+        <h4 className="text-xs font-semibold">{isZh ? '配置明细（全量 Category）' : 'Configuration Details (All Categories)'}</h4>
         {orderedSuperIds.map((superId) => {
           const items = groupedSelections[superId] || [];
           if (items.length === 0) return null;
@@ -104,7 +107,7 @@ function QueryDetail({ config }: { config: ConfigDetailByNumber }) {
             <div key={superId} className={`rounded border ${cfg.bgColor}`}>
               <div className={`px-2 py-1 text-[10px] font-semibold ${cfg.color} border-b bg-white/50`}>
                 {cfg.name}
-                <span className="ml-1 text-slate-400 font-normal">({items.length}项)</span>
+                <span className="ml-1 text-slate-400 font-normal">({items.length}{isZh ? '项' : ' items'})</span>
               </div>
               <Table>
                 <TableBody>
@@ -125,6 +128,8 @@ function QueryDetail({ config }: { config: ConfigDetailByNumber }) {
 }
 
 export default function ConfigNumberQuery() {
+  const { locale } = useI18n();
+  const isZh = locale === 'zh-CN';
   const { configDetailsByNumber } = useCPQStore();
   const [query, setQuery] = useState('');
   const [detailConfig, setDetailConfig] = useState<ConfigDetailByNumber | null>(null);
@@ -138,8 +143,8 @@ export default function ConfigNumberQuery() {
   return (
     <div className="space-y-3">
       <div>
-        <h2 className="text-sm font-semibold text-slate-800">配置号查询</h2>
-        <p className="text-xs text-slate-500 mt-0.5">输入配置号后查询配置详情表（不显示销售机型与价格）</p>
+        <h2 className="text-sm font-semibold text-slate-800">{isZh ? '配置号查询' : 'Config Number Query'}</h2>
+        <p className="text-xs text-slate-500 mt-0.5">{isZh ? '输入配置号后查询配置详情表（不显示销售机型与价格）' : 'Query full configuration details by config number (without market model and price)'}</p>
       </div>
 
       <div className="flex items-center gap-2 rounded-lg border bg-slate-50 px-3 py-2">
@@ -147,7 +152,7 @@ export default function ConfigNumberQuery() {
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="输入配置号精确查询（例如 AR20J2000123）"
+          placeholder={isZh ? '输入配置号精确查询（例如 AR20J2000123）' : 'Exact config number lookup (e.g. AR20J2000123)'}
           className="h-8 text-xs bg-white"
         />
         <Button
@@ -157,30 +162,30 @@ export default function ConfigNumberQuery() {
           onClick={() => setQuery('')}
           disabled={!query.trim()}
         >
-          清空
+          {isZh ? '清空' : 'Clear'}
         </Button>
       </div>
 
       {!normalizedQuery ? (
         <div className="text-xs text-slate-400 text-center py-8 border rounded-lg bg-white">
-          请输入配置号开始查询
+          {isZh ? '请输入配置号开始查询' : 'Enter a config number to start'}
         </div>
       ) : (
         <>
           <p className="text-[11px] text-slate-500 px-1">
-            查询配置号主表：{normalizedQuery}
+            {isZh ? '查询配置号主表' : 'Query key'}: {normalizedQuery}
           </p>
 
           {!canonicalConfig ? (
             <div className="text-xs text-slate-400 text-center py-4 border rounded-lg bg-white">
-              未找到匹配配置号的记录
+              {isZh ? '未找到匹配配置号的记录' : 'No record matched this config number'}
             </div>
           ) : (
             <div className="rounded-lg border bg-white p-3 space-y-2">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-sm font-semibold text-slate-800">配置号实体</div>
-                  <div className="text-xs text-slate-500 mt-0.5">主键为配置号，展示该配置号对应的完整选配详情</div>
+                  <div className="text-sm font-semibold text-slate-800">{isZh ? '配置号实体' : 'Config Entity'}</div>
+                  <div className="text-xs text-slate-500 mt-0.5">{isZh ? '主键为配置号，展示该配置号对应的完整选配详情' : 'Primary key is config number, showing complete option details'}</div>
                 </div>
                 <Button
                   variant="outline"
@@ -189,17 +194,17 @@ export default function ConfigNumberQuery() {
                   onClick={() => setDetailConfig(canonicalConfig)}
                 >
                   <Eye className="w-3 h-3" />
-                  查看配置
+                  {isZh ? '查看配置' : 'View Configuration'}
                 </Button>
               </div>
 
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="h-8 text-xs">配置号</TableHead>
-                    <TableHead className="h-8 text-xs">工程机型</TableHead>
-                    <TableHead className="h-8 text-xs">产品线</TableHead>
-                    <TableHead className="h-8 text-xs">Category 数</TableHead>
+                    <TableHead className="h-8 text-xs">{isZh ? '配置号' : 'Config No.'}</TableHead>
+                    <TableHead className="h-8 text-xs">{isZh ? '工程机型' : 'Engineer Model'}</TableHead>
+                    <TableHead className="h-8 text-xs">{isZh ? '产品线' : 'Series'}</TableHead>
+                    <TableHead className="h-8 text-xs">{isZh ? 'Category 数' : 'Category Count'}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -220,7 +225,7 @@ export default function ConfigNumberQuery() {
         <DialogContent className="max-w-2xl max-h-[85vh]">
           <DialogHeader>
             <DialogTitle className="text-sm">
-              配置查询详情 {detailConfig?.engineer_model_name ? `- ${detailConfig.engineer_model_name}` : ''}
+              {(isZh ? '配置查询详情' : 'Configuration Query Details')} {detailConfig?.engineer_model_name ? `- ${detailConfig.engineer_model_name}` : ''}
             </DialogTitle>
           </DialogHeader>
           {detailConfig && <QueryDetail config={detailConfig} />}

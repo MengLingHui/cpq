@@ -30,8 +30,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Trash2, Eye, ClipboardList, Play, FileJson, FileSpreadsheet, ShieldCheck, Search } from 'lucide-react';
 import type { SavedConfiguration, ConfigStatus } from '@/lib/cpq-data';
-import { CONFIG_STATUS_LABELS, formatModelDisplayName } from '@/lib/cpq-data';
+import { formatModelDisplayName } from '@/lib/cpq-data';
 import { userStorage } from '@/lib/utils';
+import { formatDateTime, getConfigStatusLabel, useI18n } from '@/lib/i18n';
 
 // 导出配置为JSON（PLM格式）
 function exportToJSON(config: SavedConfiguration) {
@@ -120,7 +121,7 @@ function exportToCSV(config: SavedConfiguration) {
 
 function getStatusDisplay(cfg: SavedConfiguration): { label: string; variant: 'default' | 'outline' | 'secondary'; color: string } {
   const status: ConfigStatus = cfg.status || (cfg.is_complete ? 'completed' : 'options_incomplete');
-  const label = CONFIG_STATUS_LABELS[status];
+  const label = getConfigStatusLabel(status);
 
   switch (status) {
     case 'completed':
@@ -132,16 +133,16 @@ function getStatusDisplay(cfg: SavedConfiguration): { label: string; variant: 'd
     case 'options_incomplete':
       return { label, variant: 'secondary', color: 'text-blue-600' };
     default:
-      return { label: '未知', variant: 'outline', color: '' };
+      return { label: getConfigStatusLabel('options_incomplete'), variant: 'outline', color: '' };
   }
 }
 
 // 超级分类显示顺序和样式配置
-const SUPER_CATEGORY_CONFIG: Record<number, { name: string; color: string; bgColor: string }> = {
-  0: { name: '标准化版本', color: 'text-purple-700', bgColor: 'bg-purple-50' },
-  1: { name: '基础参数', color: 'text-slate-700', bgColor: 'bg-slate-50' },
-  2: { name: '配置选择', color: 'text-blue-700', bgColor: 'bg-blue-50' },
-  3: { name: '制造属性', color: 'text-emerald-700', bgColor: 'bg-emerald-50' },
+const SUPER_CATEGORY_CONFIG: Record<number, { nameKey: string; color: string; bgColor: string }> = {
+  0: { nameKey: 'saved.group.standard', color: 'text-purple-700', bgColor: 'bg-purple-50' },
+  1: { nameKey: 'saved.group.basic', color: 'text-slate-700', bgColor: 'bg-slate-50' },
+  2: { nameKey: 'saved.group.option', color: 'text-blue-700', bgColor: 'bg-blue-50' },
+  3: { nameKey: 'saved.group.manufacture', color: 'text-emerald-700', bgColor: 'bg-emerald-50' },
 };
 
 function normalizeConfigNumber(value: string): string {
@@ -149,6 +150,7 @@ function normalizeConfigNumber(value: string): string {
 }
 
 function ConfigDetail({ config }: { config: SavedConfiguration }) {
+  const { t } = useI18n();
   const { marketModels } = useCPQStore();
   const model = marketModels.find(m => m.model_id === config.model_id);
   const engineerModelName = config.engineer_model_name || config.model_name || '-';
@@ -212,26 +214,26 @@ function ConfigDetail({ config }: { config: SavedConfiguration }) {
   return (
     <div className="max-h-[60vh] overflow-y-auto space-y-3">
       <div className="grid grid-cols-2 gap-2 text-xs p-2 bg-slate-50 rounded">
-        <div><span className="text-slate-500">工程机型:</span> {engineerModelName}</div>
-        <div><span className="text-slate-500">销售机型:</span> {config.model_name ? formatModelDisplayName(config.model_name, config.engineer_model_name) : '-'}</div>
-        <div><span className="text-slate-500">产品线:</span> {config.series_description || config.series_name || '-'}</div>
-        <div><span className="text-slate-500">保存时间:</span> {new Date(config.saved_at).toLocaleString('zh-CN')}</div>
+        <div><span className="text-slate-500">{t('saved.detailLabels.engineerModel')}:</span> {engineerModelName}</div>
+        <div><span className="text-slate-500">{t('saved.detailLabels.marketModel')}:</span> {config.model_name ? formatModelDisplayName(config.model_name, config.engineer_model_name) : '-'}</div>
+        <div><span className="text-slate-500">{t('saved.detailLabels.series')}:</span> {config.series_description || config.series_name || '-'}</div>
+        <div><span className="text-slate-500">{t('saved.detailLabels.savedAt')}:</span> {formatDateTime(config.saved_at)}</div>
         <div>
-          <span className="text-slate-500">状态:</span>{' '}
+          <span className="text-slate-500">{t('saved.detailLabels.status')}:</span>{' '}
           <Badge variant={statusInfo.variant} className={`text-[9px] h-4 ${statusInfo.color}`}>{statusInfo.label}</Badge>
         </div>
         <div>
-          <span className="text-slate-500">订单号:</span>{' '}
+          <span className="text-slate-500">{t('saved.detailLabels.orderNo')}:</span>{' '}
           <span className="font-mono text-[11px]">{config.order_number || '-'}</span>
         </div>
         <div>
-          <span className="text-slate-500">配置号:</span>{' '}
+          <span className="text-slate-500">{t('saved.detailLabels.configNo')}:</span>{' '}
           <span className="font-mono text-[11px]">{config.config_number}</span>
         </div>
       </div>
 
       <div className="space-y-2">
-        <h4 className="text-xs font-semibold">配置明细（全量 Category）</h4>
+        <h4 className="text-xs font-semibold">{t('saved.fullDetail')}</h4>
         {[0, 1, 2, 3].map(superId => {
           const items = groupedSelections[superId] || [];
           if (items.length === 0) return null;
@@ -240,7 +242,7 @@ function ConfigDetail({ config }: { config: SavedConfiguration }) {
           return (
             <div key={superId} className={`rounded border ${cfg.bgColor}`}>
               <div className={`px-2 py-1 text-[10px] font-semibold ${cfg.color} border-b bg-white/50`}>
-                {cfg.name}
+                {t(cfg.nameKey)}
                 <span className="ml-1 text-slate-400 font-normal">({items.length}项)</span>
               </div>
               <Table>
@@ -262,6 +264,7 @@ function ConfigDetail({ config }: { config: SavedConfiguration }) {
 }
 
 export default function SavedConfigList() {
+  const { t } = useI18n();
   const {
     savedConfigurations,
     deleteConfiguration,
@@ -281,8 +284,8 @@ export default function SavedConfigList() {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-slate-400">
         <ClipboardList className="w-12 h-12 mb-3" />
-        <p className="text-sm">暂无选配历史</p>
-        <p className="text-xs mt-1">请先在"产品选配"页面完成选配并保存</p>
+        <p className="text-sm">{t('saved.empty')}</p>
+        <p className="text-xs mt-1">{t('saved.emptyHint')}</p>
       </div>
     );
   }
@@ -291,11 +294,11 @@ export default function SavedConfigList() {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-slate-800">选配历史</h2>
+          <h2 className="text-sm font-semibold text-slate-800">{t('saved.title')}</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            用户ID: <span className="font-mono text-slate-400">{userStorage.getUserId()}</span>
+            {t('saved.userId')}: <span className="font-mono text-slate-400">{userStorage.getUserId()}</span>
             {' · '}
-            共 {savedConfigurations.length} 条记录
+            {savedConfigurations.length} {t('saved.records')}
           </p>
         </div>
         {/* 暂时注释：纯产品报价单功能入口 */}
@@ -306,7 +309,7 @@ export default function SavedConfigList() {
         <Input
           value={configNumberQuery}
           onChange={(e) => setConfigNumberQuery(e.target.value)}
-          placeholder="输入配置号精确查询（例如 AR20J2000123）"
+          placeholder={t('saved.queryPlaceholder')}
           className="h-8 text-xs bg-white"
         />
         <Button
@@ -316,27 +319,27 @@ export default function SavedConfigList() {
           onClick={() => setConfigNumberQuery('')}
           disabled={!configNumberQuery.trim()}
         >
-          清空
+          {t('common.clear')}
         </Button>
       </div>
       {normalizedQuery && (
         <p className="text-[11px] text-slate-500 px-1">
-          查询“{normalizedQuery}”命中 {displayConfigs.length} 条记录
+          {t('saved.queryHitPrefix')}{normalizedQuery}{t('saved.queryHitSuffix')} {displayConfigs.length} {t('saved.queryHitUnit')}
         </p>
       )}
 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="h-8 text-xs">保存时间</TableHead>
-            <TableHead className="h-8 text-xs">产品线</TableHead>
-            <TableHead className="h-8 text-xs">销售机型</TableHead>
-            <TableHead className="h-8 text-xs">价格表</TableHead>
-            <TableHead className="h-8 text-xs">状态</TableHead>
-            <TableHead className="h-8 text-xs">订单号</TableHead>
-            <TableHead className="h-8 text-xs">配置号</TableHead>
-            <TableHead className="h-8 text-xs">总价</TableHead>
-            <TableHead className="h-8 text-xs text-right">操作</TableHead>
+            <TableHead className="h-8 text-xs">{t('saved.table.savedAt')}</TableHead>
+            <TableHead className="h-8 text-xs">{t('saved.table.series')}</TableHead>
+            <TableHead className="h-8 text-xs">{t('saved.table.marketModel')}</TableHead>
+            <TableHead className="h-8 text-xs">{t('saved.table.priceTable')}</TableHead>
+            <TableHead className="h-8 text-xs">{t('saved.table.status')}</TableHead>
+            <TableHead className="h-8 text-xs">{t('saved.table.orderNo')}</TableHead>
+            <TableHead className="h-8 text-xs">{t('saved.table.configNo')}</TableHead>
+            <TableHead className="h-8 text-xs">{t('saved.table.totalPrice')}</TableHead>
+            <TableHead className="h-8 text-xs text-right">{t('saved.table.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -345,7 +348,7 @@ export default function SavedConfigList() {
             return (
               <TableRow key={cfg.id}>
                 <TableCell className="py-2 text-xs">
-                  {new Date(cfg.saved_at).toLocaleString('zh-CN')}
+                  {formatDateTime(cfg.saved_at)}
                 </TableCell>
                 <TableCell className="py-2 text-xs font-medium">
                   {cfg.series_description || cfg.series_name || '-'}
@@ -388,7 +391,7 @@ export default function SavedConfigList() {
                       onClick={() => loadConfiguration(cfg)}
                     >
                       <Play className="w-3 h-3" />
-                      继续选配
+                      {t('saved.actions.continueConfig')}
                     </Button>
                     <Button
                       variant="ghost"
@@ -397,7 +400,7 @@ export default function SavedConfigList() {
                       onClick={() => setDetailConfig(cfg)}
                     >
                       <Eye className="w-3 h-3" />
-                      详情
+                      {t('saved.actions.detail')}
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -411,20 +414,20 @@ export default function SavedConfigList() {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle className="text-sm">确认删除</AlertDialogTitle>
+                          <AlertDialogTitle className="text-sm">{t('saved.actions.deleteConfirm')}</AlertDialogTitle>
                           <AlertDialogDescription className="text-xs">
-                            确定要删除此选配记录吗？此操作不可撤销。
+                            {t('saved.actions.deleteDesc')}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel className="h-7 text-xs">取消</AlertDialogCancel>
+                          <AlertDialogCancel className="h-7 text-xs">{t('common.cancel')}</AlertDialogCancel>
                           <AlertDialogAction
                             className="h-7 text-xs bg-red-600 hover:bg-red-700"
                             onClick={() => {
                               deleteConfiguration(cfg.id);
                             }}
                           >
-                            删除
+                            {t('common.delete')}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -451,7 +454,7 @@ export default function SavedConfigList() {
 
       {displayConfigs.length === 0 && (
         <div className="text-xs text-slate-400 text-center py-4 border rounded-lg bg-white">
-          未找到匹配配置号的记录
+          {t('saved.notFound')}
         </div>
       )}
 
@@ -460,7 +463,7 @@ export default function SavedConfigList() {
           <DialogHeader>
             <DialogTitle className="text-sm flex items-center justify-between">
               <span>
-                选配历史详情 {detailConfig?.model_name ? `- ${formatModelDisplayName(detailConfig.model_name, detailConfig.engineer_model_name)}` : `- ${detailConfig?.series_description || detailConfig?.series_name}`}
+                {t('saved.detailTitle')} {detailConfig?.model_name ? `- ${formatModelDisplayName(detailConfig.model_name, detailConfig.engineer_model_name)}` : `- ${detailConfig?.series_description || detailConfig?.series_name}`}
               </span>
               {detailConfig && (
                 <div className="flex items-center gap-2">
@@ -471,7 +474,7 @@ export default function SavedConfigList() {
                     onClick={() => exportToJSON(detailConfig)}
                   >
                     <FileJson className="w-3 h-3" />
-                    导出JSON
+                    {t('quote.exportJson')}
                   </Button>
                   <Button
                     variant="outline"
@@ -480,7 +483,7 @@ export default function SavedConfigList() {
                     onClick={() => exportToCSV(detailConfig)}
                   >
                     <FileSpreadsheet className="w-3 h-3" />
-                    导出CSV
+                    CSV
                   </Button>
                 </div>
               )}

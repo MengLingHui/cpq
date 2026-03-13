@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useCPQStore } from '@/lib/cpq-store';
+import { formatNumber } from '@/lib/i18n';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -39,6 +40,7 @@ import {
 import PricePanel from './PricePanel';
 import { isSuperCategoryPriced, isSuperCategoryReadOnly, supportsCustomInput, canShowHiddenItems, formatModelDisplayName } from '@/lib/cpq-data';
 import type { OptionItem, SeriesInfo } from '@/lib/cpq-data';
+import { useI18n } from '@/lib/i18n';
 
 const SAVE_PRIMARY_CLASS = 'h-8 px-3 text-xs gap-1.5 rounded-full shadow-sm';
 const SAVE_SECONDARY_CLASS = 'h-8 px-3 text-xs gap-1.5 rounded-full border-slate-300 bg-white';
@@ -62,6 +64,8 @@ function buildSeriesPath(seriesList: SeriesInfo[], leafSeriesId: string): Series
 
 // Step 1: Series Selection - Folder navigation style
 function SeriesSelector() {
+  const { locale } = useI18n();
+  const isZh = locale === 'zh-CN';
   const {
     seriesList,
     selectSeries,
@@ -120,7 +124,9 @@ function SeriesSelector() {
     if (children.length === 0) {
       const availableModels = getModelsForSeries(seriesId);
       if (availableModels.length === 0) {
-        alert(`产品线「${series.series_name}」暂无可用销售机型，请先在“销售机型”中发布或关联后再试。`);
+        alert(isZh
+          ? `产品线「${series.series_name}」暂无可用销售机型，请先在“销售机型”中发布或关联后再试。`
+          : `No available market model for series "${series.series_name}". Please publish or link one in Market Models first.`);
         return;
       }
       // Leaf node with models - select and proceed
@@ -171,15 +177,15 @@ function SeriesSelector() {
   const breadcrumbs = getBreadcrumbs();
   const currentLevelSeries = getCurrentLevelSeries();
   const editingConfig = editingConfigId ? savedConfigurations.find(cfg => cfg.id === editingConfigId) : null;
-  const overwriteLabel = '保存(覆盖)';
-  const overwriteDoneLabel = editingConfig?.source_config_id ? '已覆盖' : '已保存';
+  const overwriteLabel = isZh ? '保存(覆盖)' : 'Save (Overwrite)';
+  const overwriteDoneLabel = editingConfig?.source_config_id ? (isZh ? '已覆盖' : 'Overwritten') : (isZh ? '已保存' : 'Saved');
 
   return (
     <div className="space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold text-slate-800">产品选配器</h2>
-          <p className="text-xs text-slate-500 mt-0.5">第一步：选择产品线</p>
+          <h2 className="text-sm font-semibold text-slate-800">{isZh ? '产品选配器' : 'Product Configurator'}</h2>
+          <p className="text-xs text-slate-500 mt-0.5">{isZh ? '第一步：选择产品线' : 'Step 1: Select Series'}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end rounded-xl border border-slate-200 bg-white/80 px-2 py-1 shadow-sm">
           {currentPath.length > 0 && (
@@ -191,7 +197,7 @@ function SeriesSelector() {
                 onClick={navigateBack}
               >
                 <ArrowLeft className="w-3 h-3" />
-                返回上级
+                {isZh ? '返回上级' : 'Back'}
               </Button>
               <Button
                 size="sm"
@@ -200,7 +206,7 @@ function SeriesSelector() {
                 onClick={() => handleSaveIntermediate('new')}
                 disabled={saveSuccess}
               >
-                {saveSuccess ? <><CheckCircle2 className="w-3 h-3" />已保存</> : <><Save className="w-3 h-3" />保存(新增)</>}
+                {saveSuccess ? <><CheckCircle2 className="w-3 h-3" />{isZh ? '已保存' : 'Saved'}</> : <><Save className="w-3 h-3" />{isZh ? '保存(新增)' : 'Save (New)'}</>}
               </Button>
               {editingConfigId && (
                 <Button
@@ -220,7 +226,7 @@ function SeriesSelector() {
             className="h-7 text-xs"
             onClick={() => setActiveTab('saved')}
           >
-            查看选配历史
+            {isZh ? '查看选配历史' : 'View Saved Configs'}
           </Button>
         </div>
       </div>
@@ -229,17 +235,17 @@ function SeriesSelector() {
       <div className="flex items-center gap-2 text-[10px] text-slate-500 bg-slate-50 rounded-lg p-2">
         <div className="flex items-center gap-1 text-blue-600 font-semibold">
           <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">1</div>
-          选择产品线
+          {isZh ? '选择产品线' : 'Select Series'}
         </div>
         <ChevronRight className="w-3 h-3 text-slate-300" />
         <div className="flex items-center gap-1 text-slate-400">
           <div className="w-5 h-5 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[10px]">2</div>
-          选择机型
+          {isZh ? '选择机型' : 'Select Model'}
         </div>
         <ChevronRight className="w-3 h-3 text-slate-300" />
         <div className="flex items-center gap-1 text-slate-400">
           <div className="w-5 h-5 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[10px]">3</div>
-          配置选项
+          {isZh ? '配置选项' : 'Configure Options'}
         </div>
       </div>
 
@@ -301,7 +307,7 @@ function SeriesSelector() {
               </div>
               {hasChildren && (
                 <>
-                  <Badge variant="secondary" className="text-[9px] h-5 shrink-0">{children.length} 子系列</Badge>
+                  <Badge variant="secondary" className="text-[9px] h-5 shrink-0">{children.length} {isZh ? '子系列' : 'subseries'}</Badge>
                   <ChevronRight className="w-3 h-3 text-slate-400" />
                 </>
               )}
@@ -310,7 +316,7 @@ function SeriesSelector() {
                   variant={availableModelCount > 0 ? 'secondary' : 'destructive'}
                   className="text-[9px] h-5 shrink-0"
                 >
-                  {availableModelCount} 机型
+                  {availableModelCount} {isZh ? '机型' : 'models'}
                 </Badge>
               )}
             </div>
@@ -323,6 +329,8 @@ function SeriesSelector() {
 
 // Step 2: Model Selection - Shows engineer model + linked sales models in one card
 function ModelSelector() {
+  const { locale } = useI18n();
+  const isZh = locale === 'zh-CN';
   const {
     selectedSeriesId,
     getModelsForSeries,
@@ -340,8 +348,8 @@ function ModelSelector() {
 
   const [saveSuccess, setSaveSuccess] = useState(false);
   const editingConfig = editingConfigId ? savedConfigurations.find(cfg => cfg.id === editingConfigId) : null;
-  const overwriteLabel = '保存(覆盖)';
-  const overwriteDoneLabel = editingConfig?.source_config_id ? '已覆盖' : '已保存';
+  const overwriteLabel = isZh ? '保存(覆盖)' : 'Save (Overwrite)';
+  const overwriteDoneLabel = editingConfig?.source_config_id ? (isZh ? '已覆盖' : 'Overwritten') : (isZh ? '已保存' : 'Saved');
 
   const series = getSelectedSeries();
   const modelsForSeries = getModelsForSeries(selectedSeriesId);
@@ -396,8 +404,8 @@ function ModelSelector() {
     <div className="space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold text-slate-800">产品选配器</h2>
-          <p className="text-xs text-slate-500 mt-0.5">第二步：选择机型</p>
+          <h2 className="text-sm font-semibold text-slate-800">{isZh ? '产品选配器' : 'Product Configurator'}</h2>
+          <p className="text-xs text-slate-500 mt-0.5">{isZh ? '第二步：选择机型' : 'Step 2: Select Model'}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end rounded-xl border border-slate-200 bg-white/80 px-2 py-1 shadow-sm">
           <Button
@@ -407,7 +415,7 @@ function ModelSelector() {
             onClick={backToSeriesSelection}
           >
             <ArrowLeft className="w-3 h-3" />
-            返回产品线
+            {isZh ? '返回产品线' : 'Back to Series'}
           </Button>
           <Button
             size="sm"
@@ -423,7 +431,7 @@ function ModelSelector() {
             }}
             disabled={saveSuccess}
           >
-            {saveSuccess ? <><CheckCircle2 className="w-3 h-3" />已保存</> : <><Save className="w-3 h-3" />保存(新增)</>}
+            {saveSuccess ? <><CheckCircle2 className="w-3 h-3" />{isZh ? '已保存' : 'Saved'}</> : <><Save className="w-3 h-3" />{isZh ? '保存(新增)' : 'Save (New)'}</>}
           </Button>
           {editingConfigId && (
             <Button
@@ -448,7 +456,7 @@ function ModelSelector() {
             className="h-7 text-xs"
             onClick={() => setActiveTab('saved')}
           >
-            查看选配历史
+            {isZh ? '查看选配历史' : 'View Saved Configs'}
           </Button>
         </div>
       </div>
@@ -457,17 +465,17 @@ function ModelSelector() {
       <div className="flex items-center gap-2 text-[10px] text-slate-500 bg-slate-50 rounded-lg p-2 overflow-x-auto whitespace-nowrap">
         <div className="flex items-center gap-1 text-emerald-600">
           <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">✓</div>
-          产品线已选
+          {isZh ? '产品线已选' : 'Series Selected'}
         </div>
         <ChevronRight className="w-3 h-3 text-slate-300" />
         <div className="flex items-center gap-1 text-blue-600 font-semibold">
           <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">2</div>
-          选择机型
+          {isZh ? '选择机型' : 'Select Model'}
         </div>
         <ChevronRight className="w-3 h-3 text-slate-300" />
         <div className="flex items-center gap-1 text-slate-400">
           <div className="w-5 h-5 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[10px]">3</div>
-          配置选项
+          {isZh ? '配置选项' : 'Configure Options'}
         </div>
       </div>
 
@@ -495,14 +503,14 @@ function ModelSelector() {
             </div>
           ))}
           <ChevronRight className="w-3 h-3 text-slate-400" />
-          <span className="text-blue-600 font-semibold">机型选择</span>
+          <span className="text-blue-600 font-semibold">{isZh ? '机型选择' : 'Model Selection'}</span>
         </div>
       </div>
 
       {hasNoModels ? (
         <div className="text-center py-10 text-slate-400">
           <Package className="w-10 h-10 mx-auto mb-2" />
-          <p className="text-sm">该产品线下暂无可用的机型</p>
+          <p className="text-sm">{isZh ? '该产品线下暂无可用的机型' : 'No available models under this series'}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -542,9 +550,9 @@ function ModelSelector() {
                   <Database className="w-4 h-4 text-indigo-500 shrink-0" />
                   <div className="flex-1 min-w-0 flex items-center gap-2">
                     <div className="text-xs font-semibold text-slate-800 truncate">{engModel.model_name}</div>
-                    <Badge variant="outline" className="text-[9px] h-5 border-indigo-300 text-indigo-600 shrink-0">工程机型</Badge>
-                    <Badge variant="secondary" className="text-[9px] h-5 shrink-0">{engGroupCount} 配置组</Badge>
-                    <span className="text-[9px] text-slate-400 shrink-0 hidden sm:inline">未关联销售机型</span>
+                    <Badge variant="outline" className="text-[9px] h-5 border-indigo-300 text-indigo-600 shrink-0">{isZh ? '工程机型' : 'Engineer Model'}</Badge>
+                    <Badge variant="secondary" className="text-[9px] h-5 shrink-0">{engGroupCount} {isZh ? '配置组' : 'groups'}</Badge>
+                    <span className="text-[9px] text-slate-400 shrink-0 hidden sm:inline">{isZh ? '未关联销售机型' : 'No linked market model'}</span>
                   </div>
                 </div>
               </div>
@@ -579,6 +587,8 @@ function ModelSelector() {
 
 // Step 3: Options Configuration
 function OptionsConfigurator() {
+  const { locale } = useI18n();
+  const isZh = locale === 'zh-CN';
   const {
     marketModels,
     activeMarketModelIndex,
@@ -630,15 +640,15 @@ function OptionsConfigurator() {
   };
 
   const editingConfig = editingConfigId ? savedConfigurations.find(cfg => cfg.id === editingConfigId) : null;
-  const overwriteLabel = '保存(覆盖)';
-  const overwriteDoneLabel = editingConfig?.source_config_id ? '已覆盖' : '已保存';
+  const overwriteLabel = isZh ? '保存(覆盖)' : 'Save (Overwrite)';
+  const overwriteDoneLabel = editingConfig?.source_config_id ? (isZh ? '已覆盖' : 'Overwritten') : (isZh ? '已保存' : 'Saved');
 
   const currency = getCurrency();
   const series = getSelectedSeries();
   const modelDisplayName = getActiveModelDisplayName();
 
   const formatPrice = (price: number): string => {
-    return price > 0 ? `+${currency}${price.toLocaleString('zh-CN')}` : `${currency}0`;
+    return price > 0 ? `+${currency}${formatNumber(price)}` : `${currency}0`;
   };
 
   const toggleCustomInput = (categoryCode: string, hasHiddenOptions: boolean = false) => {
@@ -757,7 +767,7 @@ function OptionsConfigurator() {
               {isReadOnly && <Lock className="w-2.5 h-2.5 text-slate-400 shrink-0" />}
               {shouldDisable && <AlertTriangle className="w-2.5 h-2.5 text-amber-500 shrink-0" />}
               <span className="text-[11px] truncate text-slate-600 flex-1">{opt.description}</span>
-              {opt.is_default && <Badge variant="secondary" className="text-[9px] h-4 shrink-0">默认</Badge>}
+              {opt.is_default && <Badge variant="secondary" className="text-[9px] h-4 shrink-0">{isZh ? '默认' : 'Default'}</Badge>}
               {hasPricing && <span className="text-emerald-600 text-[10px] whitespace-nowrap ml-auto">{formatPrice(price)}</span>}
             </div>
           );
@@ -806,17 +816,17 @@ function OptionsConfigurator() {
       {/* Sticky header with title and action buttons */}
       <div className="flex items-center justify-between sticky top-0 bg-white z-10 pb-2">
         <div>
-          <h2 className="text-sm font-semibold text-slate-800">产品选配器</h2>
-          <p className="text-xs text-slate-500 mt-0.5">第三步：配置选项 - {modelDisplayName}</p>
+          <h2 className="text-sm font-semibold text-slate-800">{isZh ? '产品选配器' : 'Product Configurator'}</h2>
+          <p className="text-xs text-slate-500 mt-0.5">{isZh ? '第三步：配置选项' : 'Step 3: Configure Options'} - {modelDisplayName}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
           <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={backToModelSelection}>
             <ArrowLeft className="w-3 h-3" />
-            返回机型
+            {isZh ? '返回机型' : 'Back to Model'}
           </Button>
           <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={resetSelections}>
             <RotateCcw className="w-3 h-3" />
-            重置
+            {isZh ? '重置' : 'Reset'}
           </Button>
           <Button 
             size="sm" 
@@ -826,9 +836,9 @@ function OptionsConfigurator() {
             disabled={saveSuccess}
           >
             {saveSuccess ? (
-              <><CheckCircle2 className="w-3 h-3" />已保存</>
+              <><CheckCircle2 className="w-3 h-3" />{isZh ? '已保存' : 'Saved'}</>
             ) : (
-              <><Save className="w-3 h-3" />保存(新增)</>
+              <><Save className="w-3 h-3" />{isZh ? '保存(新增)' : 'Save (New)'}</>
             )}
           </Button>
           {editingConfigId && (
@@ -846,7 +856,7 @@ function OptionsConfigurator() {
             </Button>
           )}
           <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setActiveTab('saved')}>
-            查看选配历史
+            {isZh ? '查看选配历史' : 'View Saved Configs'}
           </Button>
         </div>
       </div>
@@ -865,7 +875,7 @@ function OptionsConfigurator() {
         <ChevronRight className="w-3 h-3 text-slate-300" />
         <div className="flex items-center gap-1 text-blue-600 font-semibold">
           <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">3</div>
-          配置选项
+          {isZh ? '配置选项' : 'Configure Options'}
         </div>
       </div>
 
@@ -876,7 +886,7 @@ function OptionsConfigurator() {
           className="h-6 text-xs px-2"
           onClick={backToSeriesSelection}
         >
-          根目录
+          {isZh ? '根目录' : 'Root'}
         </Button>
         {seriesPath.map((node) => (
           <div key={node.series_id} className="flex items-center gap-2">
@@ -898,7 +908,7 @@ function OptionsConfigurator() {
           className="h-6 text-xs px-2"
           onClick={backToModelSelection}
         >
-          机型选择
+          {isZh ? '机型选择' : 'Model Selection'}
         </Button>
         <ChevronRight className="w-3 h-3 text-slate-400" />
         <span className="text-blue-600 font-semibold">{modelDisplayName}</span>
@@ -915,19 +925,19 @@ function OptionsConfigurator() {
             <div className="flex items-center gap-2">
               <Label className="text-[10px] text-slate-500 whitespace-nowrap flex items-center gap-1">
                 <DollarSign className="w-3 h-3" />
-                价格表:
+                {isZh ? '价格表' : 'Price Table'}:
               </Label>
               <Select
                 value={model.price_table_id || ''}
                 onValueChange={handlePriceTableChange}
               >
                 <SelectTrigger className="h-7 text-[10px] w-[160px]">
-                  <SelectValue placeholder="选择价格表" />
+                  <SelectValue placeholder={isZh ? '选择价格表' : 'Select Price Table'} />
                 </SelectTrigger>
                 <SelectContent>
                   {availablePriceTables.length === 0 ? (
                     <div className="px-2 py-1.5 text-[10px] text-slate-400">
-                      无可用价格表
+                      {isZh ? '无可用价格表' : 'No available price table'}
                     </div>
                   ) : (
                     availablePriceTables.map(pt => (
@@ -945,24 +955,28 @@ function OptionsConfigurator() {
             <div className="border rounded-lg p-3 mb-2 bg-amber-50/60 border-amber-200">
               <div className="flex items-center gap-2 text-xs font-medium text-amber-800 mb-1">
                 <AlertTriangle className="w-3.5 h-3.5" />
-                规则引擎提示
+                {isZh ? '规则引擎提示' : 'Rule Engine Notice'}
               </div>
               {constraintAnalysis.activeEnableRuleIds.length > 0 && (
                 <p className="text-[11px] text-amber-700">
-                  已触发 {constraintAnalysis.activeEnableRuleIds.length} 条启用规则，部分选项范围已自动收敛。
+                  {isZh
+                    ? `已触发 ${constraintAnalysis.activeEnableRuleIds.length} 条启用规则，部分选项范围已自动收敛。`
+                    : `${constraintAnalysis.activeEnableRuleIds.length} enable rules are active; some option ranges were auto-constrained.`}
                 </p>
               )}
               {constraintAnalysis.conflicts.length > 0 && (
                 <p className="text-[11px] text-red-600 mt-1">
-                  检测到 {constraintAnalysis.conflicts.length} 组排除冲突，系统已尝试自动修复，请确认当前配置。
+                  {isZh
+                    ? `检测到 ${constraintAnalysis.conflicts.length} 组排除冲突，系统已尝试自动修复，请确认当前配置。`
+                    : `${constraintAnalysis.conflicts.length} exclusion conflicts detected. Auto-repair has been applied; please verify current configuration.`}
                 </p>
               )}
               {constraintAnalysis.repairSuggestions.length > 0 && (
                 <div className="mt-1 text-[11px] text-amber-800 space-y-0.5">
                   {constraintAnalysis.repairSuggestions.slice(0, 3).map((suggestion, idx) => (
                     <div key={`${suggestion.category_code}-${idx}`}>
-                      建议：{suggestion.category_code} 从 {suggestion.from_option_code}
-                      {suggestion.to_option_code ? ` 调整为 ${suggestion.to_option_code}` : ' 取消当前值'}（{suggestion.reason}）
+                      {isZh ? '建议' : 'Suggestion'}: {suggestion.category_code} {isZh ? '从' : 'from'} {suggestion.from_option_code}
+                      {suggestion.to_option_code ? (isZh ? ` 调整为 ${suggestion.to_option_code}` : ` -> ${suggestion.to_option_code}`) : (isZh ? ' 取消当前值' : ' clear current value')} ({suggestion.reason})
                     </div>
                   ))}
                 </div>
@@ -1019,15 +1033,15 @@ function OptionsConfigurator() {
                       <span className={isGroupHidden ? 'text-amber-600' : ''}>
                         {group.super_category_name}
                       </span>
-                      <Badge variant="secondary" className="text-[10px] h-4">{visibleCats.length} 项</Badge>
+                      <Badge variant="secondary" className="text-[10px] h-4">{visibleCats.length} {isZh ? '项' : 'items'}</Badge>
                       {isReadOnly && (
-                        <Badge variant="outline" className="text-[10px] h-4 text-slate-500 border-slate-300">只读</Badge>
+                        <Badge variant="outline" className="text-[10px] h-4 text-slate-500 border-slate-300">{isZh ? '只读' : 'Read-only'}</Badge>
                       )}
                       {isGroupHidden && (
-                        <Badge variant="outline" className="text-[10px] h-4 text-amber-600 border-amber-300">已隐藏</Badge>
+                        <Badge variant="outline" className="text-[10px] h-4 text-amber-600 border-amber-300">{isZh ? '已隐藏' : 'Hidden'}</Badge>
                       )}
                       {canCustom && (
-                        <Badge variant="outline" className="text-[10px] h-4 text-blue-500 border-blue-300">支持自定义</Badge>
+                        <Badge variant="outline" className="text-[10px] h-4 text-blue-500 border-blue-300">{isZh ? '支持自定义' : 'Customizable'}</Badge>
                       )}
                       <div className="flex-1" />
                       {/* Category visibility toggle button at super category level - 暂时注释掉
@@ -1083,10 +1097,10 @@ function OptionsConfigurator() {
                               {isReadOnly && <Lock className="w-2.5 h-2.5 text-slate-400" />}
                               <span className="text-[11px] font-medium text-slate-700">{cat.category_name}</span>
                               {isCatHidden && (
-                                <Badge variant="outline" className="text-[9px] h-4 text-amber-500 border-amber-300">隐藏项</Badge>
+                                <Badge variant="outline" className="text-[9px] h-4 text-amber-500 border-amber-300">{isZh ? '隐藏项' : 'Hidden Item'}</Badge>
                               )}
                               {!selectedCode && !hasCustom && !isReadOnly && (
-                                <Badge variant="outline" className="text-[9px] h-4 text-orange-500 border-orange-300">未选择</Badge>
+                                <Badge variant="outline" className="text-[9px] h-4 text-orange-500 border-orange-300">{isZh ? '未选择' : 'Not Selected'}</Badge>
                               )}
                               <div className="flex-1" />
                               {/* Option visibility toggle button at category level - 暂时注释掉
@@ -1103,12 +1117,12 @@ function OptionsConfigurator() {
                               )} */}
                               {canCustom && !isReadOnly && !hasCustom && !showingCustomInput && (
                                 <Button variant="ghost" size="sm" className="h-5 text-[10px] gap-0.5 text-blue-600 hover:text-blue-700" onClick={() => toggleCustomInput(cat.category_code, cat.options.some(o => o.hide))}>
-                                  <PenLine className="w-2.5 h-2.5" />自定义
+                                  <PenLine className="w-2.5 h-2.5" />{isZh ? '自定义' : 'Custom'}
                                 </Button>
                               )}
                               {hasCustom && !isReadOnly && (
                                 <Button variant="ghost" size="sm" className="h-5 text-[10px] gap-0.5 text-amber-600 hover:text-amber-700" onClick={() => toggleCustomInput(cat.category_code)}>
-                                  <X className="w-2.5 h-2.5" />取消自定义
+                                  <X className="w-2.5 h-2.5" />{isZh ? '取消自定义' : 'Cancel Custom'}
                                 </Button>
                               )}
                             </div>
@@ -1116,9 +1130,9 @@ function OptionsConfigurator() {
                             {hasCustom && customEntry && (
                               <div className="bg-amber-100/50 border border-amber-200 rounded p-2 mb-1.5">
                                 <div className="flex items-center gap-2 text-[11px]">
-                                  <Badge variant="outline" className="text-[9px] h-4 border-amber-400 text-amber-700">自定义</Badge>
+                                  <Badge variant="outline" className="text-[9px] h-4 border-amber-400 text-amber-700">{isZh ? '自定义' : 'Custom'}</Badge>
                                   <span className="text-amber-800">{customEntry.custom_text}</span>
-                                  <span className="text-amber-600 text-[10px] ml-auto font-medium">价格: ?</span>
+                                  <span className="text-amber-600 text-[10px] ml-auto font-medium">{isZh ? '价格' : 'Price'}: ?</span>
                                 </div>
                               </div>
                             )}
@@ -1129,7 +1143,7 @@ function OptionsConfigurator() {
                                 {renderOptions(
                                   displayOptions.map(o => ({
                                     ...o,
-                                    description: o.description + (o.hide ? ' (隐藏项)' : ''),
+                                    description: o.description + (o.hide ? (isZh ? ' (隐藏项)' : ' (Hidden)') : ''),
                                   })),
                                   cat.category_code,
                                   selectedCode,
@@ -1142,7 +1156,9 @@ function OptionsConfigurator() {
 
                             {!hasCustom && disabledOptionCount > 0 && (
                               <div className="text-[10px] text-amber-700 mb-1">
-                                该特征有 {disabledOptionCount} 个选项被规则限制，鼠标悬停可查看原因。
+                                {isZh
+                                  ? `该特征有 ${disabledOptionCount} 个选项被规则限制，鼠标悬停可查看原因。`
+                                  : `${disabledOptionCount} options are restricted by rules. Hover to see reasons.`}
                               </div>
                             )}
 
@@ -1151,7 +1167,9 @@ function OptionsConfigurator() {
                               <div className="bg-amber-50/50 border border-amber-200 rounded p-2 mb-2">
                                 <div className="flex items-center gap-2 text-[11px] text-amber-700">
                                   <Eye className="w-3 h-3" />
-                                  <span>该配置项隐藏的 {cat.options.filter(o => o.hide).length} 个选项已显示，若仍不满足要求，请输入自定义配置</span>
+                                  <span>{isZh
+                                    ? `该配置项隐藏的 ${cat.options.filter(o => o.hide).length} 个选项已显示，若仍不满足要求，请输入自定义配置`
+                                    : `${cat.options.filter(o => o.hide).length} hidden options are shown. If still not suitable, please enter a custom requirement.`}</span>
                                 </div>
                               </div>
                             )}
@@ -1160,19 +1178,19 @@ function OptionsConfigurator() {
                             {showingCustomInput && !hasCustom && (
                               <div className="bg-blue-50/50 border border-blue-200 rounded p-2">
                                 <div className="space-y-1.5">
-                                  <Label className="text-[10px] text-blue-700">输入特殊要求：</Label>
+                                  <Label className="text-[10px] text-blue-700">{isZh ? '输入特殊要求：' : 'Enter custom requirement:'}</Label>
                                   <Textarea
                                     value={customInputText[cat.category_code] || ''}
                                     onChange={(e) => setCustomInputText(prev => ({ ...prev, [cat.category_code]: e.target.value }))}
                                     className="h-16 text-[11px] resize-none"
-                                    placeholder="请描述您的特殊配置需求..."
+                                    placeholder={isZh ? '请描述您的特殊配置需求...' : 'Describe your custom configuration needs...'}
                                   />
                                   <div className="flex gap-1 justify-end">
                                     <Button variant="outline" size="sm" className="h-6 text-[10px]" onClick={() => {
                                       setCustomInputVisible(prev => ({ ...prev, [cat.category_code]: false }));
                                       setCustomInputText(prev => ({ ...prev, [cat.category_code]: '' }));
-                                    }}>取消</Button>
-                                    <Button size="sm" className="h-6 text-[10px]" onClick={() => confirmCustomInput(cat.category_code, cat.category_name, group.super_category_id)} disabled={!customInputText[cat.category_code]?.trim()}>确认</Button>
+                                    }}>{isZh ? '取消' : 'Cancel'}</Button>
+                                    <Button size="sm" className="h-6 text-[10px]" onClick={() => confirmCustomInput(cat.category_code, cat.category_name, group.super_category_id)} disabled={!customInputText[cat.category_code]?.trim()}>{isZh ? '确认' : 'Confirm'}</Button>
                                   </div>
                                 </div>
                               </div>

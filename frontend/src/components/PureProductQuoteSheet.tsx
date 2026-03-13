@@ -30,6 +30,7 @@ import {
 import { ClipboardList, Eye, FileDown, FileJson, Trash2 } from 'lucide-react';
 import type { PureProductQuoteSheet as PureProductQuoteSheetType } from '@/lib/cpq-data';
 import { formatModelDisplayName } from '@/lib/cpq-data';
+import { formatDateTime, formatNumber, useI18n } from '@/lib/i18n';
 
 function exportSheetAsJSON(sheet: PureProductQuoteSheetType) {
   const payload = {
@@ -54,9 +55,9 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#039;');
 }
 
-function exportSheetAsPDF(sheet: PureProductQuoteSheetType) {
+function exportSheetAsPDF(sheet: PureProductQuoteSheetType, t: (key: string) => string, locale: 'zh-CN' | 'en-US') {
   const totalsHtml = Object.entries(sheet.totals_by_currency || {})
-    .map(([currency, total]) => `<span class="badge">${escapeHtml(currency)}${Number(total).toLocaleString('zh-CN')}</span>`)
+    .map(([currency, total]) => `<span class="badge">${escapeHtml(currency)}${formatNumber(Number(total), locale)}</span>`)
     .join('');
 
   const rowsHtml = (sheet.items || [])
@@ -65,7 +66,7 @@ function exportSheetAsPDF(sheet: PureProductQuoteSheetType) {
         ? (item.printable_details || [])
             .map((detail) => `<div>${escapeHtml(detail.category_name)}: ${escapeHtml(detail.option_description)}</div>`)
             .join('')
-        : '<span class="muted">无可打印明细</span>';
+        : `<span class="muted">${escapeHtml(t('quote.noPrintableDetail'))}</span>`;
 
       const modelName = item.model_name
         ? formatModelDisplayName(item.model_name, item.engineer_model_name)
@@ -79,7 +80,7 @@ function exportSheetAsPDF(sheet: PureProductQuoteSheetType) {
           </td>
           <td>${escapeHtml(item.price_table_name || '-')}</td>
           <td>${details}</td>
-          <td>${escapeHtml(item.total_price || '-')} ${item.has_custom ? '<span class="warn">(含待确认项)</span>' : ''}</td>
+          <td>${escapeHtml(item.total_price || '-')} ${item.has_custom ? `<span class="warn">${escapeHtml(t('quote.includePending'))}</span>` : ''}</td>
         </tr>
       `;
     })
@@ -87,7 +88,7 @@ function exportSheetAsPDF(sheet: PureProductQuoteSheetType) {
 
   const html = `
     <!doctype html>
-    <html lang="zh-CN">
+    <html lang="${locale}">
       <head>
         <meta charset="UTF-8" />
         <title>${escapeHtml(sheet.name)}</title>
@@ -108,15 +109,15 @@ function exportSheetAsPDF(sheet: PureProductQuoteSheetType) {
       </head>
       <body>
         <h1>${escapeHtml(sheet.name)}</h1>
-        <div class="meta">生成时间: ${new Date(sheet.created_at).toLocaleString('zh-CN')} | 条目数: ${sheet.item_count}</div>
+        <div class="meta">${escapeHtml(t('quote.labels.generatedAt'))}: ${formatDateTime(sheet.created_at, locale)} | ${escapeHtml(t('quote.labels.items'))}: ${sheet.item_count}</div>
         <div class="badges">${totalsHtml}</div>
         <table>
           <thead>
             <tr>
-              <th style="width: 22%">机型</th>
-              <th style="width: 18%">价格表</th>
-              <th style="width: 40%">打印选配明细</th>
-              <th style="width: 20%">总价</th>
+              <th style="width: 22%">${escapeHtml(t('quote.labels.model'))}</th>
+              <th style="width: 18%">${escapeHtml(t('quote.labels.priceTable'))}</th>
+              <th style="width: 40%">${escapeHtml(t('quote.labels.printableDetails'))}</th>
+              <th style="width: 20%">${escapeHtml(t('quote.labels.totalPrice'))}</th>
             </tr>
           </thead>
           <tbody>
@@ -147,7 +148,7 @@ function exportSheetAsPDF(sheet: PureProductQuoteSheetType) {
     const printWindow = iframe.contentWindow;
     if (!printWindow) {
       cleanup();
-      alert('打印窗口初始化失败，请重试。');
+      alert(t('quote.printInitFailed'));
       return;
     }
     printWindow.focus();
@@ -158,7 +159,7 @@ function exportSheetAsPDF(sheet: PureProductQuoteSheetType) {
   const doc = iframe.contentDocument || iframe.contentWindow?.document;
   if (!doc) {
     cleanup();
-    alert('打印内容初始化失败，请重试。');
+    alert(t('quote.printContentInitFailed'));
     return;
   }
 
@@ -179,6 +180,7 @@ function exportSheetAsPDF(sheet: PureProductQuoteSheetType) {
 }
 
 export default function PureProductQuoteSheet() {
+  const { t, locale } = useI18n();
   const { pureProductQuoteSheets, deletePureProductQuoteSheet } = useCPQStore();
   const [detailSheet, setDetailSheet] = useState<PureProductQuoteSheetType | null>(null);
 
@@ -186,8 +188,8 @@ export default function PureProductQuoteSheet() {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-slate-400">
         <ClipboardList className="w-12 h-12 mb-3" />
-        <p className="text-sm">暂无纯产品报价单</p>
-        <p className="text-xs mt-1">请先到“选配历史”勾选记录并生成报价单</p>
+        <p className="text-sm">{t('quote.empty')}</p>
+        <p className="text-xs mt-1">{t('quote.emptyHint')}</p>
       </div>
     );
   }
@@ -195,18 +197,18 @@ export default function PureProductQuoteSheet() {
   return (
     <div className="space-y-3">
       <div>
-        <h2 className="text-sm font-semibold text-slate-800">纯产品报价单</h2>
-        <p className="text-xs text-slate-500 mt-0.5">共 {pureProductQuoteSheets.length} 份报价单</p>
+        <h2 className="text-sm font-semibold text-slate-800">{t('quote.title')}</h2>
+        <p className="text-xs text-slate-500 mt-0.5">{t('quote.totalSheets')} {pureProductQuoteSheets.length} {t('quote.totalSheetsSuffix')}</p>
       </div>
 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="h-8 text-xs">报价单名称</TableHead>
-            <TableHead className="h-8 text-xs">条目数</TableHead>
-            <TableHead className="h-8 text-xs">汇总金额</TableHead>
-            <TableHead className="h-8 text-xs">创建时间</TableHead>
-            <TableHead className="h-8 text-xs text-right">操作</TableHead>
+            <TableHead className="h-8 text-xs">{t('quote.table.name')}</TableHead>
+            <TableHead className="h-8 text-xs">{t('quote.table.itemCount')}</TableHead>
+            <TableHead className="h-8 text-xs">{t('quote.table.total')}</TableHead>
+            <TableHead className="h-8 text-xs">{t('quote.table.createdAt')}</TableHead>
+            <TableHead className="h-8 text-xs text-right">{t('quote.table.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -218,12 +220,12 @@ export default function PureProductQuoteSheet() {
                 <div className="flex flex-wrap gap-1">
                   {Object.entries(sheet.totals_by_currency || {}).map(([currency, total]) => (
                     <Badge key={`${sheet.id}-${currency}`} variant="outline" className="text-[10px]">
-                      {currency}{total.toLocaleString('zh-CN')}
+                      {currency}{formatNumber(total)}
                     </Badge>
                   ))}
                 </div>
               </TableCell>
-              <TableCell className="py-2 text-xs">{new Date(sheet.created_at).toLocaleString('zh-CN')}</TableCell>
+              <TableCell className="py-2 text-xs">{formatDateTime(sheet.created_at)}</TableCell>
               <TableCell className="py-2 text-right">
                 <div className="flex items-center justify-end gap-1">
                   <Button
@@ -242,16 +244,16 @@ export default function PureProductQuoteSheet() {
                     onClick={() => exportSheetAsJSON(sheet)}
                   >
                     <FileJson className="w-3 h-3" />
-                    导出JSON
+                    {t('quote.exportJson')}
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     className="h-7 text-xs gap-1"
-                    onClick={() => exportSheetAsPDF(sheet)}
+                    onClick={() => exportSheetAsPDF(sheet, t, locale)}
                   >
                     <FileDown className="w-3 h-3" />
-                    导出PDF
+                    {t('quote.exportPdf')}
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -265,18 +267,18 @@ export default function PureProductQuoteSheet() {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle className="text-sm">确认删除</AlertDialogTitle>
+                        <AlertDialogTitle className="text-sm">{t('quote.deleteConfirm')}</AlertDialogTitle>
                         <AlertDialogDescription className="text-xs">
-                          确定删除这份纯产品报价单吗？删除后不可恢复。
+                          {t('quote.deleteDesc')}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel className="h-7 text-xs">取消</AlertDialogCancel>
+                        <AlertDialogCancel className="h-7 text-xs">{t('common.cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                           className="h-7 text-xs bg-red-600 hover:bg-red-700"
                           onClick={() => deletePureProductQuoteSheet(sheet.id)}
                         >
-                          删除
+                          {t('common.delete')}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -292,16 +294,16 @@ export default function PureProductQuoteSheet() {
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-sm flex items-center justify-between gap-2">
-              <span>{detailSheet?.name || '纯产品报价单详情'}</span>
+              <span>{detailSheet?.name || t('quote.detailTitle')}</span>
               {detailSheet && (
                 <Button
                   variant="outline"
                   size="sm"
                   className="h-7 text-xs gap-1"
-                  onClick={() => exportSheetAsPDF(detailSheet)}
+                  onClick={() => exportSheetAsPDF(detailSheet, t, locale)}
                 >
                   <FileDown className="w-3 h-3" />
-                  导出PDF
+                  {t('quote.exportPdf')}
                 </Button>
               )}
             </DialogTitle>
@@ -313,7 +315,7 @@ export default function PureProductQuoteSheet() {
                 <Badge variant="secondary">条目数: {detailSheet.item_count}</Badge>
                 {Object.entries(detailSheet.totals_by_currency || {}).map(([currency, total]) => (
                   <Badge key={`total-${currency}`} variant="outline">
-                    汇总({currency}): {currency}{total.toLocaleString('zh-CN')}
+                    {t('quote.labels.totalByCurrency')}({currency}): {currency}{formatNumber(total)}
                   </Badge>
                 ))}
               </div>
@@ -321,10 +323,10 @@ export default function PureProductQuoteSheet() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="h-8 text-xs">机型</TableHead>
-                    <TableHead className="h-8 text-xs">价格表</TableHead>
-                    <TableHead className="h-8 text-xs">打印选配明细</TableHead>
-                    <TableHead className="h-8 text-xs">总价</TableHead>
+                    <TableHead className="h-8 text-xs">{t('quote.labels.model')}</TableHead>
+                    <TableHead className="h-8 text-xs">{t('quote.labels.priceTable')}</TableHead>
+                    <TableHead className="h-8 text-xs">{t('quote.labels.printableDetails')}</TableHead>
+                    <TableHead className="h-8 text-xs">{t('quote.labels.totalPrice')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -339,7 +341,7 @@ export default function PureProductQuoteSheet() {
                       <TableCell className="py-2 text-xs">{item.price_table_name}</TableCell>
                       <TableCell className="py-2 text-xs">
                         {(item.printable_details || []).length === 0 ? (
-                          <span className="text-slate-400 text-[11px]">无可打印明细</span>
+                          <span className="text-slate-400 text-[11px]">{t('quote.noPrintableDetail')}</span>
                         ) : (
                           <div className="space-y-0.5">
                             {(item.printable_details || []).map((detail) => (
@@ -352,7 +354,7 @@ export default function PureProductQuoteSheet() {
                       </TableCell>
                       <TableCell className="py-2 text-xs">
                         {item.total_price}
-                        {item.has_custom && <span className="ml-1 text-[10px] text-amber-600">(含待确认项)</span>}
+                        {item.has_custom && <span className="ml-1 text-[10px] text-amber-600">{t('quote.includePending')}</span>}
                       </TableCell>
                     </TableRow>
                   ))}

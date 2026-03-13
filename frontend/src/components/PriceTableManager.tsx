@@ -29,6 +29,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Plus, Pencil, Trash2, DollarSign, Copy, Database } from 'lucide-react';
+import { formatDate, useI18n } from '@/lib/i18n';
 
 function PriceTableEditor({
   table,
@@ -40,6 +41,7 @@ function PriceTableEditor({
   onCancel: () => void;
 }) {
   const { getEngineerModelName } = useCPQStore();
+  const { t } = useI18n();
   const [name, setName] = useState(table.name);
   const [description, setDescription] = useState(table.description);
   const [currency, setCurrency] = useState(table.currency || '¥');
@@ -76,25 +78,25 @@ function PriceTableEditor({
     <div className="space-y-3">
       <div className="grid grid-cols-3 gap-3">
         <div>
-          <Label className="text-xs">价格表名称</Label>
+          <Label className="text-xs">{t('pricetable.fields.name')}</Label>
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="h-7 text-xs mt-1"
-            placeholder="输入价格表名称"
+            placeholder={t('pricetable.placeholders.name')}
           />
         </div>
         <div>
-          <Label className="text-xs">描述</Label>
+          <Label className="text-xs">{t('pricetable.fields.desc')}</Label>
           <Input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="h-7 text-xs mt-1"
-            placeholder="输入描述"
+            placeholder={t('pricetable.placeholders.desc')}
           />
         </div>
         <div>
-          <Label className="text-xs">币种</Label>
+          <Label className="text-xs">{t('pricetable.fields.currency')}</Label>
           <Select value={currency} onValueChange={setCurrency}>
             <SelectTrigger className="h-7 text-xs mt-1">
               <SelectValue />
@@ -102,7 +104,7 @@ function PriceTableEditor({
             <SelectContent>
               {CURRENCIES.map(c => (
                 <SelectItem key={c.code} value={c.code} className="text-xs">
-                  {c.label}
+                  {c.code}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -112,7 +114,7 @@ function PriceTableEditor({
 
       {/* Linked engineer model (read-only) */}
       <div>
-        <Label className="text-xs font-medium">关联工程机型</Label>
+        <Label className="text-xs font-medium">{t('pricetable.fields.linkedEngineer')}</Label>
         <div className="mt-1 p-2 bg-slate-50 rounded border">
           <Badge variant="outline" className="text-[10px] gap-1">
             <Database className="w-2.5 h-2.5" />
@@ -126,10 +128,10 @@ function PriceTableEditor({
           value={filterText}
           onChange={(e) => setFilterText(e.target.value)}
           className="h-7 text-xs max-w-[240px]"
-          placeholder="搜索选项编码或内容..."
+          placeholder={t('pricetable.placeholders.filter')}
         />
         <span className="text-[10px] text-slate-500">
-          共 {entries.length} 个选项价格 · 币种: {currency}
+          {t('pricetable.countSummary')} {entries.length} {t('pricetable.countSummarySuffix')} {currency}
         </span>
       </div>
 
@@ -137,10 +139,10 @@ function PriceTableEditor({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="h-7 text-[10px] sticky top-0 bg-white z-10 w-10">序号</TableHead>
-              <TableHead className="h-7 text-[10px] sticky top-0 bg-white z-10 w-28">选项编码</TableHead>
-              <TableHead className="h-7 text-[10px] sticky top-0 bg-white z-10">选项内容</TableHead>
-              <TableHead className="h-7 text-[10px] sticky top-0 bg-white z-10 w-32">价格 ({currency})</TableHead>
+              <TableHead className="h-7 text-[10px] sticky top-0 bg-white z-10 w-10">{t('pricetable.table.index')}</TableHead>
+              <TableHead className="h-7 text-[10px] sticky top-0 bg-white z-10 w-28">{t('pricetable.table.optionCode')}</TableHead>
+              <TableHead className="h-7 text-[10px] sticky top-0 bg-white z-10">{t('pricetable.table.optionDesc')}</TableHead>
+              <TableHead className="h-7 text-[10px] sticky top-0 bg-white z-10 w-32">{t('pricetable.table.price')} ({currency})</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -169,10 +171,10 @@ function PriceTableEditor({
 
       <DialogFooter>
         <Button variant="outline" size="sm" className="h-8 px-3 text-xs rounded-full border-slate-300 bg-white" onClick={onCancel}>
-          取消
+          {t('common.cancel')}
         </Button>
         <Button size="sm" className="h-8 px-3 text-xs rounded-full shadow-sm" onClick={handleSave}>
-          保存
+          {t('common.save')}
         </Button>
       </DialogFooter>
     </div>
@@ -181,6 +183,7 @@ function PriceTableEditor({
 
 export default function PriceTableManager() {
   const { priceTables, addPriceTable, updatePriceTable, deletePriceTable, marketModels, engineerModels, getEngineerModelName } = useCPQStore();
+  const { t } = useI18n();
   const [editingTable, setEditingTable] = useState<PriceTable | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   // For the "select engineer model" step when creating
@@ -188,7 +191,7 @@ export default function PriceTableManager() {
 
   const handleCreate = () => {
     if (engineerModels.length === 0) {
-      alert('暂无工程机型，无法创建价格表');
+      alert(t('pricetable.noEngineerAlert'));
       return;
     }
     if (engineerModels.length === 1) {
@@ -206,8 +209,8 @@ export default function PriceTableManager() {
 
     const newTable = generatePriceTableFromEngineer(
       engModel,
-      `价格表 ${priceTables.length + 1}`,
-      `创建于 ${new Date().toLocaleDateString('zh-CN')}`
+      `PT ${priceTables.length + 1}`,
+      `${t('pricetable.createdOn')} ${formatDate(new Date())}`
     );
     setEditingTable(newTable);
     setSelectEngDialogOpen(false);
@@ -218,7 +221,7 @@ export default function PriceTableManager() {
     const newTable: PriceTable = {
       ...JSON.parse(JSON.stringify(table)),
       id: `pt_${Date.now()}`,
-      name: `${table.name} (副本)`,
+      name: `${table.name}${t('pricetable.duplicateSuffix')}`,
       created_at: new Date().toISOString(),
     };
     setEditingTable(newTable);
@@ -244,7 +247,7 @@ export default function PriceTableManager() {
   const handleDelete = (id: string) => {
     const inUse = marketModels.some(m => m.price_table_id === id);
     if (inUse) {
-      alert('该价格表正在被销售机型使用，无法删除');
+      alert(t('pricetable.inUseAlert'));
       return;
     }
     deletePriceTable(id);
@@ -254,34 +257,34 @@ export default function PriceTableManager() {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-slate-800">价格表管理</h2>
+          <h2 className="text-sm font-semibold text-slate-800">{t('pricetable.title')}</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            维护选项价格表，支持多币种。价格表关联工程机型，销售机型选择价格表时仅显示关联相同工程机型的价格表。
+            {t('pricetable.subtitle')}
           </p>
         </div>
         <Button size="sm" className="h-7 text-xs gap-1" onClick={handleCreate}>
           <Plus className="w-3 h-3" />
-          新建价格表
+          {t('pricetable.create')}
         </Button>
       </div>
 
       {priceTables.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-slate-400">
           <DollarSign className="w-12 h-12 mb-3" />
-          <p className="text-sm">暂无价格表</p>
-          <p className="text-xs mt-1">点击上方按钮创建价格表</p>
+          <p className="text-sm">{t('pricetable.noData')}</p>
+          <p className="text-xs mt-1">{t('pricetable.noDataHint')}</p>
         </div>
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="h-8 text-xs">价格表名称</TableHead>
-              <TableHead className="h-8 text-xs">描述</TableHead>
-              <TableHead className="h-8 text-xs">关联工程机型</TableHead>
-              <TableHead className="h-8 text-xs">币种</TableHead>
-              <TableHead className="h-8 text-xs">选项数</TableHead>
-              <TableHead className="h-8 text-xs">创建时间</TableHead>
-              <TableHead className="h-8 text-xs text-right">操作</TableHead>
+              <TableHead className="h-8 text-xs">{t('pricetable.table.name')}</TableHead>
+              <TableHead className="h-8 text-xs">{t('pricetable.table.desc')}</TableHead>
+              <TableHead className="h-8 text-xs">{t('pricetable.table.linkedEngineer')}</TableHead>
+              <TableHead className="h-8 text-xs">{t('pricetable.table.currency')}</TableHead>
+              <TableHead className="h-8 text-xs">{t('pricetable.table.optionCount')}</TableHead>
+              <TableHead className="h-8 text-xs">{t('pricetable.table.createdAt')}</TableHead>
+              <TableHead className="h-8 text-xs text-right">{t('pricetable.table.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -313,7 +316,7 @@ export default function PriceTableManager() {
                     </Badge>
                   </TableCell>
                   <TableCell className="py-2 text-xs text-slate-500">
-                    {new Date(table.created_at).toLocaleDateString('zh-CN')}
+                    {formatDate(table.created_at)}
                   </TableCell>
                   <TableCell className="py-2 text-right">
                     <div className="flex items-center justify-end gap-1">
@@ -324,7 +327,7 @@ export default function PriceTableManager() {
                         onClick={() => handleEdit(table)}
                       >
                         <Pencil className="w-3 h-3" />
-                        编辑
+                        {t('pricetable.actions.edit')}
                       </Button>
                       <Button
                         variant="ghost"
@@ -333,7 +336,7 @@ export default function PriceTableManager() {
                         onClick={() => handleDuplicate(table)}
                       >
                         <Copy className="w-3 h-3" />
-                        复制
+                        {t('pricetable.actions.copy')}
                       </Button>
                       <Button
                         variant="ghost"
@@ -358,11 +361,11 @@ export default function PriceTableManager() {
           <DialogHeader>
             <DialogTitle className="text-sm flex items-center gap-2">
               <Database className="w-4 h-4 text-blue-600" />
-              选择工程机型
+              {t('pricetable.selectEngineer')}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
-            <p className="text-xs text-slate-500">请先选择要关联的工程机型，价格表的选项将基于该工程机型生成。</p>
+            <p className="text-xs text-slate-500">{t('pricetable.selectEngineerHint')}</p>
             <div className="space-y-2 max-h-[40vh] overflow-y-auto">
               {engineerModels.map(eng => (
                 <div
@@ -376,8 +379,8 @@ export default function PriceTableManager() {
                     <div className="text-[10px] text-slate-500">{eng.series_info.series_description}</div>
                     <div className="text-[10px] text-slate-400 font-mono">{eng.model_id}</div>
                   </div>
-                  <Badge variant="secondary" className="text-[9px]">
-                    {eng.configuration_groups.reduce((sum, g) => sum + g.categories.length, 0)} 配置项
+                    <Badge variant="secondary" className="text-[9px]">
+                    {eng.configuration_groups.reduce((sum, g) => sum + g.categories.length, 0)} {t('pricetable.itemCount')}
                   </Badge>
                 </div>
               ))}
@@ -391,7 +394,7 @@ export default function PriceTableManager() {
         <DialogContent className="max-w-4xl max-h-[85vh]">
           <DialogHeader>
             <DialogTitle className="text-sm">
-              {editingTable && priceTables.find(t => t.id === editingTable.id) ? '编辑价格表' : '新建价格表'}
+              {editingTable && priceTables.find(t => t.id === editingTable.id) ? t('pricetable.editDialogTitle') : t('pricetable.createDialogTitle')}
             </DialogTitle>
           </DialogHeader>
           {editingTable && (

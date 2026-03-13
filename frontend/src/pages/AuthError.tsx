@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { AlertCircle } from 'lucide-react';
+import { useI18n } from '@/lib/i18n';
 
 export default function AuthErrorPage() {
   const [searchParams] = useSearchParams();
   const [countdown, setCountdown] = useState(3);
+  const { t } = useI18n();
   const errorMessage =
     searchParams.get('msg') ||
-    'Sorry, your authentication information is invalid or has expired';
+    t('auth.defaultError');
 
   useEffect(() => {
     // Countdown logic
@@ -49,7 +51,7 @@ export default function AuthErrorPage() {
 
           {/* Error title */}
           <h1 className="text-2xl font-bold text-gray-800">
-            Authentication Error
+            {t('auth.errorTitle')}
           </h1>
 
           {/* Error description */}
@@ -60,14 +62,14 @@ export default function AuthErrorPage() {
             <p className="text-sm text-gray-500">
               {countdown > 0 ? (
                 <>
-                  Will automatically return to the home page in{' '}
+                  {t('auth.autoReturnPrefix')}{' '}
                   <span className="text-blue-600 font-semibold text-base">
                     {countdown}
                   </span>{' '}
-                  seconds
+                  {t('auth.autoReturnSuffix')}
                 </>
               ) : (
-                'Redirecting...'
+                t('auth.redirecting')
               )}
             </p>
           </div>
@@ -76,7 +78,7 @@ export default function AuthErrorPage() {
         {/* Return to home button */}
         <div className="flex justify-center pt-2">
           <Button onClick={handleReturnHome} className="px-6">
-            Return to Home
+            {t('auth.returnHome')}
           </Button>
         </div>
       </div>

@@ -38,6 +38,7 @@ import {
 } from './cpq-data';
 import type { ConstraintAnalysis } from './cpq-rules';
 import { analyzeConstraints, repairSelectionsByRules } from './cpq-rules';
+import { formatDateTime, formatNumber, getActiveLocale } from './i18n';
 
 interface ConfigSelection {
   [categoryCode: string]: string;
@@ -903,7 +904,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
 
     const basePrice = MODEL_BASE_PRICE;
     const knownTotal = basePrice + optionsPrice;
-    const formattedTotal = `${currency}${knownTotal.toLocaleString('zh-CN')}`;
+    const formattedTotal = `${currency}${formatNumber(knownTotal)}`;
 
     const readyForConfigNumber = complete && !hasCustom;
     const status = getStatus('options', complete);
@@ -1212,7 +1213,9 @@ export const useCPQStore = create<CPQState>((set, get) => ({
     const now = new Date().toISOString();
     const sheet: PureProductQuoteSheet = {
       id: `ppq_${Date.now()}`,
-      name: name?.trim() || `纯产品报价单-${new Date().toLocaleString('zh-CN')}`,
+      name: name?.trim() || (getActiveLocale() === 'en-US'
+        ? `Quote-${formatDateTime(new Date())}`
+        : `纯产品报价单-${formatDateTime(new Date())}`),
       source_config_ids: selectedConfigs.map(cfg => cfg.id),
       item_count: items.length,
       totals_by_currency: totalsByCurrency,
@@ -1274,7 +1277,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
     const options = get().getOptionsPrice();
     const currency = get().getCurrency();
     const known = base + options;
-    const formatted = `${currency}${known.toLocaleString('zh-CN')}`;
+    const formatted = `${currency}${formatNumber(known)}`;
     if (customEntries.length > 0) {
       return `${formatted} + ?`;
     }

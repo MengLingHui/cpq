@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useMemo, useState } from 'react';
 import { useCPQStore } from '@/lib/cpq-store';
-import { isSuperCategoryPriced, generateConfigNumber, formatModelDisplayName } from '@/lib/cpq-data';
+import { isSuperCategoryPriced, formatModelDisplayName, generateConfigFingerprint } from '@/lib/cpq-data';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -10,16 +10,20 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { formatNumber, useI18n } from '@/lib/i18n';
 
-import { DollarSign, TrendingUp, AlertTriangle, Hash, Copy, CheckCircle2, RefreshCw } from 'lucide-react';
+import { DollarSign, TrendingUp, AlertTriangle, Hash, Copy, CheckCircle2 } from 'lucide-react';
 
 export default function PricePanel() {
+  const { locale } = useI18n();
+  const isZh = locale === 'zh-CN';
   const {
     selections,
     priceMap,
     marketModels,
     activeMarketModelIndex,
     customEntries,
+    savedConfigurations,
     priceTables,
     getBasePrice,
     getOptionsPrice,
@@ -27,22 +31,10 @@ export default function PricePanel() {
     getCurrency,
     hasCustomEntries,
     getActiveModelDisplayName,
+    getEngineerModelName,
   } = useCPQStore();
 
-  const [orderNumber, setOrderNumber] = useState('-');
-  const [configNumber, setConfigNumber] = useState('-');
   const [copied, setCopied] = useState(false);
-  const prevSelectionsRef = useRef<string>('');
-
-  // Reset order/config number preview when selections change
-  useEffect(() => {
-    const currentKey = JSON.stringify(selections) + JSON.stringify(customEntries);
-    if (prevSelectionsRef.current && prevSelectionsRef.current !== currentKey) {
-      setOrderNumber('-');
-      setConfigNumber('-');
-    }
-    prevSelectionsRef.current = currentKey;
-  }, [selections, customEntries]);
 
   const model = marketModels[activeMarketModelIndex];
   if (!model) return null;
@@ -54,22 +46,33 @@ export default function PricePanel() {
   const hasCustom = hasCustomEntries();
   const currency = getCurrency();
   const linkedPT = priceTables.find(t => t.id === model.price_table_id);
+  const engineerModelName = model.engineer_model_name || getEngineerModelName(model.engineer_model_id) || model.model_name;
 
-  const fp = (price: number) => `${currency}${price.toLocaleString('zh-CN')}`;
+  const matchedSavedConfig = useMemo(() => {
+    if (hasCustom) return undefined;
 
-  const handleGetConfigNumber = () => {
-    const nextOrder = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-    const nextConfigSerial = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-    setOrderNumber(nextOrder);
-    if (hasCustom) {
-      setConfigNumber('-');
-      return;
-    }
+    const fingerprint = generateConfigFingerprint(
+      engineerModelName,
+      selections,
+      customEntries,
+    );
 
-    const engineerModelName = model.engineer_model_name || model.model_name;
-    const num = generateConfigNumber(engineerModelName, nextConfigSerial);
-    setConfigNumber(num);
-  };
+    return savedConfigurations.find((cfg) => {
+      if (!cfg.is_complete) return false;
+      if (!cfg.config_number || cfg.config_number === '-') return false;
+      const cfgFingerprint = generateConfigFingerprint(
+        cfg.engineer_model_name || cfg.model_name || 'MODEL',
+        cfg.selections || {},
+        cfg.custom_entries || [],
+      );
+      return cfgFingerprint === fingerprint;
+    });
+  }, [hasCustom, engineerModelName, selections, customEntries, savedConfigurations]);
+
+  const orderNumber = matchedSavedConfig?.order_number || '-';
+  const configNumber = matchedSavedConfig?.config_number || '-';
+
+  const fp = (price: number) => `${currency}${formatNumber(price)}`;
 
   const handleCopyConfigNumber = async () => {
     if (configNumber === '-') return;
@@ -113,19 +116,19 @@ export default function PricePanel() {
         <div className="p-3 border-b bg-slate-50 rounded-t-lg">
           <div className="flex items-center gap-2">
             <DollarSign className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-xs font-semibold text-slate-800">价格汇总</h3>
+            <h3 className="text-xs font-semibold text-slate-800">{isZh ? '价格汇总' : 'Price Summary'}</h3>
             <Badge variant="secondary" className="text-[9px] h-4 ml-auto">{currency}</Badge>
           </div>
           <p className="text-[10px] text-slate-500 mt-0.5">{modelDisplayName}</p>
           {linkedPT && (
-            <p className="text-[10px] text-slate-400 mt-0.5">价格表: {linkedPT.name}</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">{isZh ? '价格表' : 'Price Table'}: {linkedPT.name}</p>
           )}
         </div>
 
         <div className="p-3 space-y-2">
           {/* Base Price */}
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-600">基础价格</span>
+            <span className="text-slate-600">{isZh ? '基础价格' : 'Base Price'}</span>
             <span className="font-medium">{fp(basePrice)}</span>
           </div>
 
@@ -135,10 +138,10 @@ export default function PricePanel() {
           <div className="space-y-1 max-h-[250px] overflow-y-auto">
             <div className="flex items-center gap-1 text-[10px] text-slate-500 font-medium">
               <TrendingUp className="w-3 h-3" />
-              选配加价项
+              {isZh ? '选配加价项' : 'Selected Option Add-ons'}
             </div>
             {selectedItems.length === 0 && !hasCustom ? (
-              <p className="text-[10px] text-slate-400 py-1">无加价选项</p>
+              <p className="text-[10px] text-slate-400 py-1">{isZh ? '无加价选项' : 'No priced add-ons'}</p>
             ) : (
               <>
                 {selectedItems.map((item, idx) => (
@@ -163,7 +166,7 @@ export default function PricePanel() {
               <div className="space-y-1">
                 <div className="flex items-center gap-1 text-[10px] text-amber-600 font-medium">
                   <AlertTriangle className="w-3 h-3" />
-                  自定义配置项（价格待定）
+                  {isZh ? '自定义配置项（价格待定）' : 'Custom entries (price pending)'}
                 </div>
                 {customEntries.map((entry) => (
                   <div
@@ -184,7 +187,7 @@ export default function PricePanel() {
 
           {/* Options subtotal */}
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-600">选配加价合计</span>
+            <span className="text-slate-600">{isZh ? '选配加价合计' : 'Add-on Subtotal'}</span>
             <span className="font-medium text-emerald-600">+{fp(optionsPrice)}</span>
           </div>
 
@@ -192,14 +195,16 @@ export default function PricePanel() {
 
           {/* Total */}
           <div className="flex items-center justify-between text-sm font-bold pt-1">
-            <span className="text-slate-800">总价</span>
+            <span className="text-slate-800">{isZh ? '总价' : 'Total'}</span>
             <span className={`text-base ${hasCustom ? 'text-amber-600' : 'text-blue-700'}`}>
               {totalPriceStr}
             </span>
           </div>
           {hasCustom && (
             <p className="text-[10px] text-amber-500 text-right">
-              含 {customEntries.length} 项自定义配置，价格待确认
+              {isZh
+                ? `含 ${customEntries.length} 项自定义配置，价格待确认`
+                : `${customEntries.length} custom entries included, price pending`}
             </p>
           )}
 
@@ -209,7 +214,7 @@ export default function PricePanel() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1 text-[10px] text-slate-500 font-medium">
                 <Hash className="w-3 h-3" />
-                订单号 / 配置号
+                {isZh ? '订单号 / 配置号' : 'Order / Config Number'}
               </div>
               <div className="flex items-center gap-1">
                 {configNumber !== '-' && (
@@ -229,37 +234,27 @@ export default function PricePanel() {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="text-[10px]">
-                      复制配置号
+                      {isZh ? '复制配置号' : 'Copy config number'}
                     </TooltipContent>
                   </Tooltip>
                 )}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-5 w-5 p-0"
-                      onClick={handleGetConfigNumber}
-                    >
-                      <RefreshCw className="w-3 h-3 text-blue-500" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-[10px]">
-                    生成订单号与配置号
-                  </TooltipContent>
-                </Tooltip>
               </div>
             </div>
             <div className={`text-xs font-mono text-center py-1 rounded ${
               orderNumber === '-' ? 'text-slate-400' : 'text-slate-700 bg-slate-100 font-bold'
             }`}>
-              订单号: {orderNumber}
+              {isZh ? '订单号' : 'Order No.'}: {orderNumber}
             </div>
             <div className={`text-xs font-mono text-center py-1 rounded ${
               configNumber === '-' ? 'text-slate-400' : 'text-blue-700 bg-blue-50 font-bold'
             }`}>
-              配置号: {configNumber === '-' ? (hasCustom && orderNumber !== '-' ? 'ETO评审后生成' : '-') : configNumber}
+              {isZh ? '配置号' : 'Config No.'}: {configNumber === '-' ? (hasCustom ? (isZh ? 'ETO评审后生成' : 'Generated after ETO review') : '-') : configNumber}
             </div>
+            <p className="text-[10px] text-slate-400 text-center">
+              {isZh
+                ? '保存后自动生成正式编号；相同配置会复用历史配置号'
+                : 'Formal numbers are generated after save; identical configs reuse existing numbers'}
+            </p>
           </div>
 
         </div>

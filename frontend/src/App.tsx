@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Index from './pages/Index';
 import AuthCallback from './pages/AuthCallback';
 import AuthError from './pages/AuthError';
+import { I18nProvider } from '@/lib/i18n';
 // MODULE_IMPORTS_START
 // MODULE_IMPORTS_END
 
@@ -12,6 +13,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <I18nProvider>
     {/* MODULE_PROVIDERS_START */}
     {/* MODULE_PROVIDERS_END */}
     <TooltipProvider>
@@ -26,6 +28,7 @@ const App = () => (
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
+    </I18nProvider>
     {/* MODULE_PROVIDERS_CLOSE */}
   </QueryClientProvider>
 );
