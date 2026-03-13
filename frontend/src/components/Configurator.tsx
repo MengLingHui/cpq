@@ -742,6 +742,16 @@ function OptionsConfigurator() {
     }, 800);
   };
 
+  const blockWhenCustomEditing = () => {
+    if (!hasPendingCustomEdit) {
+      return false;
+    }
+    toast.warning(isZh
+      ? '正在编辑自定义需求，请先确认或取消后再继续操作。'
+      : 'A custom requirement edit is in progress. Please confirm or cancel it first.');
+    return true;
+  };
+
   const handlePriceTableChange = (priceTableId: string) => {
     changePriceTableInConfig(priceTableId);
   };
@@ -843,7 +853,15 @@ function OptionsConfigurator() {
           <p className="text-xs text-slate-500 mt-0.5">{isZh ? '第三步：配置选项' : 'Step 3: Configure Options'} - {modelDisplayName}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
-          <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={backToModelSelection}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs gap-1"
+            onClick={() => {
+              if (blockWhenCustomEditing()) return;
+              backToModelSelection();
+            }}
+          >
             <ArrowLeft className="w-3 h-3" />
             {isZh ? '返回机型' : 'Back to Model'}
           </Button>
@@ -878,7 +896,15 @@ function OptionsConfigurator() {
               )}
             </Button>
           )}
-          <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setActiveTab('saved')}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={() => {
+              if (blockWhenCustomEditing()) return;
+              setActiveTab('saved');
+            }}
+          >
             {isZh ? '查看选配历史' : 'View Saved Configs'}
           </Button>
         </div>
@@ -915,7 +941,10 @@ function OptionsConfigurator() {
           variant="ghost"
           size="sm"
           className="h-6 text-xs px-2"
-          onClick={backToSeriesSelection}
+          onClick={() => {
+            if (blockWhenCustomEditing()) return;
+            backToSeriesSelection();
+          }}
         >
           {isZh ? '根目录' : 'Root'}
         </Button>
@@ -926,7 +955,10 @@ function OptionsConfigurator() {
               variant="ghost"
               size="sm"
               className="h-6 text-xs px-2"
-              onClick={() => jumpToSeriesNode(node.series_id)}
+              onClick={() => {
+                if (blockWhenCustomEditing()) return;
+                jumpToSeriesNode(node.series_id);
+              }}
             >
               {node.series_name}
             </Button>
@@ -937,7 +969,10 @@ function OptionsConfigurator() {
           variant="ghost"
           size="sm"
           className="h-6 text-xs px-2"
-          onClick={backToModelSelection}
+          onClick={() => {
+            if (blockWhenCustomEditing()) return;
+            backToModelSelection();
+          }}
         >
           {isZh ? '机型选择' : 'Model Selection'}
         </Button>

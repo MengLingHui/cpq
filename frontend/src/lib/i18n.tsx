@@ -191,6 +191,10 @@ const messages = {
       },
       status: {
         etoPending: '待ETO评审',
+        etoToStart: '待发起ETO流程',
+        etoInReview: 'ETO审批中',
+        etoApproved: 'ETO评审通过',
+        etoRejected: 'ETO评审拒绝',
         directOrder: '可下单',
         pendingConfig: '待完成选配',
         seriesConfirming: '待完成选配',
@@ -213,6 +217,7 @@ const messages = {
         savedComplete: '选配结果已写入商机产品行。',
         savedPartial: '中间保存已写入商机产品行，可后续继续完善。',
         lineCopied: '产品行已复制。',
+        etoApproved: 'ETO审批通过，已回写配置号并更新价格。',
       },
       productLines: {
         title: '产品行',
@@ -235,6 +240,9 @@ const messages = {
           edit: '查看或修改配置',
           copy: '复制产品行',
           delete: '删除产品行',
+          startEto: '发起ETO',
+          approveEto: 'ETO通过',
+          rejectEto: 'ETO拒绝',
         },
       },
       commercial: {
@@ -440,6 +448,10 @@ const messages = {
       },
       status: {
         etoPending: 'ETO Review Pending',
+        etoToStart: 'ETO Not Started',
+        etoInReview: 'ETO Under Review',
+        etoApproved: 'ETO Approved',
+        etoRejected: 'ETO Rejected',
         directOrder: 'Ready to Order',
         pendingConfig: 'Configuration Pending',
         seriesConfirming: 'Configuration Pending',
@@ -462,6 +474,7 @@ const messages = {
         savedComplete: 'Configuration saved to opportunity product lines.',
         savedPartial: 'Intermediate save added to opportunity product lines; continue editing later.',
         lineCopied: 'Product line copied.',
+        etoApproved: 'ETO approved. Config number and price have been updated.',
       },
       productLines: {
         title: 'Product Lines',
@@ -484,6 +497,9 @@ const messages = {
           edit: 'View or edit configuration',
           copy: 'Duplicate product line',
           delete: 'Delete product line',
+          startEto: 'Start ETO',
+          approveEto: 'Approve ETO',
+          rejectEto: 'Reject ETO',
         },
       },
       commercial: {

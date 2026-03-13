@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useCPQStore } from '@/lib/cpq-store';
 import { useI18n } from '@/lib/i18n';
+import { generateConfigNumber, generateConfigSerial } from '@/lib/cpq-data';
 import Configurator from '@/components/Configurator';
 import { toast } from '@/components/ui/sonner';
 import { Badge } from '@/components/ui/badge';
@@ -25,17 +26,22 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
+  Check,
   ClipboardList,
   Copy,
   Layers,
   PenSquare,
+  Play,
   Plus,
   Settings2,
   ShieldCheck,
   Truck,
   Trash2,
   WalletCards,
+  X,
 } from 'lucide-react';
+
+type ETOStatus = 'etoToStart' | 'etoInReview' | 'etoApproved' | 'etoRejected';
 
 type OpportunityProductLine = {
   id: string;
@@ -43,10 +49,12 @@ type OpportunityProductLine = {
   modelId: string;
   quantity: number;
   unitPrice: number | null;
+  etoBaseUnitPrice: number | null;
   currency: string;
   totalLabel: string;
   displayCode: string;
-  configStatus: string;
+  hasCustom: boolean;
+  etoStatus: ETOStatus | null;
   savedConfigId: string;
   isComplete: boolean;
 };
@@ -82,14 +90,6 @@ function formatCurrency(value: number, currency: string, locale: string) {
   }
 }
 
-function configStatusLabel(hasCustom: boolean, t: (key: string) => string) {
-  return hasCustom ? t('crm.status.etoPending') : t('crm.status.directOrder');
-}
-
-function getProgressLabel(_status: string | undefined, t: (key: string) => string) {
-  return t('crm.status.pendingConfig');
-}
-
 function resolveProductName(
   seriesName: string | undefined,
   modelName: string | undefined,
@@ -121,6 +121,17 @@ function resolveDisplayCode(configNumber?: string, orderNumber?: string) {
     return normalizedOrder;
   }
   return '-';
+}
+
+function getLineStatusLabel(line: OpportunityProductLine, t: (key: string) => string) {
+  if (line.hasCustom) {
+    return t(`crm.status.${line.etoStatus || 'etoToStart'}`);
+  }
+  return line.isComplete ? t('crm.status.directOrder') : t('crm.status.pendingConfig');
+}
+
+function isEtoPriceConfirmed(line: OpportunityProductLine) {
+  return !line.hasCustom || line.etoStatus === 'etoApproved';
 }
 
 interface CRMOpportunityPageProps {
@@ -167,7 +178,22 @@ export default function CRMOpportunityPage({ embedded = false }: CRMOpportunityP
         commercialTerms?: CommercialTerms;
       };
       if (Array.isArray(parsed.productLines)) {
-        setProductLines(parsed.productLines);
+        setProductLines(parsed.productLines.map((line) => ({
+          ...line,
+          hasCustom: typeof line.hasCustom === 'boolean' ? line.hasCustom : false,
+          etoStatus: (typeof line.hasCustom === 'boolean' ? line.hasCustom : false)
+            ? (line.etoStatus || 'etoToStart')
+            : null,
+          etoBaseUnitPrice:
+            typeof line.etoBaseUnitPrice === 'number'
+              ? line.etoBaseUnitPrice
+              : (typeof line.unitPrice === 'number' ? line.unitPrice : null),
+          unitPrice:
+            (typeof line.hasCustom === 'boolean' ? line.hasCustom : false)
+            && ((line.etoStatus || 'etoToStart') !== 'etoApproved')
+              ? null
+              : line.unitPrice,
+        })));
       }
       if (parsed.commercialTerms) {
         setCommercialTerms(parsed.commercialTerms);
@@ -249,8 +275,10 @@ export default function CRMOpportunityPage({ embedded = false }: CRMOpportunityP
 
     const isComplete = !!cfg.is_complete;
     const normalizedCurrency = opportunityCurrency;
-    const knownUnitPrice = isComplete ? cfg.base_price + cfg.options_price : null;
-    const totalLabel = isComplete && knownUnitPrice !== null
+    const baseUnitPrice = isComplete ? cfg.base_price + cfg.options_price : null;
+    const hasCustom = !!cfg.has_custom;
+    const knownUnitPrice = hasCustom ? null : baseUnitPrice;
+    const totalLabel = knownUnitPrice !== null
       ? formatCurrency(knownUnitPrice, normalizedCurrency, locale)
       : t('crm.status.pendingConfig');
 
@@ -269,10 +297,12 @@ export default function CRMOpportunityPage({ embedded = false }: CRMOpportunityP
           productName,
           modelId: cfg.model_id || '-',
           unitPrice: knownUnitPrice,
+          etoBaseUnitPrice: baseUnitPrice,
           currency: normalizedCurrency,
           totalLabel,
           displayCode: resolveDisplayCode(cfg.config_number, cfg.order_number),
-          configStatus: isComplete ? configStatusLabel(cfg.has_custom, t) : getProgressLabel(cfg.status, t),
+          hasCustom,
+          etoStatus: hasCustom ? 'etoToStart' : null,
           savedConfigId: cfg.id,
           isComplete,
         };
@@ -335,8 +365,10 @@ export default function CRMOpportunityPage({ embedded = false }: CRMOpportunityP
 
       const isComplete = !!sourceConfig.is_complete;
       const normalizedCurrency = opportunityCurrency;
-      const knownUnitPrice = isComplete ? sourceConfig.base_price + sourceConfig.options_price : null;
-      const totalLabel = isComplete && knownUnitPrice !== null
+      const baseUnitPrice = isComplete ? sourceConfig.base_price + sourceConfig.options_price : null;
+      const hasCustom = !!sourceConfig.has_custom;
+      const knownUnitPrice = hasCustom ? null : baseUnitPrice;
+      const totalLabel = knownUnitPrice !== null
         ? formatCurrency(knownUnitPrice, normalizedCurrency, locale)
         : t('crm.status.pendingConfig');
 
@@ -346,10 +378,12 @@ export default function CRMOpportunityPage({ embedded = false }: CRMOpportunityP
         modelId: sourceConfig.model_id || '-',
         quantity: 1,
         unitPrice: knownUnitPrice,
+        etoBaseUnitPrice: baseUnitPrice,
         currency: normalizedCurrency,
         totalLabel,
         displayCode: resolveDisplayCode(sourceConfig.config_number, sourceConfig.order_number),
-        configStatus: isComplete ? configStatusLabel(sourceConfig.has_custom, t) : getProgressLabel(sourceConfig.status, t),
+        hasCustom,
+        etoStatus: hasCustom ? 'etoToStart' : null,
         savedConfigId: sourceConfig.id,
         isComplete,
       };
@@ -364,7 +398,7 @@ export default function CRMOpportunityPage({ embedded = false }: CRMOpportunityP
     setPostSaveTab(null);
 
     toast.success(latestIsComplete ? t('crm.toast.savedComplete') : t('crm.toast.savedPartial'));
-  }, [isConfiguratorOpen, savedConfigurations, setPostSaveTab, setActiveTab, t]);
+  }, [isConfiguratorOpen, savedConfigurations, setPostSaveTab, setActiveTab, t, locale]);
 
   const removeLine = (lineId: string) => {
     setProductLines((prev) => prev.filter((line) => line.id !== lineId));
@@ -383,6 +417,43 @@ export default function CRMOpportunityPage({ embedded = false }: CRMOpportunityP
       return [...prev, copied];
     });
     toast.success(t('crm.toast.lineCopied'));
+  };
+
+  const startEto = (lineId: string) => {
+    setProductLines((prev) => prev.map((line) => (
+      line.id === lineId && line.hasCustom
+        ? { ...line, etoStatus: 'etoInReview' }
+        : line
+    )));
+  };
+
+  const approveEto = (lineId: string) => {
+    setProductLines((prev) => prev.map((line) => {
+      if (line.id !== lineId || !line.hasCustom) {
+        return line;
+      }
+      const linkedCfg = savedConfigurations.find((cfg) => cfg.id === line.savedConfigId);
+      const engineerModelName = linkedCfg?.engineer_model_name || linkedCfg?.model_name || line.productName;
+      const generatedConfigNo = generateConfigNumber(engineerModelName, generateConfigSerial(savedConfigurations));
+      const nextUnitPrice = (line.etoBaseUnitPrice ?? 0) + 1000;
+      return {
+        ...line,
+        etoStatus: 'etoApproved',
+        displayCode: generatedConfigNo,
+        unitPrice: nextUnitPrice,
+        isComplete: true,
+        totalLabel: formatCurrency(nextUnitPrice, line.currency || opportunityCurrency, locale),
+      };
+    }));
+    toast.success(t('crm.toast.etoApproved'));
+  };
+
+  const rejectEto = (lineId: string) => {
+    setProductLines((prev) => prev.map((line) => (
+      line.id === lineId && line.hasCustom
+        ? { ...line, etoStatus: 'etoRejected' }
+        : line
+    )));
   };
 
   const updateLineQuantity = (lineId: string, rawValue: string) => {
@@ -410,9 +481,6 @@ export default function CRMOpportunityPage({ embedded = false }: CRMOpportunityP
               <p className="mt-1 text-sm text-slate-500">{t('crm.header.dealNo')} {OPPORTUNITY.id} · {t('crm.header.customer')} {OPPORTUNITY.org}</p>
             </div>
             <div className="flex items-center gap-2">
-              <Badge className="rounded-full bg-[var(--cpq-nav-active-bg)] px-3 py-1 text-[var(--cpq-nav-active-text)] hover:bg-[var(--cpq-nav-active-bg)]">
-                {t('crm.status.seriesConfirming')}
-              </Badge>
               <Badge className="rounded-full bg-slate-100 px-3 py-1 text-slate-700 hover:bg-slate-100">
                 {t('crm.header.inProgress')}
               </Badge>
@@ -476,19 +544,55 @@ export default function CRMOpportunityPage({ embedded = false }: CRMOpportunityP
                           />
                         </TableCell>
                         <TableCell>
-                          {line.isComplete && line.unitPrice !== null ? formatCurrency(line.unitPrice, opportunityCurrency, locale) : '-'}
+                          {isEtoPriceConfirmed(line) && line.isComplete && line.unitPrice !== null
+                            ? formatCurrency(line.unitPrice, opportunityCurrency, locale)
+                            : '-'}
                         </TableCell>
                         <TableCell>
-                          {line.isComplete && line.unitPrice !== null
+                          {isEtoPriceConfirmed(line) && line.isComplete && line.unitPrice !== null
                             ? formatCurrency(line.unitPrice * line.quantity, opportunityCurrency, locale)
                             : '-'}
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary" className="rounded-full">
-                            {line.configStatus}
+                            {getLineStatusLabel(line, t)}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
+                          {line.hasCustom && line.etoStatus === 'etoToStart' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="mr-1 h-7 text-[10px]"
+                              onClick={() => startEto(line.id)}
+                              aria-label={t('crm.productLines.actionLabels.startEto')}
+                            >
+                              <Play className="mr-1 h-3 w-3" />
+                              {t('crm.productLines.actionLabels.startEto')}
+                            </Button>
+                          )}
+                          {line.hasCustom && line.etoStatus === 'etoInReview' && (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="mr-1 h-7 w-7"
+                                onClick={() => approveEto(line.id)}
+                                aria-label={t('crm.productLines.actionLabels.approveEto')}
+                              >
+                                <Check className="h-4 w-4 text-emerald-600" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="mr-1 h-7 w-7"
+                                onClick={() => rejectEto(line.id)}
+                                aria-label={t('crm.productLines.actionLabels.rejectEto')}
+                              >
+                                <X className="h-4 w-4 text-rose-600" />
+                              </Button>
+                            </>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"
