@@ -1,4 +1,4 @@
-import { ClipboardList, Database, DollarSign, Search, Settings2, ShoppingCart, Wrench } from 'lucide-react';
+import { BriefcaseBusiness, ClipboardList, Database, DollarSign, Search, Settings2, ShoppingCart, Wrench } from 'lucide-react';
 
 export const MENU_ITEMS = [
   { value: 'test', labelKey: 'test', icon: Wrench },
@@ -8,7 +8,8 @@ export const MENU_ITEMS = [
 
   // { value: 'pure-quote', labelKey: 'pure-quote', icon: FileSpreadsheet },
   { value: 'configurator', labelKey: 'configurator', icon: Settings2 },
-    { value: 'saved', labelKey: 'saved', icon: ClipboardList },
+  { value: 'crm-demo', labelKey: 'crmDemo', icon: BriefcaseBusiness },
+  { value: 'saved', labelKey: 'saved', icon: ClipboardList },
   { value: 'query', labelKey: 'query', icon: Search },
 ] as const;
 

@@ -3,6 +3,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Index from './pages/Index';
+import CRMOpportunityPage from './pages/CRMOpportunity';
 import AuthCallback from './pages/AuthCallback';
 import AuthError from './pages/AuthError';
 import { I18nProvider } from '@/lib/i18n';
@@ -21,6 +22,8 @@ const App = () => (
       <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/cpq" element={<Index />} />
+          <Route path="/crm-demo" element={<CRMOpportunityPage />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/auth/error" element={<AuthError />} />
           {/* MODULE_ROUTES_START */}

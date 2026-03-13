@@ -18,17 +18,19 @@ const messages = {
       clear: '清空',
     },
     menu: {
-      test: '测试工具',
+      test: '演示工具',
       engineer: '工程机型',
       pricetable: '价格表',
       market: '销售机型',
       saved: '选配历史',
       query: '配置查询',
       configurator: '产品选配',
+      crmDemo: 'CRM Demo',
     },
     sidebar: {
       title: 'CPQ 选配系统',
       quickAccess: '快捷入口',
+      demoPage: '演示包(Demo Page)',
       management: '基础管理',
     },
     theme: {
@@ -179,6 +181,73 @@ const messages = {
       printInitFailed: '打印窗口初始化失败，请重试。',
       printContentInitFailed: '打印内容初始化失败，请重试。',
     },
+    crm: {
+      header: {
+        tag: 'CRM 商机',
+        dealNo: '商机编号',
+        customer: '客户',
+        inProgress: '跟进中',
+      },
+      status: {
+        etoPending: '待ETO评审',
+        directOrder: '可直接下单',
+        seriesConfirming: '产品线确认中',
+        modelConfirming: '机型确认中',
+        optionsIncomplete: '选配未完成',
+        completed: '选配完成',
+        processing: '处理中',
+      },
+      placeholder: {
+        unnamedSeries: '未命名产品线',
+        pendingModel: '待确认机型',
+        pendingSelection: '待选型',
+      },
+      toast: {
+        savedComplete: '选配结果已写入商机产品行。',
+        savedPartial: '中间保存已写入商机产品行，可后续继续完善。',
+        lineCopied: '产品行已复制。',
+      },
+      productLines: {
+        title: '产品行',
+        subtitle: '从商机直接发起 CPQ 选配，并自动写入产品行。',
+        newProduct: '新建产品',
+        empty: '暂无产品行，点击右上角“新建产品”进入选配流程。',
+        modelId: '型号ID',
+        total: '总价',
+        knownSubtotal: '已知金额小计',
+        columns: {
+          product: '产品',
+          configNo: '配置号',
+          qty: '数量',
+          unitPrice: '单价',
+          status: '状态',
+          actions: '操作',
+        },
+        actionLabels: {
+          edit: '查看或修改配置',
+          copy: '复制产品行',
+          delete: '删除产品行',
+        },
+      },
+      commercial: {
+        title: '商机条款与商务信息',
+        warranty: '质保条款',
+        payment: '付款条款',
+        delivery: '交付条款',
+        service: '服务条款',
+        notes: '商务备注',
+      },
+      defaultTerms: {
+        warranty: '整机质保12个月，核心部件24个月。',
+        payment: '30%预付款，60%发货前，10%验收后30天。',
+        delivery: '预计合同生效后6-8周交付。',
+        service: '含远程支持与现场调试。',
+      },
+      modal: {
+        title: '从商机新建产品 - CPQ选配',
+        desc: '完成机型与选项配置后点击保存，弹窗会自动关闭并把结果写入当前商机产品行。',
+      },
+    },
   },
   'en-US': {
     common: {
@@ -191,17 +260,19 @@ const messages = {
       clear: 'Clear',
     },
     menu: {
-      test: 'Test Tools',
+      test: 'Demo Tools',
       engineer: 'Engineer Models',
       pricetable: 'Price Tables',
       market: 'Market Models',
       saved: 'Saved Configs',
       query: 'Config Lookup',
       configurator: 'Configurator',
+      crmDemo: 'CRM Demo',
     },
     sidebar: {
       title: 'CPQ Configurator',
       quickAccess: 'Quick Access',
+      demoPage: 'Demo Page',
       management: 'Management',
     },
     theme: {
@@ -352,6 +423,73 @@ const messages = {
       printInitFailed: 'Failed to initialize print window. Please try again.',
       printContentInitFailed: 'Failed to initialize print content. Please try again.',
     },
+    crm: {
+      header: {
+        tag: 'CRM Opportunity',
+        dealNo: 'Deal No.',
+        customer: 'Customer',
+        inProgress: 'In Progress',
+      },
+      status: {
+        etoPending: 'ETO Review Pending',
+        directOrder: 'Ready to Order',
+        seriesConfirming: 'Series Confirming',
+        modelConfirming: 'Model Confirming',
+        optionsIncomplete: 'Options Incomplete',
+        completed: 'Completed',
+        processing: 'Processing',
+      },
+      placeholder: {
+        unnamedSeries: 'Unnamed Series',
+        pendingModel: 'Model Pending',
+        pendingSelection: 'Selection Pending',
+      },
+      toast: {
+        savedComplete: 'Configuration saved to opportunity product lines.',
+        savedPartial: 'Intermediate save added to opportunity product lines; continue editing later.',
+        lineCopied: 'Product line copied.',
+      },
+      productLines: {
+        title: 'Product Lines',
+        subtitle: 'Launch CPQ directly from opportunity and write results back to line items.',
+        newProduct: 'New Product',
+        empty: 'No product lines yet. Click "New Product" to start CPQ flow.',
+        modelId: 'Model ID',
+        total: 'Total',
+        knownSubtotal: 'Known Subtotal',
+        columns: {
+          product: 'Product',
+          configNo: 'Config No.',
+          qty: 'Qty',
+          unitPrice: 'Unit Price',
+          status: 'Status',
+          actions: 'Actions',
+        },
+        actionLabels: {
+          edit: 'View or edit configuration',
+          copy: 'Duplicate product line',
+          delete: 'Delete product line',
+        },
+      },
+      commercial: {
+        title: 'Commercial Terms',
+        warranty: 'Warranty Terms',
+        payment: 'Payment Terms',
+        delivery: 'Delivery Terms',
+        service: 'Service Terms',
+        notes: 'Commercial Notes',
+      },
+      defaultTerms: {
+        warranty: '12-month whole-unit warranty, 24 months for core components.',
+        payment: '30% down payment, 60% before shipment, 10% within 30 days after acceptance.',
+        delivery: 'Estimated delivery in 6-8 weeks after contract effectiveness.',
+        service: 'Includes remote support and on-site commissioning.',
+      },
+      modal: {
+        title: 'Create Product from Opportunity - CPQ',
+        desc: 'After configuration is saved, this dialog closes and writes results back to current opportunity line items.',
+      },
+    },
   },
 } as const;
 
@@ -457,6 +595,6 @@ export function getThemeLabel(theme: 'default' | 'graphite' | 'fresh' | 'sand', 
   return messages[locale].theme[theme] || messages[FALLBACK_LOCALE].theme[theme];
 }
 
-export function getMenuLabel(key: 'test' | 'engineer' | 'pricetable' | 'market' | 'saved' | 'query' | 'configurator', locale = getActiveLocale()): string {
+export function getMenuLabel(key: 'test' | 'engineer' | 'pricetable' | 'market' | 'saved' | 'query' | 'configurator' | 'crmDemo', locale = getActiveLocale()): string {
   return messages[locale].menu[key] || messages[FALLBACK_LOCALE].menu[key];
 }

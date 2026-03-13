@@ -6,6 +6,7 @@ import PriceTableManager from '@/components/PriceTableManager';
 import SavedConfigList from '@/components/SavedConfigList';
 import ConfigNumberQuery from '@/components/ConfigNumberQuery';
 import TestToolsPanel from '@/components/TestToolsPanel';
+import CRMOpportunityPage from '@/pages/CRMOpportunity';
 import type { CPQTab } from '@/features/cpq/menu-items';
 
 interface CPQTabContentProps {
@@ -20,6 +21,7 @@ function wrapInCard(content: ReactNode) {
 
 const TAB_CONTENT: Record<CPQTab, React.ReactNode> = {
   configurator: <Configurator />,
+  'crm-demo': <CRMOpportunityPage embedded />,
   saved: wrapInCard(<SavedConfigList />),
   query: wrapInCard(<ConfigNumberQuery />),
   market: wrapInCard(<MarketModelManager />),

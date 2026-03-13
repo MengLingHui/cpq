@@ -228,6 +228,7 @@ interface CPQState {
 
   // Navigation
   activeTab: string;
+  postSaveTab: string | null;
   editingNewModelIndex: number | null;
 
   // Loading
@@ -236,6 +237,7 @@ interface CPQState {
   // Actions
   initialize: () => Promise<void>;
   setActiveTab: (tab: string) => void;
+  setPostSaveTab: (tab: string | null) => void;
   setEditingModel: (index: number) => void;
   updateEditingModel: (model: MarketModel) => void;
   saveEditingModel: () => void;
@@ -273,7 +275,7 @@ interface CPQState {
   saveConfiguration: (mode?: 'new' | 'overwrite') => void;
   deleteConfiguration: (id: string) => void;
   confirmEtoFeasible: (id: string) => void;
-  loadConfiguration: (config: SavedConfiguration) => void;
+  loadConfiguration: (config: SavedConfiguration, options?: { preserveActiveTab?: boolean }) => void;
   clearEditingConfigContext: () => void;
   createPureProductQuoteSheetFromConfigs: (configIds: string[], name?: string) => PureProductQuoteSheet | null;
   deletePureProductQuoteSheet: (sheetId: string) => void;
@@ -315,6 +317,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
   constraintAnalysis: EMPTY_CONSTRAINT_ANALYSIS,
   editingConfigId: null,
   activeTab: 'configurator',
+  postSaveTab: null,
   editingNewModelIndex: null,
   isLoading: true,
 
@@ -395,6 +398,10 @@ export const useCPQStore = create<CPQState>((set, get) => ({
 
   setActiveTab: (tab: string) => {
     set({ activeTab: tab });
+  },
+
+  setPostSaveTab: (tab: string | null) => {
+    set({ postSaveTab: tab });
   },
 
   setEditingModel: (index: number) => {
@@ -1078,8 +1085,10 @@ export const useCPQStore = create<CPQState>((set, get) => ({
     saveDataToFile('config_details_by_number.json', detailsTable).catch(console.error);
   },
 
-  loadConfiguration: (config: SavedConfiguration) => {
+  loadConfiguration: (config: SavedConfiguration, options) => {
     const { marketModels } = get();
+    const preserveActiveTab = options?.preserveActiveTab === true;
+    const activeTabPatch = preserveActiveTab ? {} : { activeTab: 'configurator' };
     const status = config.status || (config.is_complete ? 'completed' : 'options_incomplete');
 
     if (status === 'series_confirming') {
@@ -1092,7 +1101,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
         customEntries: [],
         constraintAnalysis: EMPTY_CONSTRAINT_ANALYSIS,
         editingConfigId: config.id,
-        activeTab: 'configurator',
+        ...activeTabPatch,
       });
       return;
     }
@@ -1107,7 +1116,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
         customEntries: [],
         constraintAnalysis: EMPTY_CONSTRAINT_ANALYSIS,
         editingConfigId: config.id,
-        activeTab: 'configurator',
+        ...activeTabPatch,
       });
       return;
     }
@@ -1124,7 +1133,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
         customEntries: [],
         constraintAnalysis: EMPTY_CONSTRAINT_ANALYSIS,
         editingConfigId: config.id,
-        activeTab: 'configurator',
+        ...activeTabPatch,
       });
       return;
     }
@@ -1144,7 +1153,7 @@ export const useCPQStore = create<CPQState>((set, get) => ({
       customEntries: [...config.custom_entries],
       constraintAnalysis: resolved.analysis,
       editingConfigId: config.id,
-      activeTab: 'configurator',
+      ...activeTabPatch,
     });
     get().refreshPriceMap();
   },

@@ -10,25 +10,35 @@ interface CPQSidebarProps {
 
 export default function CPQSidebar({ activeTab, onTabChange }: CPQSidebarProps) {
   const { t } = useI18n();
+  const [isDemoExpanded, setIsDemoExpanded] = useState(true);
   const [isManagementExpanded, setIsManagementExpanded] = useState(false);
 
-  const alwaysVisibleValues = useMemo(() => new Set(['configurator','query', 'saved']), []);
+  const alwaysVisibleValues = useMemo(() => new Set(['configurator', 'query', 'saved']), []);
+  const demoValues = useMemo(() => new Set(['crm-demo', 'test']), []);
 
   const alwaysVisibleItems = useMemo(
     () => MENU_ITEMS.filter((item) => alwaysVisibleValues.has(item.value)),
     [alwaysVisibleValues],
   );
 
+  const demoItems = useMemo(
+    () => MENU_ITEMS.filter((item) => demoValues.has(item.value)),
+    [demoValues],
+  );
+
   const collapsibleItems = useMemo(
-    () => MENU_ITEMS.filter((item) => !alwaysVisibleValues.has(item.value)),
-    [alwaysVisibleValues],
+    () => MENU_ITEMS.filter((item) => !alwaysVisibleValues.has(item.value) && !demoValues.has(item.value)),
+    [alwaysVisibleValues, demoValues],
   );
 
   useEffect(() => {
+    if (demoItems.some((item) => item.value === activeTab)) {
+      setIsDemoExpanded(true);
+    }
     if (collapsibleItems.some((item) => item.value === activeTab)) {
       setIsManagementExpanded(true);
     }
-  }, [activeTab, collapsibleItems]);
+  }, [activeTab, collapsibleItems, demoItems]);
 
   const renderMenuButton = (value: string, labelKey: string, Icon: typeof Settings2) => {
     const isActive = activeTab === value;
@@ -67,6 +77,19 @@ export default function CPQSidebar({ activeTab, onTabChange }: CPQSidebarProps) 
             {t('sidebar.quickAccess')}
           </p>
           {alwaysVisibleItems.map((item) => renderMenuButton(item.value, item.labelKey, item.icon))}
+        </div>
+
+        <div className="mt-1">
+          <button
+            type="button"
+            onClick={() => setIsDemoExpanded((prev) => !prev)}
+            className="w-full flex items-center justify-between px-4 py-2 text-[10px] font-semibold uppercase tracking-wide text-[var(--cpq-sidebar-muted)] hover:bg-[var(--cpq-nav-idle-hover-bg)]"
+          >
+            <span>{t('sidebar.demoPage')}</span>
+            {isDemoExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+          </button>
+
+          {isDemoExpanded && demoItems.map((item) => renderMenuButton(item.value, item.labelKey, item.icon))}
         </div>
 
         <div className="mt-1">

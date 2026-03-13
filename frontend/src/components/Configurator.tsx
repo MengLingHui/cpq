@@ -75,6 +75,7 @@ function SeriesSelector() {
     editingConfigId,
     savedConfigurations,
     setActiveTab,
+    postSaveTab,
   } = useCPQStore();
 
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -169,8 +170,9 @@ function SeriesSelector() {
     setSaveSuccess(true);
     setTimeout(() => {
       setSaveSuccess(false);
-      // 跳转到选配历史界面
-      setActiveTab('saved');
+      if (!postSaveTab) {
+        setActiveTab('saved');
+      }
     }, 800);
   };
 
@@ -344,6 +346,7 @@ function ModelSelector() {
     engineerModels,
     seriesList,
     setActiveTab,
+    postSaveTab,
   } = useCPQStore();
 
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -426,7 +429,9 @@ function ModelSelector() {
               setSaveSuccess(true);
               setTimeout(() => {
                 setSaveSuccess(false);
-                setActiveTab('saved');
+                if (!postSaveTab) {
+                  setActiveTab('saved');
+                }
               }, 800);
             }}
             disabled={saveSuccess}
@@ -442,7 +447,9 @@ function ModelSelector() {
                 setSaveSuccess(true);
                 setTimeout(() => {
                   setSaveSuccess(false);
-                  setActiveTab('saved');
+                  if (!postSaveTab) {
+                    setActiveTab('saved');
+                  }
                 }, 800);
               }}
               disabled={saveSuccess}
@@ -617,6 +624,7 @@ function OptionsConfigurator() {
     constraintAnalysis,
     isOptionAvailable,
     getOptionDisableReasons,
+    postSaveTab,
   } = useCPQStore();
 
   const [customInputVisible, setCustomInputVisible] = useState<Record<string, boolean>>({});
@@ -702,8 +710,9 @@ function OptionsConfigurator() {
     setSaveSuccess(true);
     setTimeout(() => {
       setSaveSuccess(false);
-      // 跳转到选配历史界面
-      setActiveTab('saved');
+      if (!postSaveTab) {
+        setActiveTab('saved');
+      }
     }, 800);
   };
 
@@ -712,8 +721,9 @@ function OptionsConfigurator() {
     setSaveSuccess(true);
     setTimeout(() => {
       setSaveSuccess(false);
-      // 跳转到选配历史界面
-      setActiveTab('saved');
+      if (!postSaveTab) {
+        setActiveTab('saved');
+      }
     }, 800);
   };
 
